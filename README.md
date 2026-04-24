@@ -289,6 +289,16 @@ Use an enum and match statement in _physics_process, no external plugin needed.
 
 ---
 
+## Writing Better Prompts
+
+The prompts above are fine starting points, but they're deliberately short. For bigger features, you'll get much better results with **detailed specs** — prompts that state exact numbers, geometry, scope, and non-obvious design decisions.
+
+See [`early-requirements/`](early-requirements/) for worked examples. Start with [`v1-animated-platformer.md`](early-requirements/v1-animated-platformer.md) — it's a full spec of the animated-player phase of this project, specific enough that a fresh AI could rebuild what's here from the spec alone. The appendix at the end breaks down the patterns that make a spec like that effective.
+
+The short version: numbers beat adjectives, state what's NOT in scope, explain non-obvious decisions, and use tables for anything repetitive. If you couldn't hand your prompt to a new human and get a recognizable result back, it's too vague.
+
+---
+
 ## Resources
 
 - [Godot 4 Docs](https://docs.godotengine.org/en/stable/)

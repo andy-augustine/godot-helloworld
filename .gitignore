@@ -9,3 +9,6 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# QA / playtest screenshots (runtime artifacts)
+screenshots/

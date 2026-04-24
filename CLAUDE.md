@@ -56,3 +56,9 @@ godot-mcp-pro is configured in `~/.claude/settings.json`:
 ## Testing & QA
 
 **Read `TESTING.md` before writing any QA/playtest sequence that drives the running game through MCP.** It documents how MCP async timing interacts with physics (short version: `simulate_action` followed by separate `capture_frames` calls will miss mid-motion states because of tool round-trip latency). TESTING.md has the three working patterns and pitfalls to avoid.
+
+## Working style on new capabilities
+
+When adding a major new capability (a new subsystem like the camera/room system, enemies, save system, significant UI), default to thoughtful, creative, polished work: plan in phases before starting, confirm the plan, consider game feel and aesthetics alongside correctness (particles, transitions, responsiveness), and don't skip polish passes to save time.
+
+This does NOT apply to bug fixes, tweaks, one-line changes, or routine refactors — keep those tight and don't over-plan.

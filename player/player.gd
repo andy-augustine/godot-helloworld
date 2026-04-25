@@ -1,5 +1,23 @@
 extends CharacterBody2D
 
+# Player controller. Attached to the root of player.tscn (CharacterBody2D).
+# Lives as a sibling of GameCamera under World.
+#
+# Responsibilities:
+#   - Read input → drive horizontal motion, jump, wall slide, wall jump
+#   - Tune the feel: coyote time, jump buffer, variable jump height, fast-fall gravity
+#   - Drive the rig animation (idle / run / jump / fall / wall_slide / land) plus
+#     dust + spark particles
+#   - On heavy landings, ask the camera for screen shake (via group "camera")
+#
+# Tunable feel constants are grouped at the top under each section header. None
+# of them are `@export`'d — they're shared across all players (only one for now).
+# Promote one to `@export` if you ever need per-instance tuning.
+#
+# In group "player" (set on player.tscn), so GameCamera can find this node.
+# See STRUCTURE.md for the room/camera/player relationship; GODOT_NOTES.md
+# §Physics for `move_and_slide` and §Animation for the AnimationPlayer pattern.
+
 # ── Constants ──────────────────────────────────────────────────────────────────
 const GRAVITY: float = 1800.0
 
@@ -189,6 +207,11 @@ func _post_move_update() -> void:
 
 
 # ── Animation ──────────────────────────────────────────────────────────────────
+# Maps physics state → animation clip + drives the visual rig (facing flip,
+# particle emitters). One `AnimationPlayer` plays one clip at a time; the
+# state→clip table is the `if/else if` block below. Add a new state by
+# extending that block and adding a corresponding clip in player.tscn's
+# AnimationPlayer.
 func _update_animation() -> void:
 	var grounded: bool = is_on_floor()
 	var wall_sliding: bool = _is_wall_sliding()

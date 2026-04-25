@@ -1,5 +1,19 @@
 extends Node2D
 
+# Top-level coordinator. World.tscn is the entry scene (set in project.godot).
+# Owns Player + GameCamera + the current Room (one room loaded at a time).
+#
+# Responsibilities:
+#   - On _ready: connect door signals on the starting room, hand the camera its bounds
+#   - On a door firing `player_entered`: load the target room, position it so the
+#     entry door and target door align, tween player + camera, swap rooms, free old
+#
+# See STRUCTURE.md "Room transitions" for the full step-by-step.
+#
+# Tunables:
+#   TRANSITION_DURATION — how long the slide takes (0.5s feels Hollow Knight-ish)
+#   DOOR_GAP            — how far past the entry door the new room sits when aligned
+
 const TRANSITION_DURATION: float = 0.5
 const DOOR_GAP: float = 80.0
 
@@ -14,6 +28,8 @@ func _ready() -> void:
 	_connect_room_doors(_current_room)
 	_camera.enter_room(_current_room)
 
+# Doors are children of the current room. Connect/disconnect their signals when
+# rooms swap so we don't accumulate dangling listeners across transitions.
 func _connect_room_doors(room: Node2D) -> void:
 	if not is_instance_valid(room):
 		return
@@ -35,8 +51,11 @@ func _on_door_entered(door: Door, player: Node2D) -> void:
 		return
 	_start_transition(door, player)
 
+# Choreography for crossing a door. See STRUCTURE.md "Room transitions" for an
+# overview; the inline steps below are the implementation specifics.
 func _start_transition(door: Door, player: Node2D) -> void:
 	_transitioning = true
+	# Freeze player so input/gravity don't fight the position tween.
 	player.set_physics_process(false)
 	if player is CharacterBody2D:
 		(player as CharacterBody2D).velocity = Vector2.ZERO
@@ -47,6 +66,8 @@ func _start_transition(door: Door, player: Node2D) -> void:
 		_abort_transition(player)
 		return
 
+	# Instantiate the new room as a sibling of Player. Move it before Player in
+	# the child order so the player draws on top of room geometry.
 	var new_room: Node2D = packed.instantiate()
 	add_child(new_room)
 	move_child(new_room, _player.get_index())
@@ -58,6 +79,10 @@ func _start_transition(door: Door, player: Node2D) -> void:
 		_abort_transition(player)
 		return
 
+	# Align the new room so its target door lands DOOR_GAP past the entry door
+	# in the entry door's `direction`. The math: world position of the target
+	# door must equal (entry door world position + direction * gap), so we
+	# offset the room itself to make that true given the target door's local pos.
 	var entry_door_world: Vector2 = door.global_position
 	var target_door_local: Vector2 = target_door.position
 	new_room.global_position = entry_door_world + door.direction.normalized() * DOOR_GAP - target_door_local

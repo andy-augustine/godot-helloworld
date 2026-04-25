@@ -2,6 +2,16 @@
 class_name Room
 extends Node2D
 
+# Base class for rooms. Each room scene attaches this script to its root.
+# `bounds` defines the camera-clamp rectangle (in local coords) — the camera
+# in GameCamera.gd reads this via `enter_room(room)` and pins limit_left/top/
+# right/bottom to it. Drawn in the editor as a cyan outline; invisible at runtime.
+#
+# To make a new room: instantiate Room.tscn (or duplicate StartingRoom.tscn),
+# adjust `bounds`, drop in platforms / doors as children. See STRUCTURE.md.
+#
+# `@tool` runs this script in the editor too. See GODOT_NOTES.md §Editor vs runtime.
+
 @export var bounds: Rect2 = Rect2(0, 0, 960, 540):
 	set(value):
 		bounds = value

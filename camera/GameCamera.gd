@@ -1,6 +1,24 @@
 class_name GameCamera
 extends Camera2D
 
+# Game camera. Lives as a sibling of Player under World (NOT a child of Player —
+# that lets transitions move the camera independently and clamp to room bounds).
+#
+# Responsibilities:
+#   - Follow the player with a deadzone (small movements don't shake the framing)
+#   - Look ahead horizontally when the player is moving fast, and downward when
+#     falling fast (so the player can see where they'll land)
+#   - Clamp to the current room's `bounds` Rect2 (set via `enter_room(room)`)
+#   - Provide screen-shake for impact moments — `add_shake(intensity)` is called
+#     by the player on heavy landings
+#
+# Finds the player at startup via group "player". Adds itself to group "camera"
+# so the player can find it for shake events. See STRUCTURE.md and GODOT_NOTES.md
+# §Groups for the rationale.
+#
+# Most tuning values are `@export`'d, so they can be edited on the GameCamera node
+# in the inspector at runtime without touching the script.
+
 @export var y_offset: float = -40.0
 @export var smoothing_speed: float = 8.0
 
@@ -50,6 +68,9 @@ func _physics_process(delta: float) -> void:
 	global_position = _anchor + Vector2(_lookahead_x, _lookahead_y)
 	offset = Vector2(_shake_offset.x, y_offset + _shake_offset.y)
 
+# The "anchor" is what the camera frames; it only moves when the player leaves
+# the deadzone rect around it. Inside the deadzone the camera doesn't react —
+# this is what stops idle micro-movements from jittering the view.
 func _update_anchor() -> void:
 	var p: Vector2 = _player.global_position
 	var hd: Vector2 = deadzone_size * 0.5
@@ -94,6 +115,10 @@ func _get_player_vy() -> float:
 		return (_player as CharacterBody2D).velocity.y
 	return 0.0
 
+# Called by World whenever a room becomes current (startup + after a transition).
+# Translates the room's local `bounds` Rect2 into the camera's `limit_*` fields,
+# which Camera2D uses to clamp itself. Also resets smoothing so the camera doesn't
+# slide visibly the moment a new room becomes active.
 func enter_room(room: Node2D) -> void:
 	_room = room
 	if room == null:

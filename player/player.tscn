@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://stehfrplmpow"]
 
 [ext_resource type="Script" uid="uid://ba0o36pn3w8s0" path="res://player/player.gd" id="1_oul6g"]
+[ext_resource type="AudioStream" uid="uid://do0uyky3keaer" path="res://assets/audio/sfx/wall_slide.ogg" id="2_wallslide"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_player"]
 radius = 16.0
@@ -683,3 +684,8 @@ color_ramp = SubResource("Gradient_yw30f")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=811606432]
 libraries/ = SubResource("AnimationLibrary_hg6s5")
+
+[node name="WallSlideAudio" type="AudioStreamPlayer" parent="." unique_id=1980988198]
+stream = ExtResource("2_wallslide")
+volume_db = -6.0
+bus = &"SFX"

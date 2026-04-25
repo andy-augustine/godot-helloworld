@@ -55,10 +55,13 @@ const WALL_JUMP_LOCK: float = 0.15
 @onready var _land_dust: CPUParticles2D = $Rig/LandDust
 @onready var _run_dust: CPUParticles2D = $Rig/RunDust
 @onready var _wall_sparks: CPUParticles2D = $Rig/WallSlideSparks
+@onready var _wall_slide_audio: AudioStreamPlayer = $WallSlideAudio
 var _facing: int = 1
 var _was_grounded: bool = true
+var _was_wall_sliding: bool = false
 var _current_anim: String = ""
 var _pre_move_vel_y: float = 0.0
+const WALL_SLIDE_AUDIO_VOLUME: float = -6.0  # baseline; fade-out tweens to -40 then stops
 
 const FACING_LERP: float = 0.3  # per-frame smoothing factor for facing flip
 const LAND_DUST_MIN_VEL: float = 200.0  # fall velocity below which landing is silent
@@ -219,6 +222,15 @@ func _update_animation() -> void:
 	var wall_sliding: bool = _is_wall_sliding()
 	var dir: float = Input.get_axis("move_left", "move_right")
 
+	# Wall-slide audio edges: start the loop on entry, fade out on exit.
+	# The 100ms fade prevents an audible click when the player leaves the wall.
+	if wall_sliding and not _was_wall_sliding:
+		_wall_slide_audio.volume_db = WALL_SLIDE_AUDIO_VOLUME
+		_wall_slide_audio.play()
+	elif _was_wall_sliding and not wall_sliding:
+		_fade_out_wall_slide()
+	_was_wall_sliding = wall_sliding
+
 	# Facing flip — only when actively moving, so idle keeps last facing
 	if dir > 0.0:
 		_facing = 1
@@ -312,3 +324,13 @@ func _play(anim_name: String) -> void:
 		return
 	_anim.play(anim_name)
 	_current_anim = anim_name
+
+
+# Fade the wall-slide loop to silence over 100ms then stop. Avoids a click that
+# would happen if we just called stop() at the end of a wave cycle.
+func _fade_out_wall_slide() -> void:
+	if not _wall_slide_audio.playing:
+		return
+	var tween := create_tween()
+	tween.tween_property(_wall_slide_audio, "volume_db", -40.0, 0.1)
+	tween.tween_callback(_wall_slide_audio.stop)

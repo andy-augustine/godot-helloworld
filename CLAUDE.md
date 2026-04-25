@@ -32,11 +32,11 @@ godot-mcp-pro is configured in `~/.claude/settings.json`:
 ```json
 {
   "mcpServers": {
-    "godot-mcp-pro": {
-      "command": "node",
-      "args": ["/path/to/godot-mcp-pro/server/dist/index.js"],
-      "env": {}
-    }
+	"godot-mcp-pro": {
+	  "command": "node",
+	  "args": ["/path/to/godot-mcp-pro/server/dist/index.js"],
+	  "env": {}
+	}
   }
 }
 ```

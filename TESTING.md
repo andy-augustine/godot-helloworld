@@ -31,7 +31,7 @@ will miss the early/mid-motion frames. At MOVE_SPEED=220, 2–3 seconds of queue
 Runs deterministically inside the game process. No MCP round-trips mid-sequence. Use for anything involving timing, motion, or animation transitions.
 
 ```gdscript
-var p = get_tree().root.get_node("Main/Player")
+var p = get_tree().root.get_node("World/Player")
 p.position = Vector2(400, 500)
 p.velocity = Vector2.ZERO
 
@@ -62,7 +62,7 @@ Key rules:
 Good for confirming rig looks right in a specific animation state. Does NOT validate physics or transitions.
 
 ```gdscript
-var p = get_tree().root.get_node("Main/Player")
+var p = get_tree().root.get_node("World/Player")
 p.set_physics_process(false)   # stop _update_animation from overwriting
 p.position = Vector2(400, 450)
 p._anim.play("run")            # or "jump", "wall_slide", "land", etc.

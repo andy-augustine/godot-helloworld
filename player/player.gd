@@ -44,6 +44,8 @@ var _pre_move_vel_y: float = 0.0
 
 const FACING_LERP: float = 0.3  # per-frame smoothing factor for facing flip
 const LAND_DUST_MIN_VEL: float = 200.0  # fall velocity below which landing is silent
+const HEAVY_LANDING_MIN_VEL: float = 950.0   # below this, no camera shake (regular jumps stay quiet)
+const HEAVY_LANDING_MAX_VEL: float = 1700.0  # shake intensity saturates here
 
 
 func _physics_process(delta: float) -> void:
@@ -210,6 +212,7 @@ func _update_animation() -> void:
 		if _pre_move_vel_y > LAND_DUST_MIN_VEL:
 			_play("land")
 			_emit_land_dust(_pre_move_vel_y)
+			_shake_camera_on_land(_pre_move_vel_y)
 			_was_grounded = grounded
 			_update_particles(grounded, wall_sliding)
 			return
@@ -263,6 +266,17 @@ func _emit_land_dust(fall_speed: float) -> void:
 	_land_dust.amount = int(lerpf(6.0, 18.0, t))
 	_land_dust.initial_velocity_max = lerpf(60.0, 140.0, t)
 	_land_dust.restart()
+
+
+func _shake_camera_on_land(fall_speed: float) -> void:
+	if fall_speed < HEAVY_LANDING_MIN_VEL:
+		return
+	var cam: Node = get_tree().get_first_node_in_group("camera")
+	if cam == null or not cam.has_method("add_shake"):
+		return
+	var span: float = HEAVY_LANDING_MAX_VEL - HEAVY_LANDING_MIN_VEL
+	var t: float = clampf((fall_speed - HEAVY_LANDING_MIN_VEL) / span, 0.0, 1.0)
+	cam.add_shake(lerpf(3.0, 9.0, t))
 
 
 func _play(anim_name: String) -> void:

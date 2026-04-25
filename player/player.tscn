@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://stehfrplmpow"]
 
 [ext_resource type="Script" uid="uid://ba0o36pn3w8s0" path="res://player/player.gd" id="1_oul6g"]
-[ext_resource type="PackedScene" uid="uid://crjxjkfkuelnx" path="res://player/camera.tscn" id="2_g1dw6"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_player"]
 radius = 16.0
@@ -582,13 +581,11 @@ _data = {
 &"wall_slide": SubResource("Animation_rgyib")
 }
 
-[node name="Player" type="CharacterBody2D" unique_id=1833225481]
+[node name="Player" type="CharacterBody2D" unique_id=1833225481 groups=["player"]]
 script = ExtResource("1_oul6g")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=266609472]
 shape = SubResource("CapsuleShape2D_player")
-
-[node name="Camera2D" parent="." unique_id=1879841570 instance=ExtResource("2_g1dw6")]
 
 [node name="Rig" type="Node2D" parent="." unique_id=240806815]
 

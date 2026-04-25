@@ -296,11 +296,14 @@ func _emit_land_dust(fall_speed: float) -> void:
 func _shake_camera_on_land(fall_speed: float) -> void:
 	if fall_speed < HEAVY_LANDING_MIN_VEL:
 		return
+	var span: float = HEAVY_LANDING_MAX_VEL - HEAVY_LANDING_MIN_VEL
+	var t: float = clampf((fall_speed - HEAVY_LANDING_MIN_VEL) / span, 0.0, 1.0)
+	# Audio + shake share the same trigger and intensity curve so visual and
+	# auditory hit feel coupled. Volume scales -6 dB (light heavy) → 0 dB (max).
+	AudioManager.play_sfx("heavy_landing", 0.0, lerpf(-6.0, 0.0, t))
 	var cam: Node = get_tree().get_first_node_in_group("camera")
 	if cam == null or not cam.has_method("add_shake"):
 		return
-	var span: float = HEAVY_LANDING_MAX_VEL - HEAVY_LANDING_MIN_VEL
-	var t: float = clampf((fall_speed - HEAVY_LANDING_MIN_VEL) / span, 0.0, 1.0)
 	cam.add_shake(lerpf(3.0, 9.0, t))
 
 

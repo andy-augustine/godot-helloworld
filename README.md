@@ -30,6 +30,8 @@ The point of the project: explore what AI-driven game development feels like whe
 | [`TESTING.md`](TESTING.md) | How to drive the running game through MCP without fighting async/physics timing |
 | [`CLAUDE.md`](CLAUDE.md) | Project rules Claude Code follows on every session |
 | [`plans/`](plans/) | In-progress multi-phase plans. Completed plans live in `plans/done/` for reference. |
+| [`research/`](research/) | Source-of-truth notes from evaluations of external tools and approaches — read before re-evaluating something |
+| [`backlog/`](backlog/) | Things we want to act on later, split into [`tooling-pipeline.md`](backlog/tooling-pipeline.md) (portable) and [`gamedev.md`](backlog/gamedev.md) (project-specific) |
 | [`early-requirements/`](early-requirements/) | Worked examples of detailed prompts that produced features in this repo |
 
 ---

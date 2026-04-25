@@ -1,0 +1,50 @@
+# Backlog
+
+Things we want to act on later, separated by domain. Items capture the **what** and the **why** so a future session — including a freshly /clear'd Claude — can pick one up without re-research.
+
+## What's in here
+
+| File | Domain | Examples |
+|---|---|---|
+| [`tooling-pipeline.md`](tooling-pipeline.md) | Skills, hooks, doc protocol, MCP usage, dev-loop conventions | `visual-qa.md` skill, polish playbook, MEMORY.md convention, forked-context experiment |
+| [`gamedev.md`](gamedev.md) | Gameplay systems, content, polish, art | Audio system, TileMapLayer art, save/load, enemies, HUD, room aesthetics |
+
+## Why split them
+
+These two backlogs evolve at different cadences and serve different audiences:
+
+- **Tooling/pipeline items** mature into reusable artifacts — skills, hooks, conventions — that should eventually be portable across game projects (card/deck, rogue-like, future Metroidvanias). When something here gets a version that's working and stable, it's a candidate to extract into a starter kit.
+- **Gamedev items** are specific to *this* game and its scope. They live and die with the project. Polish a heavy landing here, you're not lifting it elsewhere.
+
+Mixing the two would dilute both lists. When in doubt: ask "if I started a new Godot project tomorrow, would I want this?" — yes → tooling-pipeline, no → gamedev.
+
+## How to add an item
+
+Each backlog item gets a numbered subsection with these fields:
+
+```markdown
+## N. Title
+
+**Why:** one or two sentences on the value / pain it removes.
+**Source:** link to the research file or note that justified this (or "internal" if it came from playtest).
+**Effort:** rough estimate (≤30 min, 1–2 hr, half day, days).
+**Deliverable:** the concrete thing we'd produce — a file path, a tool, a doc section.
+**Notes:** anything else a future picker-upper would want to know — open questions, sequencing constraints.
+```
+
+Keep the title imperative and specific. "Add visual-QA skill" beats "Improve testing." Anchor to a deliverable, not an aspiration.
+
+## How to take an item off the backlog
+
+When work starts:
+1. Move the item's contents into a `plans/<slug>.md` if it's multi-phase, OR just start working if it's a single commit.
+2. Mark the backlog entry as `**Status:** in progress (YYYY-MM-DD, slug → plans/<slug>.md)` — don't delete it from the backlog yet.
+3. When shipped: archive the plan to `plans/done/` per the rule in CLAUDE.md, and remove the item from the backlog file (the plan is now the historical record).
+
+## Long-term vision
+
+This hello-world doubles as a **tooling sandbox**. Items in `tooling-pipeline.md` that prove themselves here — skills used regularly, conventions that stick, hooks that catch real problems — are candidates for extraction into a portable Claude-Code-driven Godot starter kit. We don't extract until something has earned it through repeated use; the bar is "I would copy this into a brand-new Godot project tomorrow and use it on day one."
+
+That extraction doesn't need a separate repo today. It does mean **writing each tooling-pipeline artifact as if it has to stand alone**: skills as standalone Markdown files with no cross-references to project specifics, hooks as standalone scripts, conventions documented in their own files rather than buried in CLAUDE.md. When the day comes to extract, the work should be mostly file-moves, not re-authoring.
+
+`gamedev.md` items have no portability obligation — they're free to assume the full project context.

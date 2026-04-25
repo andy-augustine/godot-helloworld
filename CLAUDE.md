@@ -62,3 +62,7 @@ godot-mcp-pro is configured in `~/.claude/settings.json`:
 When adding a major new capability (a new subsystem like the camera/room system, enemies, save system, significant UI), default to thoughtful, creative, polished work: plan in phases before starting, confirm the plan, consider game feel and aesthetics alongside correctness (particles, transitions, responsiveness), and don't skip polish passes to save time.
 
 This does NOT apply to bug fixes, tweaks, one-line changes, or routine refactors — keep those tight and don't over-plan.
+
+## Plan archiving
+
+Multi-phase plans live in `plans/` while in progress. When a plan is fully shipped, move it to `plans/done/` in the same commit (or a follow-up cleanup commit) and update its top-of-file status line to `**Status:** complete (YYYY-MM-DD)` with a one-line note pointing at the implementation commit(s). Don't delete completed plans — the historical record is useful for context on why decisions were made.

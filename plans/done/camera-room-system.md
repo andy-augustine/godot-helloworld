@@ -1,6 +1,6 @@
 # Camera / Room System — Plan
 
-**Status:** approved, not started. Next session should start from this file.
+**Status:** complete (2026-04-25). All five phases shipped. Archived for reference. Implementation landed in commits ac23f96 (system), d77e1f5 + fe0a817 (cleanup of orphaned `main.tscn` and player-child camera).
 
 ## Decisions locked in
 

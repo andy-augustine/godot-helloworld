@@ -49,17 +49,23 @@ func _disconnect_room_doors(room: Node2D) -> void:
 func _on_door_entered(door: Door, player: Node2D) -> void:
 	if _transitioning:
 		return
-	_start_transition(door, player)
-
-# Choreography for crossing a door. See STRUCTURE.md "Room transitions" for an
-# overview; the inline steps below are the implementation specifics.
-func _start_transition(door: Door, player: Node2D) -> void:
+	# This handler runs from inside a physics flush (Area2D body_entered fires
+	# mid-flush). The transition itself instantiates a new Room — which has
+	# Area2D doors + StaticBody platforms whose shapes register with the
+	# physics server — and Godot rejects shape changes during a flush. So:
+	# set the guard flag and freeze the player synchronously (those don't touch
+	# physics-server shapes), then defer the room-mutation work to the next
+	# idle step where shape changes are legal.
 	_transitioning = true
-	# Freeze player so input/gravity don't fight the position tween.
 	player.set_physics_process(false)
 	if player is CharacterBody2D:
 		(player as CharacterBody2D).velocity = Vector2.ZERO
+	_start_transition.call_deferred(door, player)
 
+# Choreography for crossing a door. See STRUCTURE.md "Room transitions" for an
+# overview; the inline steps below are the implementation specifics.
+# Always invoked via call_deferred from `_on_door_entered` — see why there.
+func _start_transition(door: Door, player: Node2D) -> void:
 	var packed: PackedScene = door.get_target_room_scene()
 	if packed == null:
 		push_error("Door has no target_room_path")

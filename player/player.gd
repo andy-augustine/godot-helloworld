@@ -125,6 +125,7 @@ func _handle_jump(_delta: float) -> void:
 		_coyote_timer = 0.0
 		_wall_jump_direction = -wall_dir
 		_wall_jump_lock_timer = WALL_JUMP_LOCK
+		AudioManager.play_sfx("jump", 0.1)
 		return
 
 	# --- Floor / coyote jump ---
@@ -133,6 +134,7 @@ func _handle_jump(_delta: float) -> void:
 		velocity.y = JUMP_VELOCITY
 		_is_jumping = true
 		_coyote_timer = 0.0
+		AudioManager.play_sfx("jump", 0.1)
 		return
 
 	# --- Variable jump height: cut velocity on early release ---

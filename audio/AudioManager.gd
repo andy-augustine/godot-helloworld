@@ -17,11 +17,12 @@ extends Node
 const SFX_BUS := "SFX"
 const POOL_SIZE := 8
 
-# Map of name → AudioStream. Populated in Phase 2 once .ogg files are placed.
-# Phase 2 will replace this with real preload() entries.
+# Map of name → AudioStream. Add a row here + drop the .ogg file in
+# assets/audio/sfx/ to register a new SFX. Wall-slide is NOT here — it
+# loops on a dedicated AudioStreamPlayer on the player node, not via the pool.
 const SFX: Dictionary = {
-	# "jump": preload("res://assets/audio/sfx/jump.ogg"),
-	# "heavy_landing": preload("res://assets/audio/sfx/heavy_landing.ogg"),
+	"jump": preload("res://assets/audio/sfx/jump.ogg"),
+	"heavy_landing": preload("res://assets/audio/sfx/heavy_landing.ogg"),
 }
 
 var _player_pool: Array[AudioStreamPlayer] = []

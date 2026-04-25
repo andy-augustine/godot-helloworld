@@ -15,11 +15,16 @@ run/main_scene="res://World.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[audio]
+
+buses/default_bus_layout="uid://dy65e4k2csk5r"
+
 [autoload]
 
 MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
 MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
 MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
+AudioManager="*res://audio/AudioManager.gd"
 
 [display]
 

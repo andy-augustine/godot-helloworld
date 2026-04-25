@@ -63,20 +63,19 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ---
 
-## 5b. Add `godot-api` skill — local searchable Godot class reference
+## 5b. ~~Add `godot-api` skill — local searchable Godot class reference~~ — **BUILT, PARKED**
 
-**Why:** Right now Claude relies on training memory + reading project code to answer "what's the method called?" / "what signals does Area2D emit?" / "what does CharacterBody2D.move_and_slide return?". Works ~90% of the time, fails on edge cases. godogen built a one-time pipeline that converts Godot's official XML class docs into per-class Markdown files Claude can load on demand — definitive answers, no guessing. **This skill is language-agnostic** (the converter has `--lang gdscript`); the .NET lock is only on godogen's code-generation skills, not this one. **Liftable as-is.**
-**Source:** [`research/tools/godogen.md`](../research/tools/godogen.md) — `claude/skills/godot-api/SKILL.md`, `gdscript.md` (804-line syntax reference), `tools/godot_api_converter.py`. Real files at https://github.com/htdt/godogen/tree/master/claude/skills/godot-api .
-**Effort:** 2–3 hours. One-time build step (download Godot's `doc/classes/` XMLs, run their Python converter), then a small `SKILL.md` that points Claude at the output.
-**Deliverable:**
-- `.claude/skills/godot-api/SKILL.md` — recipe: read `_common.md` index → jump to specific class file. Adapted from godogen's, language fields stripped to GDScript-only.
-- `.claude/skills/godot-api/doc_api/_common.md`, `_other.md`, `<ClassName>.md` — generated from Godot 4.6+ source XMLs via the converter (committed once; regenerate when Godot ships a new minor version).
-- `.claude/skills/godot-api/gdscript.md` — lifted directly from godogen as a syntax reference. Useful for the team too, not just Claude.
-- `.claude/skills/godot-api/tools/build.sh` — wrapper that does the sparse checkout + converter run, so anyone can rebuild after a Godot update.
-**Notes:**
-- Pairs with item #5 (forked-context experiment): if `context: fork` works, this skill stays lean in main context. If not, falls back to `Agent` tool with the skill's docs as the prompt.
-- Significantly more concrete and higher-confidence than I rated this in the original research pass — moved up from "concept worth lifting" to its own backlog item.
-- Bootstrap warning from godogen's SKILL.md: "Bootstrap if doc_api is empty: `bash ${CLAUDE_SKILL_DIR}/tools/ensure_doc_api.sh`" — copy that pattern so the skill self-heals on a fresh checkout.
+**Status:** Built (commits `f9c4d5e` + `9cadb16` on `skill/godot-api`, merged to main as `e819c5e`) but **deliberately not active** — `SKILL.md` renamed to `SKILL.md.disabled` so Claude Code's discovery ignores it. See `.claude/skills/godot-api/README.md` for the full state and re-enable instructions.
+
+**Why parked instead of active:** The team wants to first measure whether GDScript hallucinations or other in-session friction are common enough to justify changing how Claude works. The skill is preserved on disk and rebuildable; activation is one `git mv`.
+
+**When to revisit:**
+- A team member reports Claude inventing a Godot method/signal/property that doesn't exist
+- Audio, tilemap, or save-system work hits API uncertainty Claude can't resolve from training memory
+- Godot 4.7+ ships and we want Claude to know the new APIs immediately
+- A new project (card/rogue-like) starts where API recall matters from day one
+
+**Original research source:** [`research/tools/godogen.md`](../research/tools/godogen.md) — `claude/skills/godot-api/SKILL.md`, `gdscript.md`, `tools/godot_api_converter.py`. Original files at https://github.com/htdt/godogen/tree/master/claude/skills/godot-api .
 
 ---
 

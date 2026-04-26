@@ -1,6 +1,6 @@
 # Plan: Add `godot-api` Claude Code skill — local searchable Godot class reference
 
-**Status:** ready to execute. Self-contained — a fresh Claude session in this project folder, with no prior conversation context, can run this end to end.
+**Status:** complete (2026-04-26). Skill built end-to-end by a side-Claude session per this plan. Implementation landed in commits `f9c4d5e` (scaffold) + `9cadb16` (generated doc_api/). Merged to main as `e819c5e` (merge commit) and then deliberately parked in `f4ee582` — `SKILL.md` renamed to `SKILL.md.disabled` so Claude Code's discovery ignores it pending evidence the team needs it. See `.claude/skills/godot-api/README.md` for parked state and re-enable instructions.
 
 **Estimated time:** 2–3 hours, mostly spent waiting on the sparse-checkout and the converter.
 

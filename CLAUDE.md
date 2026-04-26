@@ -57,6 +57,12 @@ godot-mcp-pro is configured in `~/.claude/settings.json`:
 
 **Read `TESTING.md` before writing any QA/playtest sequence that drives the running game through MCP.** It documents how MCP async timing interacts with physics (short version: `simulate_action` followed by separate `capture_frames` calls will miss mid-motion states because of tool round-trip latency). TESTING.md has the three working patterns and pitfalls to avoid.
 
+## Starting a session
+
+For quick tasks (bug fixes, single-file edits, Q&A, exploration) — just state what you need. No orientation overhead needed.
+
+For resuming feature work or picking up an in-flight plan after `/clear` or a fresh launch, type **`/orient`** — that slash command reads ROADMAP.md and any active plan in `plans/`, then confirms with you before any code changes. The command lives at `.claude/commands/orient.md` if you want to tweak its behavior.
+
 ## Working style on new capabilities
 
 When adding a major new capability (a new subsystem like the camera/room system, enemies, save system, significant UI), default to thoughtful, creative, polished work: plan in phases before starting, confirm the plan, consider game feel and aesthetics alongside correctness (particles, transitions, responsiveness), and don't skip polish passes to save time.

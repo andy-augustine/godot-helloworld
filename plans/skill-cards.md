@@ -2,6 +2,8 @@
 
 **Status:** in progress (started 2026-04-26)
 
+**P3 carryover bug (found in playtest 2026-04-26)**: dragging an inventory card onto an already-occupied active slot does nothing — no swap. The cause is that the active card (a `SkillCard` Control with `mouse_filter = STOP`) is the topmost hit when the cursor hovers over the active slot, and `SkillCard` doesn't define `_can_drop_data` / `_drop_data`. So Godot finds no drop-accepting Control, drag is rejected, no swap. Fix: add forwarding `_can_drop_data` + `_drop_data` to `SkillCard.gd` that delegates to its parent slot. Likely 6 lines. Land before declaring P3 done.
+
 **Why this plan exists:** We need to validate the synthetic-drag recipe in [`research/tools/godot-drag-drop-api.md §3`](../research/tools/godot-drag-drop-api.md) against a real UI before crystallizing it into a Claude skill. Rather than build throwaway test scaffolding under `tests/`, this plan delivers a real game system — a 2-card skill inventory + 1 active slot HUD in the top-right corner — and uses it as the validation harness in Phase 5. Forward-compatible with the future pickup system (the only change later is "find the cards" instead of "start with both").
 
 **Estimated time:** ~5–6 hours total. P1 ~1h, P2 ~1.5h, P3 ~1h, P4 ~45m, P5 ~1.5h.

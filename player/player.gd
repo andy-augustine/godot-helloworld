@@ -153,7 +153,7 @@ func _handle_jump(_delta: float) -> void:
 		_consume_jump_buffer()
 		var wall_dir: int = _get_wall_direction()
 		velocity.x = -float(wall_dir) * WALL_JUMP_VELOCITY.x
-		velocity.y = WALL_JUMP_VELOCITY.y
+		velocity.y = WALL_JUMP_VELOCITY.y * Skills.get_jump_multiplier()
 		_is_jumping = true
 		_coyote_timer = 0.0
 		_wall_jump_direction = -wall_dir
@@ -164,7 +164,7 @@ func _handle_jump(_delta: float) -> void:
 	# --- Floor / coyote jump ---
 	if (can_floor_jump or can_coyote_jump) and buffered_jump:
 		_consume_jump_buffer()
-		velocity.y = JUMP_VELOCITY
+		velocity.y = JUMP_VELOCITY * Skills.get_jump_multiplier()
 		_is_jumping = true
 		_coyote_timer = 0.0
 		AudioManager.play_sfx("jump", 0.1, -6)
@@ -199,7 +199,7 @@ func _handle_horizontal(delta: float) -> void:
 	var decel: float = DECELERATION if is_grounded else AIR_DECELERATION
 
 	if dir != 0.0:
-		velocity.x = move_toward(velocity.x, dir * MOVE_SPEED, accel * delta)
+		velocity.x = move_toward(velocity.x, dir * MOVE_SPEED * Skills.get_speed_multiplier(), accel * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, decel * delta)
 

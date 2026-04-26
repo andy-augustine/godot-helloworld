@@ -32,15 +32,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 func _apply_visuals() -> void:
 	_name_label.text = skill.display_name
 	_desc_label.text = skill.description
-	var sb := StyleBoxFlat.new()
+	# Duplicate the inspector-set StyleBoxFlat so per-card color tints don't
+	# mutate the shared scene resource. Static styling (corner_radius,
+	# border_width) lives on the Panel in SkillCard.tscn — tweak there.
+	var sb := _panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	sb.bg_color = skill.color.darkened(0.6)
 	sb.border_color = skill.color
-	sb.border_width_left = 2
-	sb.border_width_top = 2
-	sb.border_width_right = 2
-	sb.border_width_bottom = 2
-	sb.corner_radius_top_left = 8
-	sb.corner_radius_top_right = 8
-	sb.corner_radius_bottom_left = 8
-	sb.corner_radius_bottom_right = 8
 	_panel.add_theme_stylebox_override("panel", sb)

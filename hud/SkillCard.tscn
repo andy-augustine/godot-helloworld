@@ -2,6 +2,18 @@
 
 [ext_resource type="Script" uid="uid://dlm8te10pmytm" path="res://hud/SkillCard.gd" id="1_vjnma"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vjnma"]
+bg_color = Color(0.15, 0.15, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.5, 0.55, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="SkillCard" type="Control" unique_id=1248859782]
 custom_minimum_size = Vector2(64, 88)
 layout_mode = 3
@@ -13,6 +25,7 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_vjnma")
 
 [node name="VBox" type="VBoxContainer" parent="Panel" unique_id=1120968817]
 layout_mode = 0

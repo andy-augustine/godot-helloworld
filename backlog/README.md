@@ -18,6 +18,18 @@ These two backlogs evolve at different cadences and serve different audiences:
 
 Mixing the two would dilute both lists. When in doubt: ask "if I started a new Godot project tomorrow, would I want this?" — yes → tooling-pipeline, no → gamedev.
 
+## Mental model: writers' room → production pipeline → shooting script
+
+Three states an idea can live in. Each has one home:
+
+| State | Lives in | Audience | Mutability |
+|---|---|---|---|
+| **Writers' room** (raw / WIP / unfinished) | `backlog/*.md` here | Solo lead + Claude | High — rename, merge, delete freely |
+| **Production pipeline** (crystallized for team) | GitHub Issue *(starts later when team arrives)* | Whole team | Medium — labels evolve, comments thread |
+| **Shooting script** (active execution) | `plans/<feature>.md` | One claimer at a time | Low — locked while in flight |
+
+The `backlog/` folder is the writers' room: a place for Claude and the lead to brainstorm freely without filling the team's inbox with half-thoughts. When an idea is solid enough that another person could read it and act, it graduates out — for now into a refined backlog entry, later (when team arrives) into a GitHub Issue with `idea` or `discussion` labels for collaboration. See [`../ROADMAP.md`](../ROADMAP.md) for the full lifecycle.
+
 ## How to add an item
 
 Each backlog item gets a numbered subsection with these fields:

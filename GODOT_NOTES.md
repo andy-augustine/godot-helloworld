@@ -299,6 +299,7 @@ func _draw() -> void:
 - **`queue_free()` is deferred** — the node is freed at the end of the current frame, not immediately. Don't access it after calling.
 - **Setters fire on `@export`'d properties even from the editor** — that's why `Room.bounds` and `Door.direction` use a setter that calls `queue_redraw()`. It keeps the editor visualization in sync.
 - **Nodes referenced via `$Path` resolve at runtime, not parse time.** Typos in `$Foo/Bar` only blow up when the line executes.
+- **Godot's import scanner ignores `.gitignore` but respects `.gdignore`.** If you keep gitignored asset scratch directories inside the project (e.g. `_audio_workshop/` with hundreds of OGG files we don't ship), drop an empty `.gdignore` file inside them — otherwise Godot tries to import every asset on every reload and the Errors panel fills with `Cannot open file from path 'res://...'`. Two-file gotcha: `.gitignore` in the parent stops Git tracking the directory; `.gdignore` inside the directory stops Godot scanning it.
 
 ---
 

@@ -78,7 +78,7 @@ Just one person (you) plus side-Claude sessions on the same machine.
 - **Commit directly to main.** No PRs, no feature branches per task. Branches only for genuinely risky changes.
 - **No GitHub Issues yet.** Backlog lives in `backlog/*.md` files.
 - **No project board yet.** This `ROADMAP.md` *is* the board.
-- **One Claude with MCP at a time.** Side-Claude bottleneck on the Godot editor — script-only sessions can run in parallel, but MCP-touching sessions serialize. See `plans/done/audio-foundations.md` for an example of clean sequential execution.
+- **One Claude with MCP at a time.** This is a **solo-dev-with-multiple-Claudes** problem only. The bottleneck is per-Godot-editor: one editor running, one MCP connection, two Claudes can't safely issue MCP commands simultaneously. **Multi-dev teams don't hit this** — each teammate runs their own Godot + MCP on their own laptop. Side-Claude sessions on the same machine can still run in parallel as long as only one is MCP-touching at a time (the others stick to script-only edits). See `plans/done/audio-foundations.md` for an example of clean sequential execution.
 
 ### Phase B — team onboarded (later, ~when 6 collaborators arrive)
 

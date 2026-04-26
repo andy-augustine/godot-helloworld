@@ -233,6 +233,67 @@ git push                             # upload to GitHub
 
 ---
 
+## Step 11: Launching Claude on this project
+
+Once everything's installed, working with Claude is just one terminal command — but there's nuance around model selection and parallel sessions worth knowing.
+
+### Default launch
+
+```bash
+cd /Users/[you]/godot-helloworld
+claude
+```
+
+This opens a Claude Code session **in the project root**. Crucial — Claude needs to be in the project folder so it can read `ROADMAP.md`, `CLAUDE.md`, etc., and so MCP can find the Godot editor on the same machine.
+
+### Picking a model
+
+Claude Code uses Opus 4.7 by default — the most capable model. But Opus is overkill (and pricier) for mechanical execution work. Pick the right tool:
+
+| Model | When to use | Launch command |
+|---|---|---|
+| **Opus 4.7** | New subsystems, architecture decisions, planning, debugging hairy issues, anything requiring real reasoning | `claude` (default) |
+| **Sonnet 4.6** | Executing a self-contained plan, mechanical multi-file edits, doc writing, refactors with clear specs | `claude --model claude-sonnet-4-6` |
+| **Haiku 4.5** | Trivial tasks (simple grep, single-file tweak, format change). Risky on multi-file work. | `claude --model claude-haiku-4-5-20251001` |
+
+You can also **switch models mid-session** with `/model`. The model isn't locked once chosen.
+
+> **Why model choice matters:** Sonnet is meaningfully faster and cheaper than Opus, with no quality loss on well-specified mechanical work. If you hand off `plans/<feature>.md` to a side-Claude that just needs to execute the plan, Sonnet is the right pick. Reserve Opus for work where the model needs to make real decisions.
+
+### Running a side-Claude session in parallel
+
+When you want a long mechanical task (executing a fully-specced plan) to run while you continue other work, spawn a second Claude in a new terminal:
+
+```bash
+# In a NEW terminal window
+cd /Users/[you]/godot-helloworld          # same project folder
+claude --model claude-sonnet-4-6
+```
+
+Then paste the task brief, e.g.:
+
+> *"Read `plans/audio-foundations.md` and execute it end to end. Confirm before starting. Don't push without showing me."*
+
+**Important constraints when running parallel Claudes on one machine:**
+
+- **Only one Claude can use the Godot MCP at a time.** Both can write GDScript files freely, but if both try `play_scene` or `add_node` simultaneously, they'll conflict. Coordinate: one is the "MCP session" (running game, scene-editing), the others are "script-only sessions" (file edits only).
+- **Both share the git working tree.** If they both touch the same file, last write wins. Use feature branches (`git checkout -b feature/<name>`) for the side-Claude when in doubt — see `ROADMAP.md` Phase B for the full team-mode workflow.
+- **For different developers on different laptops, this isn't a concern** — each has their own Godot + MCP + working tree.
+
+### Verifying Claude is connected to MCP
+
+After Claude launches:
+
+```bash
+claude mcp list                        # in another terminal — should show godot-mcp-pro
+```
+
+Or in Claude itself, ask it to read editor errors — if it can call `get_editor_errors`, MCP is connected.
+
+The MCP Pro panel inside Godot shows a **green dot** when a Claude session is connected, **red** when not.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |

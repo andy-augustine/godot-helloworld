@@ -49,6 +49,17 @@ var _wall_jump_direction: int = 0  # -1 left, 0 none, +1 right (set on wall-jump
 var _wall_jump_lock_timer: float = 0.0  # brief lock so player can't immediately re-grab
 const WALL_JUMP_LOCK: float = 0.15
 
+# Health
+const MAX_HEALTH: int = 100
+const IFRAMES_DURATION: float = 1.2
+const IFRAME_FLASH_RATE: float = 10.0  # flashes per second
+
+var _health: int = MAX_HEALTH
+var _iframes_timer: float = 0.0
+
+signal health_changed(current: int, maximum: int)
+signal player_died
+
 # ── Animation ──────────────────────────────────────────────────────────────────
 @onready var _anim: AnimationPlayer = $AnimationPlayer
 @onready var _rig: Node2D = $Rig
@@ -110,6 +121,14 @@ func _tick_timers(delta: float) -> void:
 
 	# Wall-jump direction lock
 	_wall_jump_lock_timer = max(_wall_jump_lock_timer - delta, 0.0)
+
+	# I-frames countdown — flashes the rig at IFRAME_FLASH_RATE while active
+	if _iframes_timer > 0.0:
+		_iframes_timer = max(_iframes_timer - delta, 0.0)
+		var flash: bool = fmod(_iframes_timer, 1.0 / IFRAME_FLASH_RATE) < (0.5 / IFRAME_FLASH_RATE)
+		_rig.modulate.a = 0.2 if flash else 1.0
+	else:
+		_rig.modulate.a = 1.0
 
 
 # ── Jump logic ─────────────────────────────────────────────────────────────────
@@ -334,3 +353,48 @@ func _fade_out_wall_slide() -> void:
 	var tween := create_tween()
 	tween.tween_property(_wall_slide_audio, "volume_db", -40.0, 0.1)
 	tween.tween_callback(_wall_slide_audio.stop)
+
+
+# ── Health ─────────────────────────────────────────────────────────────────────
+func take_damage(amount: int) -> void:
+	if _iframes_timer > 0.0:
+		return
+	_health = max(_health - amount, 0)
+	_iframes_timer = IFRAMES_DURATION
+	health_changed.emit(_health, MAX_HEALTH)
+	var cam: Node = get_tree().get_first_node_in_group("camera")
+	if cam and cam.has_method("add_shake"):
+		cam.add_shake(4.0)
+	if _health == 0:
+		player_died.emit()
+		_handle_death()
+
+
+func _handle_death() -> void:
+	set_physics_process(false)
+	velocity = Vector2.ZERO
+	await get_tree().create_timer(0.4).timeout
+	_respawn()
+
+
+func _respawn() -> void:
+	# Per Room.gd: get_spawn returns a local-space Vector2 (or Vector2.ZERO if
+	# the named spawn isn't defined). Convert to world via room.to_global.
+	# Fall back to in-place if no current room or no default spawn.
+	var room: Node = get_tree().get_first_node_in_group("current_room")
+	if room and room.has_method("get_spawn"):
+		var local_pos: Vector2 = room.get_spawn("default")
+		if local_pos != Vector2.ZERO and room is Node2D:
+			global_position = (room as Node2D).to_global(local_pos)
+	_health = MAX_HEALTH
+	_iframes_timer = 0.0
+	_rig.modulate.a = 1.0
+	health_changed.emit(_health, MAX_HEALTH)
+	set_physics_process(true)
+
+
+# Debug: Tab deals 20 damage so we can verify the health pipeline before
+# enemies exist. Remove this when enemies start calling take_damage().
+func _input(event: InputEvent) -> void:
+	if OS.is_debug_build() and event.is_action_pressed("ui_focus_next"):
+		take_damage(20)

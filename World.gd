@@ -25,6 +25,7 @@ var _transitioning: bool = false
 
 func _ready() -> void:
 	_current_room = $StartingRoom
+	_current_room.add_to_group("current_room")
 	_connect_room_doors(_current_room)
 	_camera.enter_room(_current_room)
 
@@ -116,6 +117,7 @@ func _start_transition(door: Door, player: Node2D) -> void:
 	_disconnect_room_doors(_current_room)
 	_current_room.queue_free()
 	_current_room = new_room
+	_current_room.add_to_group("current_room")
 	_connect_room_doors(_current_room)
 
 	_camera.follow_player = true

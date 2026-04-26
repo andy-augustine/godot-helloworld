@@ -6,7 +6,23 @@
 | Researched | 2026-04-26 |
 | Pairs with | [`../../TESTING.md`](../../TESTING.md) — MCP async-latency pattern |
 
-## Verdict
+## ⚠️ Update 2026-04-26 — empirical finding
+
+**Recipe A below does NOT work in Godot 4.6.2.** Verified end-to-end against the real `SkillsPanel` UI in this project (see `tests/RESULTS.md`). Concrete observations:
+
+- `Input.parse_input_event(InputEventMouseButton)` and `Viewport.push_input(event)` both fail to trigger `_gui_input` on the topmost Control under the press position. Hooked a counter to `card.gui_input` signal — fires 0 times immediately and 0 times after a 300 ms wait.
+- Because `_gui_input` never fires, the GUI dispatcher never registers a "potential drag" from the source. Subsequent motion events past threshold do not call `_get_drag_data`. The recipe's `button_mask` / `use_accumulated_input` / frame-pacing details are all moot — the events don't reach GUI dispatch at all.
+- `Control.force_drag(data, preview)` *does* engage the drag (`gui_is_dragging` → true, `gui_get_drag_data()` returns the payload), but synthetic release events do NOT trigger `_drop_data` on the target. The drag silently ends after a delay with `gui_is_drag_successful=false` and no state mutation.
+
+This may be a Godot 4.6 regression vs. earlier 4.x. GUT issue #608 (May 2024) documented synthetic drag working with `button_mask` as the gotcha. We did not bisect when the regression landed.
+
+**What works instead** for testing UI Control drag-and-drop in Godot 4.6: directly invoke `target_slot._can_drop_data(pos, data)` and `target_slot._drop_data(pos, data)` from `execute_game_script`. This is a unit test of the slot logic — it does NOT exercise the GUI hit-test path or the engine's drag state machine. It catches regressions in slot routing rules but not in mouse-filter / hit-test / preview rendering. For those, manual playtest is the only option. See `tests/run_drag_recipe.gd` for the runner and `tests/RESULTS.md` for observed output.
+
+The recipe and discussion below are kept as-is for historical reference and in case the underlying behavior changes back. **Do not extract them into a Claude skill in their current form** — they will produce silent test passes that don't actually validate drag.
+
+---
+
+## Verdict (original — superseded by the update above for Godot 4.6.2)
 
 **Conditional yes.** Godot has a clean API for synthesizing drag (`Input.parse_input_event` + `InputEventMouseButton` + `InputEventMouseMotion`), but the **non-obvious gotcha is `button_mask`** on the motion events. Without it, Godot's GUI dispatcher doesn't recognize a held button, so `_can_drop_data` / drag-preview never fires. The GUT issue #608 thread documents this exact failure mode and the fix.
 

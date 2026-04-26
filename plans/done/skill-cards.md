@@ -1,8 +1,28 @@
 # Plan: Skill Cards — drag-and-drop inventory + active slot
 
-**Status:** in progress (started 2026-04-26)
+**Status:** complete (2026-04-26). P1–P3 + P5 shipped. P4 (visual polish pass) deferred to a future opportunistic touch-up — it's optional for the system to be functional.
 
-**P3 carryover bug (found in playtest 2026-04-26)**: dragging an inventory card onto an already-occupied active slot does nothing — no swap. The cause is that the active card (a `SkillCard` Control with `mouse_filter = STOP`) is the topmost hit when the cursor hovers over the active slot, and `SkillCard` doesn't define `_can_drop_data` / `_drop_data`. So Godot finds no drop-accepting Control, drag is rejected, no swap. Fix: add forwarding `_can_drop_data` + `_drop_data` to `SkillCard.gd` that delegates to its parent slot. Likely 6 lines. Land before declaring P3 done.
+**Commits:**
+- `506f576` P1 — Skill class + Skills autoload + player coupling
+- `dafbd82` P2 — HUD scaffolding (SkillCard / SkillCardSlot / SkillsPanel)
+- `3108d2f` P3 — drag-drop methods (equip / swap / deactivate)
+- `b14b9c0` P3 fix — mouse_filter on inner Controls
+- `66a3ea4` P3 fix — DescLabel custom_minimum_size for autowrap
+- `d6da1a6` P3 hygiene — static visuals to inspector StyleBoxFlat
+- `0d925ff` P3 — SkillCard forwards _can_drop_data/_drop_data to parent slot (swap-on-occupied)
+- (this commit) P5 — direct-invocation harness; synthetic drag dead-ends documented
+
+**Outcome:**
+- Phases 1–3 went per plan after several `.tscn` serialization issues (duplicate `EmptyPanel` captures in SkillsPanel.tscn → HUD.tscn) which were fixed and which produced six new working-style rules now encoded in `feedback_godot_mcp_scene_editing.md` memory.
+- Phase 5 produced a meaningful **negative result**: synthetic drag-and-drop via `Input.parse_input_event` and `Viewport.push_input` does not work in Godot 4.6.2 (verified `_gui_input` doesn't fire). The recipe from `research/tools/godot-drag-drop-api.md §3` is invalidated for this Godot version. Documented in `tests/RESULTS.md` and the research doc; replaced with a direct-invocation runner at `tests/run_drag_recipe.gd`.
+- Phase 4 (polish) was skipped — empty-slot dashed border, drag preview scale-up, equipped pulse, drop flash, hover lift. The feature works without these. Future opportunistic touch-up via a small follow-up.
+
+**Carryover:**
+- P4 polish items (deferred — see above).
+- The synthetic-drag bisect (when did it break in 4.x?) is not done. Out of scope. If it turns out to be a 4.6 regression worth filing upstream, that's a separate task.
+- "Synthetic drag-and-drop" Claude skill — **not graduated**. The recipe doesn't work. Captured the empirical finding instead. No skill to extract.
+
+**Estimated time vs actual:** estimated ~5–6 hours; actual closer to 8 hours including the .tscn cleanup detours and the P5 dead-end investigation. Most of the overrun was on the .tscn serialization issues — now prevented going forward by the encoded rules.
 
 **Why this plan exists:** We need to validate the synthetic-drag recipe in [`research/tools/godot-drag-drop-api.md §3`](../research/tools/godot-drag-drop-api.md) against a real UI before crystallizing it into a Claude skill. Rather than build throwaway test scaffolding under `tests/`, this plan delivers a real game system — a 2-card skill inventory + 1 active slot HUD in the top-right corner — and uses it as the validation harness in Phase 5. Forward-compatible with the future pickup system (the only change later is "find the cards" instead of "start with both").
 

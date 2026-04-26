@@ -74,6 +74,31 @@ Then call `get_game_screenshot` to capture the static pose. Re-enable `set_physi
 
 For feel tuning (jump floatiness, run speed, gravity weight), nothing beats the user playing. Don't try to QA subjective feel — ask for symptoms ("jump feels floaty at apex", "turning around is sluggish") and tune the relevant constant in `player/player.gd`.
 
+### Pattern 4: Drag-and-drop — direct method invocation, NOT synthetic input
+
+**Synthetic mouse events do not exercise GUI drag-and-drop in Godot 4.6.2.** Empirical finding from the skill-cards build (2026-04-26, see `tests/RESULTS.md`):
+
+- `Input.parse_input_event(InputEventMouseButton)` and `Viewport.push_input(event)` both fail to fire `_gui_input` on the topmost Control under the press position. So the engine never starts a drag, and `_get_drag_data` / `_drop_data` never run from synthetic input.
+- `Control.force_drag(data, preview)` engages the drag programmatically but synthetic release does not complete it cleanly — drag ends silently with `gui_is_drag_successful=false` and no state mutation.
+
+The recipe in `research/tools/godot-drag-drop-api.md §3` is documented for completeness and historical reference, but **do not use it as the basis for a drag test in this Godot version**. It will silently pass without validating anything. (May be a Godot 4.6 regression vs. earlier 4.x; not bisected.)
+
+**Working pattern for testing slot drop-handling logic** (a unit test of the routing code, not an end-to-end GUI drag test):
+
+```gdscript
+var data: Dictionary = { "skill": source_slot.card.skill, "source_slot": source_slot }
+var accepted: bool = target_slot._can_drop_data(Vector2.ZERO, data)
+if accepted:
+    target_slot._drop_data(Vector2.ZERO, data)
+# Now read state — Skills.active, multipliers, slot.card — and assert.
+```
+
+The runner at `tests/run_drag_recipe.gd` exercises four modes against the real `SkillsPanel`: equip, swap, deactivate, and two negative controls (inv→inv and same-slot rejection). Re-run after any change to `SkillCardSlot.gd` or `SkillsPanel.gd` to catch regressions in routing rules.
+
+**What this pattern catches**: `_can_drop_data` predicate correctness, `_drop_data` mutations, position-aware swap behavior, multipliers reaching the player.
+
+**What this pattern does NOT catch**: mouse-filter regressions (events not reaching the right Control), drag preview rendering, drag threshold / hit-test issues, anything that requires real OS mouse events through GUI dispatch. Hand off to manual playtest for those.
+
 ## Window / screenshot sizing
 
 Project is set to 960×540 viewport with `allow_hidpi=false` specifically to keep QA screenshots small. Do not change these settings without asking — they exist to conserve session context.

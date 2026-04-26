@@ -29,6 +29,20 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	return { "skill": skill, "source_slot": get_parent() }
 
 
+# Forward drops to the parent slot. When the active slot is occupied, the card
+# is the topmost hit under the cursor — without these forwarders, swap is
+# impossible because Godot would only consult SkillCard for _can_drop_data.
+func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
+	var slot := get_parent() as SkillCardSlot
+	return slot._can_drop_data(at_position, data) if slot else false
+
+
+func _drop_data(at_position: Vector2, data: Variant) -> void:
+	var slot := get_parent() as SkillCardSlot
+	if slot:
+		slot._drop_data(at_position, data)
+
+
 func _apply_visuals() -> void:
 	_name_label.text = skill.display_name
 	_desc_label.text = skill.description

@@ -1,6 +1,6 @@
 # Plan: Audio foundations + first three SFX (jump / heavy landing / wall slide)
 
-**Status:** approved, not yet started.
+**Status:** complete (2026-04-26). All six phases shipped. Implementation landed in commits 5837248 (Phase 1 infra) → 25fd741 (Phase 2 files) → 8da4905 (Phase 3 jump) → e1fd7e7 (Phase 4 landing) → 9a37ed8 (Phase 5 wall slide loop) → 7497711 (Phase 6 tuning). Final tuning values captured in code: jump file swapped from select_004 to impactSoft_medium_002, floor jump -6 dB, wall jump -8 dB, wall slide loop -16 dB.
 
 **Estimated time:** ~3 hours total, mostly mechanical after Phase 1.
 

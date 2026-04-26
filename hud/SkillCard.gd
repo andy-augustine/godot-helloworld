@@ -22,6 +22,13 @@ func _ready() -> void:
 		_apply_visuals()
 
 
+func _get_drag_data(_at_position: Vector2) -> Variant:
+	var preview := duplicate() as Control
+	preview.modulate = Color(1.0, 1.0, 1.0, 0.7)
+	set_drag_preview(preview)
+	return { "skill": skill, "source_slot": get_parent() }
+
+
 func _apply_visuals() -> void:
 	_name_label.text = skill.display_name
 	_desc_label.text = skill.description

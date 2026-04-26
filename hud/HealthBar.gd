@@ -1,20 +1,26 @@
 extends Control
 
-# Segmented energy bar. Drawn via _draw() so we have full control over the
-# Metroid-style segment dividers, glow, and damage flash — a stock ProgressBar
-# would need theme overrides to match, and this is ~30 lines either way.
+# Segmented health bar. Drawn via _draw() so we have full control over the
+# Metroid-style segment dividers, color gradient, and damage flash — a stock
+# ProgressBar would need theme overrides to match, and this is ~40 lines either way.
 #
 # Driven by the parent HUD calling set_health(current, maximum) when the player
 # emits health_changed. The bar lerps toward `_current` so changes feel like a
-# drain rather than a snap, and pulses red briefly when damage lands.
+# drain rather than a snap, shifts color from green → yellow → red as health
+# drops, and pulses white briefly when damage lands.
 
 const SEG_GAP: float = 2.0       # px gap between segments
 const BAR_HEIGHT: float = 14.0
 const CORNER_RADIUS: float = 3.0
 
-const COLOR_FILL: Color = Color("00e5ff")       # cyan accent (matches player rig)
+# Bar color shifts with remaining health: green at full, yellow around half,
+# red as it approaches empty. Two-segment lerp keyed at ratio 0.5 so the
+# midpoint reads cleanly as yellow rather than a muddy green-red blend.
+const COLOR_HEALTH_HIGH: Color = Color(0.25, 0.9, 0.35)   # green
+const COLOR_HEALTH_MID: Color = Color(1.0, 0.85, 0.2)     # yellow
+const COLOR_HEALTH_LOW: Color = Color(1.0, 0.25, 0.25)    # red
 const COLOR_BG: Color = Color(0.05, 0.05, 0.1, 0.85)
-const COLOR_DAMAGE: Color = Color(1.0, 0.2, 0.2)
+const COLOR_DAMAGE_FLASH: Color = Color(1.0, 1.0, 1.0)    # white pulse — reads as a hit even when the bar is already red
 const COLOR_SEG_LINE: Color = Color(0.0, 0.0, 0.0, 0.5)
 
 var _current: float = 100.0
@@ -42,8 +48,14 @@ func _draw() -> void:
 	# Background
 	draw_rect(Rect2(0, 0, w, h), COLOR_BG)
 
-	# Fill (lerp toward damage color when flashing)
-	var fill_color: Color = COLOR_FILL.lerp(COLOR_DAMAGE, _damage_flash)
+	# Health-based color: green (full) → yellow (half) → red (low).
+	# Then white-pulse on top during the brief damage flash.
+	var base_color: Color
+	if fill_ratio >= 0.5:
+		base_color = COLOR_HEALTH_MID.lerp(COLOR_HEALTH_HIGH, (fill_ratio - 0.5) * 2.0)
+	else:
+		base_color = COLOR_HEALTH_LOW.lerp(COLOR_HEALTH_MID, fill_ratio * 2.0)
+	var fill_color: Color = base_color.lerp(COLOR_DAMAGE_FLASH, _damage_flash)
 	draw_rect(Rect2(0, 0, w * fill_ratio, h), fill_color)
 
 	# Segment dividers

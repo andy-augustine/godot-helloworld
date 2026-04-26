@@ -61,7 +61,7 @@ var _was_grounded: bool = true
 var _was_wall_sliding: bool = false
 var _current_anim: String = ""
 var _pre_move_vel_y: float = 0.0
-const WALL_SLIDE_AUDIO_VOLUME: float = -6.0  # baseline; fade-out tweens to -40 then stops
+const WALL_SLIDE_AUDIO_VOLUME: float = -16.0  # baseline; fade-out tweens to -40 then stops
 
 const FACING_LERP: float = 0.3  # per-frame smoothing factor for facing flip
 const LAND_DUST_MIN_VEL: float = 200.0  # fall velocity below which landing is silent
@@ -128,7 +128,7 @@ func _handle_jump(_delta: float) -> void:
 		_coyote_timer = 0.0
 		_wall_jump_direction = -wall_dir
 		_wall_jump_lock_timer = WALL_JUMP_LOCK
-		AudioManager.play_sfx("jump", 0.1)
+		AudioManager.play_sfx("jump", 0.1, -8)
 		return
 
 	# --- Floor / coyote jump ---
@@ -137,7 +137,7 @@ func _handle_jump(_delta: float) -> void:
 		velocity.y = JUMP_VELOCITY
 		_is_jumping = true
 		_coyote_timer = 0.0
-		AudioManager.play_sfx("jump", 0.1)
+		AudioManager.play_sfx("jump", 0.1, -6)
 		return
 
 	# --- Variable jump height: cut velocity on early release ---

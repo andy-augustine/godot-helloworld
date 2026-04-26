@@ -1,8 +1,14 @@
 # Plan: HUD + Player Health System
 
-**Status:** approved, not yet started.
+**Status:** complete (2026-04-26). Shipped across six commits on `main`: `e8ee932` (Phase 1 health state) → `1a67e7e` (Phase 2 HealthBar) → `3ded903` (Phase 3 HUD scene + wiring) → `1a4f30e` (Phase 4 HEALTH rename + green→yellow→red gradient) → `2020a3b` (Phase 5 sizzle: hit-stop, critical pulse, death sequence) → `bd87280` (Phase 5 fixup: rig tilt persistence + fade-too-soon).
 
-**Estimated time:** ~4 hours total.
+**Outcome:** Phases 1–4 went per plan. Phase 5 was an unplanned sizzle pass added on user signoff after playtest, covering hit-stop on damage, critical-health bar pulse, and a rig-collapse + screen-fade death sequence with a `player_respawned` signal. One follow-up fixup landed for two playtest bugs (rotation tween racing the respawn reset; HUD fade clobbering the death animation).
+
+**Carryover:**
+- Debug Tab key in `player/player.gd:_input` is test scaffolding and is still wired. Remove when enemies (`backlog/gamedev.md` #9) start calling `take_damage`.
+- Deferred polish — low-HP movement speed, critical-health music duck, damage vignette / chromatic aberration, knockback, hit-flash sprite, floating damage numbers, **plus the missing `player_hit.ogg` / `player_death.ogg` audio assets** — captured in `backlog/gamedev.md` #16. The SFX call sites are already wired in `player.gd`; they `push_warning` silently until the .ogg files land and are added to `AudioManager.SFX`.
+
+**Estimated time:** ~4 hours total (Phases 1–4). Phase 5 sizzle + fixup added another ~45 min.
 
 **Recommended model for execution:** Sonnet 4.6 — well-specified mechanical work. Polish tuning in Phase 4 may benefit from a more capable model on demand.
 

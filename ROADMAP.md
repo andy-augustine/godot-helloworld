@@ -10,9 +10,9 @@ Updated 2026-04-26.
 
 | | |
 |---|---|
-| **Active plans** | [`plans/hud-health.md`](plans/hud-health.md) — HUD + player health system, fully specified, **not started** |
-| **Most recent ship** | Audio foundations + first three SFX (jump / heavy landing / wall slide loop). Plan archived at [`plans/done/audio-foundations.md`](plans/done/audio-foundations.md). |
-| **Backlog top picks** | Pickups system (gamedev), visually distinct second room (gamedev), audio music + transition stingers (gamedev). See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
+| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md) or [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md) |
+| **Most recent ship** | HUD + player health system: integer health pool, segmented bar w/ green→yellow→red gradient + critical-pulse, hit-stop, rig-collapse death sequence with screen fade. Plan archived at [`plans/done/hud-health.md`](plans/done/hud-health.md). |
+| **Backlog top picks** | Pickups system (gamedev #7), enemies (gamedev #9 — gates knockback + meaningful damage), visually distinct second room (gamedev #1), HUD/health polish follow-ups (gamedev #16). See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
 | **Stage** | Solo lead + side-Claude sessions. Team of 6 collaborators planned for onboarding. |
 | **Workflow mode** | Sequential — one Claude actively using MCP at a time. See "Lifecycle" below. |
 

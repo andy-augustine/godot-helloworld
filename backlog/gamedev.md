@@ -84,11 +84,11 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ### 8. HUD / UI system
 
-**Why:** Health, abilities, item counts, mini-map — none exist. Without HUD, the game has no feedback channel for state. Pickups (#7) need at minimum a "you got X" notification.
+**Why:** Health bar shipped via [`plans/done/hud-health.md`](../plans/done/hud-health.md). What's still missing: ability indicators (when pickups exist), item-count tracker, "you got X" pickup notification overlay, mini-map, pause overlay. Without these, the game still has no feedback channel for non-health state.
 **Source:** Internal.
-**Effort:** Days. Major capability.
-**Deliverable:** `HUD.tscn` autoload or World child with Control nodes for health bar, ability indicators, optional item tracker. Style-pass that matches the player rig palette.
-**Notes:** Sequence with or after #7 — the first thing to display is whatever the first pickup grants.
+**Effort:** Days for the remaining pieces, but each sub-piece is a half-day. The pickup notification is the most pressing — it's a hard dependency for #7.
+**Deliverable:** Extend `hud/HUD.tscn` with ability slot icons, an item-count Label, and a `PickupNotification` Control that animates "Got: <name>" on pickup. Mini-map can wait.
+**Notes:** Sequence with or after #7 — the first thing to add is whatever the first pickup grants.
 
 ---
 
@@ -114,9 +114,9 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ### 11. Audio system
 
-**Why:** No audio exists at all — no music, no SFX. The player's motion has zero auditory feedback. The cheapest, highest-impact polish item not yet started.
+**Why:** Foundation shipped via [`plans/done/audio-foundations.md`](../plans/done/audio-foundations.md): `AudioManager` autoload with pooled `AudioStreamPlayer`s, three SFX (jump, heavy landing, wall slide loop), bus configuration. Still missing: music tracks, transition stinger, more SFX coverage (footsteps, hit/death — see #16 — pickup, ability gain).
 **Source:** Internal.
-**Effort:** Half day for the system; ongoing for content.
+**Effort:** Half day for music infrastructure (a `play_music(track)` API + Master/Music/SFX bus polish); ongoing for content.
 **Deliverable:** `AudioBus` configuration (Master / Music / SFX with separate volumes). `AudioManager` autoload exposing `play_sfx(name)` and `play_music(track)`. Hooks in `player.gd` for footstep, jump, land, wall slide. Hooks in `World.gd` for transition stinger.
 **Notes:** Likely the **highest-ROI single item** in this backlog — game feel jumps enormously from one audio pass.
 
@@ -146,11 +146,21 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ### 14. Screen-shake budget
 
-**Why:** Currently only heavy landings shake. Future events (taking damage, picking up an upgrade, environmental impacts) all benefit from shake. The `add_shake(intensity)` API on `GameCamera` is already there — it's just unused beyond landings.
+**Why:** Heavy landings (already shipped) and hit-taken (shipped via `plans/done/hud-health.md`) both shake. Still uncovered: pickup / upgrade gain shake, boss impact, environmental impacts. The `add_shake(intensity)` API on `GameCamera` is already there.
 **Source:** Internal — `camera/GameCamera.gd` `add_shake` method.
-**Effort:** Per-event 5 min; whole pass 1 hour.
-**Deliverable:** Pickup/upgrade gain shake, hit-taken shake, boss-impact shake, environmental impact shake. Polish-checklist skill (tooling #2) should reference this.
+**Effort:** Per-event 5 min; whole remaining pass ~30 min.
+**Deliverable:** Pickup/upgrade gain shake, boss-impact shake, environmental impact shake. Polish-checklist skill (tooling #2) should reference this.
 **Notes:** Lift directly when polish-checklist is written — they belong together.
+
+---
+
+### 15. Editor → in-game asset cleanup
+
+**Why:** `screenshots/` has 26 local QA images (gitignored). Periodically prune locally so they don't bloat the disk. Not project-affecting; reminder rather than work.
+**Source:** Internal.
+**Effort:** Trivial.
+**Deliverable:** Local `rm -rf screenshots/*` periodically. No automation needed.
+**Notes:** Mentioned for completeness; doesn't deserve a real backlog item but worth saying once.
 
 ---
 
@@ -176,10 +186,3 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ---
 
-### 17. Editor → in-game asset cleanup
-
-**Why:** `screenshots/` has 26 local QA images (gitignored). Periodically prune locally so they don't bloat the disk. Not project-affecting; reminder rather than work.
-**Source:** Internal.
-**Effort:** Trivial.
-**Deliverable:** Local `rm -rf screenshots/*` periodically. No automation needed.
-**Notes:** Mentioned for completeness; doesn't deserve a real backlog item but worth saying once.

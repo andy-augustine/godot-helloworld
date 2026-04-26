@@ -33,12 +33,6 @@ size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")
 kind = 1
 
-[node name="EmptyPanel" type="Panel" parent="VBox/ActiveSlot" unique_id=1357951113]
-modulate = Color(0.5, 0.5, 0.55, 0.6)
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
 [node name="Spacer" type="Control" parent="VBox" unique_id=789162330]
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
@@ -61,20 +55,8 @@ layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")
 
-[node name="EmptyPanel" type="Panel" parent="VBox/InventoryRow/InvSlot1" unique_id=1733533509]
-modulate = Color(0.5, 0.5, 0.55, 0.6)
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
 [node name="InvSlot2" type="Control" parent="VBox/InventoryRow" unique_id=297471924 instance=ExtResource("2_nn1lb")]
 custom_minimum_size = Vector2(64, 88)
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")
-
-[node name="EmptyPanel" type="Panel" parent="VBox/InventoryRow/InvSlot2" unique_id=524157530]
-modulate = Color(0.5, 0.5, 0.55, 0.6)
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0

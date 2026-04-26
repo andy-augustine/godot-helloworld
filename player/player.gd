@@ -56,15 +56,20 @@ const IFRAME_FLASH_RATE: float = 10.0  # flashes per second
 
 var _health: int = MAX_HEALTH
 var _iframes_timer: float = 0.0
+var _death_tween: Tween = null     # held so _respawn can kill it before resetting rig
 
 signal health_changed(current: int, maximum: int)
 signal player_died
 signal player_respawned
 
 # Sizzle tunables (Phase 5)
-const HIT_STOP_DURATION: float = 0.06    # global time-scale freeze on damage
-const DEATH_FREEZE_DURATION: float = 0.45 # rig collapse + screen fade window
-const DEATH_TILT_DEG: float = 22.0        # rig rotation during collapse
+const HIT_STOP_DURATION: float = 0.06     # global time-scale freeze on damage
+# Death pacing: rig collapse animation runs first, then a short hold so the
+# player can read the death pose, then respawn. HUD's fade-to-black is timed
+# to begin around the end of the collapse so the rig doesn't get curtained.
+const DEATH_TWEEN_DURATION: float = 0.4   # rig modulate + rotation animation
+const DEATH_HOLD_DURATION: float = 0.25   # held in collapsed pose before respawn
+const DEATH_TILT_DEG: float = 22.0        # rig rotation at end of collapse
 
 # ── Animation ──────────────────────────────────────────────────────────────────
 @onready var _anim: AnimationPlayer = $AnimationPlayer
@@ -390,18 +395,28 @@ func _handle_death() -> void:
 	velocity = Vector2.ZERO
 	# Death SFX (silent until player_death.ogg is registered — see backlog #16).
 	AudioManager.play_sfx("player_death", 0.0, 0.0)
-	# Rig collapse: tint deep red, fade alpha out, tilt over. Reset on respawn.
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.set_trans(Tween.TRANS_QUAD)
-	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(_rig, "modulate", Color(0.6, 0.15, 0.15, 0.0), DEATH_FREEZE_DURATION * 0.8)
-	tween.tween_property(_rig, "rotation", deg_to_rad(DEATH_TILT_DEG * float(_facing)), DEATH_FREEZE_DURATION)
-	await get_tree().create_timer(DEATH_FREEZE_DURATION).timeout
+	# Rig collapse: tint deep red, fade alpha out, tilt over. Tween ends before
+	# the timer so it can't race with _respawn's rig reset; _respawn also kills
+	# the tween defensively.
+	if _death_tween:
+		_death_tween.kill()
+	_death_tween = create_tween()
+	_death_tween.set_parallel(true)
+	_death_tween.set_trans(Tween.TRANS_QUAD)
+	_death_tween.set_ease(Tween.EASE_OUT)
+	_death_tween.tween_property(_rig, "modulate", Color(0.6, 0.15, 0.15, 0.0), DEATH_TWEEN_DURATION)
+	_death_tween.tween_property(_rig, "rotation", deg_to_rad(DEATH_TILT_DEG * float(_facing)), DEATH_TWEEN_DURATION)
+	await get_tree().create_timer(DEATH_TWEEN_DURATION + DEATH_HOLD_DURATION).timeout
 	_respawn()
 
 
 func _respawn() -> void:
+	# Kill any in-flight death tween before resetting the rig — without this,
+	# a still-running rotation tween will overwrite our reset on its next step
+	# and leave the rig tilted after respawn.
+	if _death_tween:
+		_death_tween.kill()
+		_death_tween = null
 	# Per Room.gd: get_spawn returns a local-space Vector2 (or Vector2.ZERO if
 	# the named spawn isn't defined). Convert to world via room.to_global.
 	# Fall back to in-place if no current room or no default spawn.

@@ -129,7 +129,83 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ---
 
-## 11. Eventually: extract reusable artifacts to a portable starter kit
+## 11. Team-mode GitHub setup (Phase B from ROADMAP.md)
+
+**Why:** When the 6 collaborators come online, we want a working team workflow ready on day one — not improvised under pressure. This item captures the exact configuration so it can be executed in ~1 day once the timing is right, without re-deriving the design.
+
+**Source:** Internal — designed in the session that produced [`ROADMAP.md`](../ROADMAP.md) (Phase B section). Influenced by standard practice in successful small OSS game projects (Mindustry, Cataclysm: DDA, OpenRCT2, Godot itself).
+
+**Effort:** ~1 day of focused setup work. Schedule the day BEFORE collaborators arrive so the workflow is in place when they clone.
+
+**Deliverable:** Concrete configuration in this order — each step ~30-60 min:
+
+1. **Branch protection on main**
+   - GitHub repo settings → Branches → add rule for `main`
+   - Require pull request before merging (1 reviewer)
+   - Require status checks to pass (when we have CI later)
+   - No direct commits to main (you can self-PR if solo)
+
+2. **Issue labels** (delete defaults you don't want, create the project-specific ones)
+   - Keep: `bug`, `enhancement`, `documentation`, `good first issue`
+   - Add: `gamedev`, `tooling`, `research`, `discussion`, `polish`, `audio`, `ui`
+   - Color discipline: gamedev = green, tooling = blue, research = purple, discussion = grey, bug = red
+
+3. **Issue templates** in `.github/ISSUE_TEMPLATE/`
+   - `feature_request.md` — short form, prompts for "what" and "why"
+   - `bug_report.md` — repro steps, expected vs. actual
+   - `idea_discussion.md` — for `discussion`-labeled exploration items
+   - All templates pre-fill the appropriate label
+
+4. **PR template** in `.github/pull_request_template.md`
+   - 5-line form: What does this do? / Closes #X / How tested? / Screenshots if UI / Anything reviewers should know
+
+5. **Single GitHub Project (board view)**
+   - Name: "Game Development"
+   - View: board layout
+   - Status field options: `Backlog` / `In Progress` / `In Review` / `Done`
+   - Auto-add: any new issue or PR to this repo lands in Backlog
+   - Auto-status: PR opened linking issue → In Review; PR merged → Done
+
+6. **Branch naming convention** documented in WORKFLOW.md
+   - Pattern: `feature/<issue#>-<short-slug>` (e.g., `feature/12-audio-foundations`)
+   - Other prefixes: `fix/`, `chore/`, `docs/`
+
+7. **WORKFLOW.md** — new file at project root
+   - Lifecycle from `ROADMAP.md` codified with concrete commands
+   - "Claim before you start" — assign issue + push plan with status header
+   - "Fetch before you start" — `git fetch && gh issue list --assignee @me`
+   - PR closing keywords (`Closes #X` in PR body)
+   - End-of-session backlog flush ritual (promote ripe items to issues)
+
+8. **Update CLAUDE.md** with a "Team mode" section
+   - Reference WORKFLOW.md
+   - Note: branches not direct-to-main, PRs required
+   - Note: when starting work, check `gh issue list` not just `plans/`
+
+9. **Migrate 2-3 high-confidence backlog items to issues as a test**
+   - Pick: polish-checklist skill, audio music+transition stingers, visually distinct second room
+   - Validate the labels, templates, and board automation work end-to-end
+   - Don't bulk-migrate — gradual is fine
+
+10. **One round of self-review**
+    - Open a small test PR yourself to verify the flow
+    - Confirm board automation moves the card on PR open / merge
+    - Confirm closing keywords auto-close the linked issue
+
+11. **Onboarding doc for collaborators**
+    - Could be a section in WORKFLOW.md or a separate `CONTRIBUTING.md`
+    - "Clone the repo, run SETUP.md, claim an issue with `good first issue` label, create branch `feature/<#>-<slug>`, work it, open PR"
+    - Walk-through of one complete cycle
+
+**Notes:**
+- Don't do this prematurely. The setup is overhead with zero benefit while you're solo. Right time = "collaborators are arriving in the next 1-2 weeks."
+- When starting this item, write `plans/team-mode-github-setup.md` first per the project plan-archiving convention.
+- The CLAUDE.md "Plan archiving" rule extends naturally: post-onboarding, plans archive in the same PR that completes the work.
+- ROADMAP.md Phase B section will be partially deleted when this is executed — the workflow becomes "live" in WORKFLOW.md, ROADMAP.md just points at it.
+
+---
+
+## 12. Eventually: extract reusable artifacts to a portable starter kit
 
 **Why:** When several items above are stable and used routinely, the team's time savings compound by re-using them on a new project (card/rogue-like, future Metroidvania) without re-authoring.
 **Source:** Internal — see `research/README.md` long-term vision.

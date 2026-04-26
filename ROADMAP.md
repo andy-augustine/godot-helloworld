@@ -91,7 +91,7 @@ When collaborators come online — same code, same `ROADMAP.md`, but layered pro
 - **Branch naming** — `feature/<issue#>-<slug>` so branch ↔ issue is grep-able.
 - **Update CLAUDE.md** with team-mode workflow notes.
 
-A `WORKFLOW.md` will be drafted closer to the team-onboarding day; not premature today.
+A `WORKFLOW.md` will be drafted closer to the team-onboarding day; not premature today. Full setup checklist for that day is captured in [`backlog/tooling-pipeline.md` item #11](backlog/tooling-pipeline.md) — branch protection, labels, templates, board config, branch naming, CLAUDE.md updates, etc. — so the work is materialized and won't be re-derived under pressure.
 
 ---
 

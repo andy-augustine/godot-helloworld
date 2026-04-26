@@ -23,11 +23,19 @@ const COLOR_BG: Color = Color(0.05, 0.05, 0.1, 0.85)
 const COLOR_DAMAGE_FLASH: Color = Color(1.0, 1.0, 1.0)    # white pulse — reads as a hit even when the bar is already red
 const COLOR_SEG_LINE: Color = Color(0.0, 0.0, 0.0, 0.5)
 
+# Critical-health pulse: when fill_ratio drops below CRITICAL_THRESHOLD, the
+# fill brightens and dims at PULSE_FREQUENCY Hz, drawing the eye to the danger.
+const CRITICAL_THRESHOLD: float = 0.25
+const PULSE_FREQUENCY: float = 4.0       # Hz
+const PULSE_BRIGHTEN_AMOUNT: float = 0.45 # 0..1 toward white at peak
+
 var _current: float = 100.0
 var _maximum: float = 100.0
 var _display: float = 100.0       # lerped value for smooth drain animation
 var _damage_flash: float = 0.0    # 0..1, decays after hit
 var _segments: int = 4
+var _pulse_phase: float = 0.0     # accumulated radians for critical-pulse sin
+var _critical_pulse: float = 0.0  # 0..1 brightness add when in critical zone
 
 func set_health(current: int, maximum: int) -> void:
 	if float(current) < _current:
@@ -38,6 +46,15 @@ func set_health(current: int, maximum: int) -> void:
 func _process(delta: float) -> void:
 	_display = lerpf(_display, _current, 12.0 * delta)
 	_damage_flash = max(_damage_flash - delta * 3.0, 0.0)
+
+	var fill_ratio: float = _display / _maximum if _maximum > 0.0 else 0.0
+	if fill_ratio < CRITICAL_THRESHOLD and fill_ratio > 0.0:
+		_pulse_phase += delta * PULSE_FREQUENCY * TAU
+		_critical_pulse = (0.5 + 0.5 * sin(_pulse_phase)) * PULSE_BRIGHTEN_AMOUNT
+	else:
+		_pulse_phase = 0.0
+		_critical_pulse = 0.0
+
 	queue_redraw()
 
 func _draw() -> void:
@@ -56,6 +73,9 @@ func _draw() -> void:
 	else:
 		base_color = COLOR_HEALTH_LOW.lerp(COLOR_HEALTH_MID, fill_ratio * 2.0)
 	var fill_color: Color = base_color.lerp(COLOR_DAMAGE_FLASH, _damage_flash)
+	# Critical pulse stacks on top: brightens toward white at the sin peaks
+	if _critical_pulse > 0.0:
+		fill_color = fill_color.lerp(Color(1, 1, 1), _critical_pulse)
 	draw_rect(Rect2(0, 0, w * fill_ratio, h), fill_color)
 
 	# Segment dividers

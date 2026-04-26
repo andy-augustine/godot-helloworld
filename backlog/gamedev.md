@@ -154,7 +154,29 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ---
 
-### 15. Editor → in-game asset cleanup
+### 16. Health/HUD polish — deferred from `plans/done/hud-health.md`
+
+**Why:** The hud-health plan shipped Phases 1–5 (health state, HUD, color gradient, hit-stop, critical pulse, death sequence with fade). A handful of "sizzle" items were intentionally punted as either dependent on missing systems or needing real playtesting against enemies. This is the bin for them.
+
+**Source:** Internal — final discussion in the hud-health work session.
+
+**Effort:** Each sub-item is a sub-half-day. Pick off opportunistically; not a single session.
+
+**Deliverable (sub-items):**
+
+- **Audio assets — `player_hit.ogg` + `player_death.ogg`.** The call sites are already wired in `player.gd:take_damage` and `player.gd:_handle_death`, but the keys are not in `AudioManager.SFX` because `preload` would crash without the files. To activate: drop the `.ogg` files into `assets/audio/sfx/` and add two rows to `AudioManager.SFX` (per the comment in that file). Until then, both calls silently `push_warning`.
+- **Movement-speed reduction at low health.** Floor `MOVE_SPEED` to ~70% when `_health / MAX_HEALTH < 0.25`. Risk: feels punishing without enemies to tune against. Hold until enemies (#9) ship.
+- **Critical-health music duck / ominous loop.** Depends on a music subsystem, which we don't have yet. Sequence after #11 (audio system music tracks) and #6 (transition stinger) — not before.
+- **Damage vignette / chromatic aberration.** Red glow at screen edges when low; subtle CA when critical. Shader work — own session.
+- **Knockback on hit.** Push the player away from the damage source. Requires a damage *source* parameter on `take_damage(amount, source: Node2D)` — only meaningful once enemies (#9) call into it. Defer.
+- **Hit-flash sprite (white silhouette flicker).** A shader on the rig that drives modulate-additive-white during the hit-stop. Plays well with the existing 1.2s i-frame alpha flicker but adds the "I just got *hit*" punch beat. Pairs with hit-stop; small shader job.
+- **Floating damage numbers.** A short-lived `Label` that spawns at hit position, drifts up, fades. Mostly meaningful with multi-tier damage values, i.e. once enemies have damage variation.
+
+**Notes:** Cross-references: #9 (enemies) gates knockback + meaningful damage numbers; #11 (audio music) gates critical music. The hit-flash and audio assets can ship independently of any other work whenever there's appetite.
+
+---
+
+### 17. Editor → in-game asset cleanup
 
 **Why:** `screenshots/` has 26 local QA images (gitignored). Periodically prune locally so they don't bloat the disk. Not project-affecting; reminder rather than work.
 **Source:** Internal.

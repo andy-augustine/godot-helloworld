@@ -59,6 +59,12 @@ var _iframes_timer: float = 0.0
 
 signal health_changed(current: int, maximum: int)
 signal player_died
+signal player_respawned
+
+# Sizzle tunables (Phase 5)
+const HIT_STOP_DURATION: float = 0.06    # global time-scale freeze on damage
+const DEATH_FREEZE_DURATION: float = 0.45 # rig collapse + screen fade window
+const DEATH_TILT_DEG: float = 22.0        # rig rotation during collapse
 
 # ── Animation ──────────────────────────────────────────────────────────────────
 @onready var _anim: AnimationPlayer = $AnimationPlayer
@@ -362,9 +368,18 @@ func take_damage(amount: int) -> void:
 	_health = max(_health - amount, 0)
 	_iframes_timer = IFRAMES_DURATION
 	health_changed.emit(_health, MAX_HEALTH)
+	# Hit feedback: SFX + camera shake + brief global hit-stop. AudioManager
+	# silently warns if "player_hit" isn't registered yet — wiring is in place
+	# for whenever the .ogg lands. See backlog/gamedev.md item #16.
+	AudioManager.play_sfx("player_hit", 0.08, -2.0)
 	var cam: Node = get_tree().get_first_node_in_group("camera")
 	if cam and cam.has_method("add_shake"):
 		cam.add_shake(4.0)
+	# Hit-stop: freeze the world for ~60ms. ignore_time_scale=true on the timer
+	# so it ticks even though Engine.time_scale is 0.
+	Engine.time_scale = 0.0
+	await get_tree().create_timer(HIT_STOP_DURATION, true, false, true).timeout
+	Engine.time_scale = 1.0
 	if _health == 0:
 		player_died.emit()
 		_handle_death()
@@ -373,7 +388,16 @@ func take_damage(amount: int) -> void:
 func _handle_death() -> void:
 	set_physics_process(false)
 	velocity = Vector2.ZERO
-	await get_tree().create_timer(0.4).timeout
+	# Death SFX (silent until player_death.ogg is registered — see backlog #16).
+	AudioManager.play_sfx("player_death", 0.0, 0.0)
+	# Rig collapse: tint deep red, fade alpha out, tilt over. Reset on respawn.
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(_rig, "modulate", Color(0.6, 0.15, 0.15, 0.0), DEATH_FREEZE_DURATION * 0.8)
+	tween.tween_property(_rig, "rotation", deg_to_rad(DEATH_TILT_DEG * float(_facing)), DEATH_FREEZE_DURATION)
+	await get_tree().create_timer(DEATH_FREEZE_DURATION).timeout
 	_respawn()
 
 
@@ -388,8 +412,10 @@ func _respawn() -> void:
 			global_position = (room as Node2D).to_global(local_pos)
 	_health = MAX_HEALTH
 	_iframes_timer = 0.0
-	_rig.modulate.a = 1.0
+	_rig.modulate = Color(1, 1, 1, 1)
+	_rig.rotation = 0.0
 	health_changed.emit(_health, MAX_HEALTH)
+	player_respawned.emit()
 	set_physics_process(true)
 
 

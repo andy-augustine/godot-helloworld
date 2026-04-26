@@ -4,8 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://stehfrplmpow" path="res://player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://rooms/StartingRoom.tscn" id="2_room"]
 [ext_resource type="PackedScene" path="res://camera/GameCamera.tscn" id="4_p1v5b"]
-[ext_resource type="Script" uid="uid://dwqkf27ks0hk1" path="res://camera/GameCamera.gd" id="5_wygdx"]
-[ext_resource type="PackedScene" path="res://hud/HUD.tscn" id="6_hud"]
+[ext_resource type="PackedScene" uid="uid://cflq2pk1q0uyh" path="res://hud/HUD.tscn" id="6_hud"]
 
 [node name="World" type="Node2D" unique_id=1552013303]
 script = ExtResource("1_eu7l1")
@@ -15,7 +14,6 @@ script = ExtResource("1_eu7l1")
 [node name="Player" parent="." unique_id=1313232919 instance=ExtResource("1_player")]
 position = Vector2(576, 500)
 
-[node name="GameCamera" type="Camera2D" parent="." unique_id=1303481831 instance=ExtResource("4_p1v5b")]
-script = ExtResource("5_wygdx")
+[node name="GameCamera" parent="." unique_id=1303481831 instance=ExtResource("4_p1v5b")]
 
-[node name="HUD" parent="." instance=ExtResource("6_hud")]
+[node name="HUD" parent="." unique_id=1109728011 instance=ExtResource("6_hud")]

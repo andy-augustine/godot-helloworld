@@ -31,6 +31,7 @@ text = "NAME"
 horizontal_alignment = 1
 
 [node name="DescLabel" type="Label" parent="Panel/VBox" unique_id=1711750698]
+custom_minimum_size = Vector2(52, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
 text = "desc"

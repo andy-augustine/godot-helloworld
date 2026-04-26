@@ -24,6 +24,7 @@ The point of the project: explore what AI-driven game development feels like whe
 
 | File | What it covers |
 |---|---|
+| [`ROADMAP.md`](ROADMAP.md) | **Start here** — single TOC for "what's going on with this project" — active work, recent ships, backlog, lifecycle, where everything lives |
 | [`SETUP.md`](SETUP.md) | End-to-end install for **macOS and Windows** — Godot, Node, VS Code, Claude Code, godot-mcp-pro, Git |
 | [`STRUCTURE.md`](STRUCTURE.md) | Folder layout, data flow between scenes, Unreal/Unity analogies for the architecture |
 | [`GODOT_NOTES.md`](GODOT_NOTES.md) | Godot/GDScript ↔ Unreal/Unity Rosetta stone — scenes vs prefabs, signals vs events, etc. |

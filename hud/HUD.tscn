@@ -1,13 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://chudbar1thuid0"]
+[gd_scene format=3 uid="uid://cflq2pk1q0uyh"]
 
-[ext_resource type="Script" path="res://hud/HUD.gd" id="1_hud"]
-[ext_resource type="Script" path="res://hud/HealthBar.gd" id="2_bar"]
+[ext_resource type="Script" uid="uid://b7ukjpe764to5" path="res://hud/HUD.gd" id="1_hud"]
+[ext_resource type="Script" uid="uid://b1teste8dggpe" path="res://hud/HealthBar.gd" id="2_bar"]
+[ext_resource type="PackedScene" uid="uid://bau0wf7f3qcsh" path="res://hud/SkillsPanel.tscn" id="3_fimwm"]
+[ext_resource type="Script" uid="uid://b3xxqvhxm0cgq" path="res://hud/SkillsPanel.gd" id="4_st07x"]
+[ext_resource type="PackedScene" uid="uid://mewqlgll4k0k" path="res://hud/SkillCardSlot.tscn" id="5_8yvdu"]
+[ext_resource type="Script" uid="uid://bp47bgqdgs0ky" path="res://hud/SkillCardSlot.gd" id="6_lmyhm"]
 
-[node name="HUD" type="CanvasLayer"]
+[node name="HUD" type="CanvasLayer" unique_id=1094250649]
 layer = 10
 script = ExtResource("1_hud")
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1159613620]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -18,28 +22,118 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1606583244]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="HealthLabel" type="Label" parent="Margin/VBox"]
+[node name="HealthLabel" type="Label" parent="Margin/VBox" unique_id=1521820303]
 layout_mode = 2
-text = "HEALTH"
 theme_override_colors/font_color = Color(0.85, 0.9, 0.95, 0.7)
 theme_override_font_sizes/font_size = 9
+text = "HEALTH"
 
-[node name="HealthBar" type="Control" parent="Margin/VBox"]
+[node name="HealthBar" type="Control" parent="Margin/VBox" unique_id=836949508]
 custom_minimum_size = Vector2(120, 14)
 layout_mode = 2
 script = ExtResource("2_bar")
 
-[node name="DeathOverlay" type="ColorRect" parent="."]
+[node name="DeathOverlay" type="ColorRect" parent="." unique_id=1830331507]
+modulate = Color(1, 1, 1, 0)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 1)
-modulate = Color(1, 1, 1, 0)
 mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="SkillsPanel" type="Control" parent="." unique_id=981143332 instance=ExtResource("3_fimwm")]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -160.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 220.0
+grow_horizontal = 0
+script = ExtResource("4_st07x")
+
+[node name="VBox" type="VBoxContainer" parent="SkillsPanel" unique_id=1549149116]
+layout_mode = 0
+theme_override_constants/separation = 4
+
+[node name="ActiveLabel" type="Label" parent="SkillsPanel/VBox" unique_id=930578883]
+modulate = Color(0.7, 0.7, 0.75, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "ACTIVE"
+horizontal_alignment = 1
+
+[node name="ActiveSlot" type="Control" parent="SkillsPanel/VBox" unique_id=352913953 instance=ExtResource("5_8yvdu")]
+custom_minimum_size = Vector2(64, 88)
+layout_mode = 2
+script = ExtResource("6_lmyhm")
+kind = 1
+
+[node name="EmptyPanel" type="Panel" parent="SkillsPanel/VBox/ActiveSlot" unique_id=1357951113]
+modulate = Color(0.5, 0.5, 0.55, 0.6)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="EmptyPanel2" type="Panel" parent="SkillsPanel/VBox/ActiveSlot" unique_id=10890816]
+modulate = Color(0.5, 0.5, 0.55, 0.6)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Spacer" type="Control" parent="SkillsPanel/VBox" unique_id=789162330]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="InventoryLabel" type="Label" parent="SkillsPanel/VBox" unique_id=1072220611]
+modulate = Color(0.7, 0.7, 0.75, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "INVENTORY"
+horizontal_alignment = 1
+
+[node name="InventoryRow" type="HBoxContainer" parent="SkillsPanel/VBox" unique_id=845087713]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="InvSlot1" type="Control" parent="SkillsPanel/VBox/InventoryRow" unique_id=713521890 instance=ExtResource("5_8yvdu")]
+custom_minimum_size = Vector2(64, 88)
+layout_mode = 2
+script = ExtResource("6_lmyhm")
+
+[node name="EmptyPanel" type="Panel" parent="SkillsPanel/VBox/InventoryRow/InvSlot1" unique_id=1816376646]
+modulate = Color(0.5, 0.5, 0.55, 0.6)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="EmptyPanel2" type="Panel" parent="SkillsPanel/VBox/InventoryRow/InvSlot1" unique_id=1733533509]
+modulate = Color(0.5, 0.5, 0.55, 0.6)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="InvSlot2" type="Control" parent="SkillsPanel/VBox/InventoryRow" unique_id=297471924 instance=ExtResource("5_8yvdu")]
+custom_minimum_size = Vector2(64, 88)
+layout_mode = 2
+script = ExtResource("6_lmyhm")
+
+[node name="EmptyPanel" type="Panel" parent="SkillsPanel/VBox/InventoryRow/InvSlot2" unique_id=1502947073]
+modulate = Color(0.5, 0.5, 0.55, 0.6)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="EmptyPanel2" type="Panel" parent="SkillsPanel/VBox/InventoryRow/InvSlot2" unique_id=524157530]
+modulate = Color(0.5, 0.5, 0.55, 0.6)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0

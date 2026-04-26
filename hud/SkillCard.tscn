@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://ch1sqicvfket0"]
+
+[ext_resource type="Script" uid="uid://dlm8te10pmytm" path="res://hud/SkillCard.gd" id="1_vjnma"]
+
+[node name="SkillCard" type="Control" unique_id=1248859782]
+custom_minimum_size = Vector2(64, 88)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_vjnma")
+
+[node name="Panel" type="Panel" parent="." unique_id=1509462870]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=1120968817]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+
+[node name="NameLabel" type="Label" parent="Panel/VBox" unique_id=1080800465]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "NAME"
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="Panel/VBox" unique_id=1711750698]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "desc"
+horizontal_alignment = 1
+autowrap_mode = 2

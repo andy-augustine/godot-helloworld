@@ -9,6 +9,10 @@ Source-of-truth notes from evaluations of external tools, frameworks, and approa
 | [`tools/godogen.md`](tools/godogen.md) | Deep notes on htdt/godogen — verdict, what's adoptable, what's not |
 | [`tools/godot-ai-builder.md`](tools/godot-ai-builder.md) | Deep notes on HubDev-AI/godot-ai-builder — skill list with relevance |
 | [`tools/mcp-alternatives.md`](tools/mcp-alternatives.md) | Comparison of godot-mcp-pro (paid) vs free MCP alternatives + pure CLI |
+| [`tools/godot-mcp-pro-internals.md`](tools/godot-mcp-pro-internals.md) | godot-mcp-pro architecture, input pipeline, CLI surface, extension points, license |
+| [`tools/godot-drag-drop-api.md`](tools/godot-drag-drop-api.md) | Godot 4 native drag/drop API + canonical synthetic-drag recipe for `execute_game_script` |
+| [`tools/godogen-playtest-deep-dive.md`](tools/godogen-playtest-deep-dive.md) | Focused dive: does godogen offer better playtest than mcp-pro? (No.) |
+| [`tools/playtest-extension-strategy.md`](tools/playtest-extension-strategy.md) | Synthesis: should we extend mcp-pro, build sibling MCP, or build a CLI framework? Ranked actions. |
 
 ## How to use this folder
 

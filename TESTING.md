@@ -74,9 +74,11 @@ Then call `get_game_screenshot` to capture the static pose. Re-enable `set_physi
 
 For feel tuning (jump floatiness, run speed, gravity weight), nothing beats the user playing. Don't try to QA subjective feel — ask for symptoms ("jump feels floaty at apex", "turning around is sluggish") and tune the relevant constant in `player/player.gd`.
 
-### Pattern 4: Drag-and-drop — direct method invocation, NOT synthetic input
+### Pattern 4: Drag-and-drop — direct method invocation (PROVISIONAL)
 
-**Synthetic mouse events do not exercise GUI drag-and-drop in Godot 4.6.2.** Empirical finding from the skill-cards build (2026-04-26, see `tests/RESULTS.md`):
+> **2026-04-26 caveat — re-verification pending.** The "synthetic drag is broken" claim below was reached during a session where (a) the user was using the mouse concurrently with my synthetic input tests (real OS events competing with synthetic ones in the GUI queue), and (b) several of my probe scripts had GDScript Parse Errors I didn't always check for. Some or all of the conclusion may be wrong. Treat this section as a working hypothesis, not established fact, until re-tested under controlled hands-off conditions with `get_editor_errors` checked after every call. — *flagged in plans/done/skill-cards.md follow-ups.*
+
+**Hypothesis: synthetic mouse events may not exercise GUI drag-and-drop in Godot 4.6.2.** Observed during the skill-cards build (2026-04-26, see `tests/RESULTS.md` for the data and caveats):
 
 - `Input.parse_input_event(InputEventMouseButton)` and `Viewport.push_input(event)` both fail to fire `_gui_input` on the topmost Control under the press position. So the engine never starts a drag, and `_get_drag_data` / `_drop_data` never run from synthetic input.
 - `Control.force_drag(data, preview)` engages the drag programmatically but synthetic release does not complete it cleanly — drag ends silently with `gui_is_drag_successful=false` and no state mutation.

@@ -7,9 +7,17 @@
 | Runner | `tests/run_drag_recipe.gd` |
 | Project SHA | (top of `main` at validation time) |
 
-## Headline finding — synthetic drag is broken in Godot 4.6.2
+## Caveat — re-verification pending
 
-**The canonical "Recipe A" from `research/tools/godot-drag-drop-api.md §3` does not work in Godot 4.6.2 for testing UI Control drag-and-drop.**
+The session that produced this file had two confounders identified after the fact:
+1. The user was using the mouse concurrently with the synthetic-input tests. Real OS events were competing with synthetic ones in the same GUI dispatch queue.
+2. Several probe scripts had GDScript Parse Errors (`Cannot infer the type of "prev"`, `INCOMPATIBLE_TERNARY`, etc.) that weren't caught at the time because `get_editor_errors` wasn't checked after every call.
+
+The findings below are recorded as a working hypothesis. **Do not treat as established fact until re-verified hands-off, with `get_editor_errors` after every script execution, and with explicit GDScript types per the godogen GDScript practices.** A re-test is queued.
+
+## Headline finding (PROVISIONAL) — synthetic drag may be broken in Godot 4.6.2
+
+**The canonical "Recipe A" from `research/tools/godot-drag-drop-api.md §3` did not appear to work in Godot 4.6.2 in this session's tests, but the tests were polluted (see caveat above).**
 
 Empirical evidence collected during P5:
 

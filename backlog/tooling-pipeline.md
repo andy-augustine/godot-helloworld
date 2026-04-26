@@ -205,7 +205,43 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ---
 
-## 12. Eventually: extract reusable artifacts to a portable starter kit
+## 12. Overnight crawl — current Godot 4.6 / GDScript community knowledge
+
+**Why:** During the skill-cards build (2026-04-26) we hit a likely Godot 4.6 quirk where `Input.parse_input_event` and `Viewport.push_input` don't trigger `_gui_input` on Controls — invalidating the canonical synthetic-drag recipe from `research/tools/godot-drag-drop-api.md §3`. Our training data and our research-doc sources (Godot stable docs, GUT issue #608 May 2024) are stale relative to current Godot. The user identified this gap explicitly: "training data is likely missing all this info." A focused crawl of *current* community sources (forums, Discord, recent GitHub issues, Reddit, blog posts dated 2025–2026) for Godot 4.6 quirks would close it. Especially important now because godogen's docs explicitly do NOT cover Control GUI / drag-and-drop testing — that domain is uncharted, and we're flying blind without recent intel.
+
+**Source:** Triggered by P5 of `plans/done/skill-cards.md` (the negative result) plus user request. Cross-references `research/tools/godogen.md` (godogen migrated to C# partly because of GDScript paper-cuts — they didn't solve them, they avoided them; we need to learn how others *stayed* in GDScript).
+
+**Effort:** One overnight remote agent run (estimated 4–8 hours of crawl + synthesis). Run via `/schedule` at idle hours.
+
+**Deliverable:** `research/tools/godot-4.6-current-intel.md` containing:
+- **GDScript quirks (current):** `:=` Variant traps beyond what godogen documented; current state of `await` / coroutines / `_cmd_execute_script`-style wrappers; type-system gotchas in 4.6 specifically.
+- **Synthetic input + GUI dispatch:** is `Input.parse_input_event` known to skip `_gui_input` in 4.6? Was it a regression? Are there workarounds people are using? Citation chain back to source posts, dated.
+- **Drag-and-drop testing in Godot 4.6:** real recipes that work *now*, not 2024 recipes. Specifically how community testers exercise `_get_drag_data` / `_drop_data` from automated tests in 4.6.
+- **Frame-rate-dependent code patterns:** the godogen quirks doc had a few but only those they hit. What others does the community currently warn about?
+- **Test harness patterns beyond godogen's:** GUT current state, GdUnit4 status, any newer frameworks. What do top-100-stars Godot repos use?
+- **Known 4.6 regressions or breaking changes** vs. 4.4/4.5 that we should be aware of.
+- **Source pointers:** every claim cites a forum post, GitHub issue, Discord screenshot, or recent video, with the date. We should be able to follow the trail back to the primary source.
+- **Test scenarios to validate:** for any non-obvious claim, a small reproducible test harness we can run locally to confirm. Don't trust unverified secondhand info.
+
+**Crawl sources (seed list):**
+- Godot Discord `#help` and `#contributors-chat` archives (last 6 months)
+- godotengine/godot GitHub issues + closed PRs filtered by `4.6` label / milestone
+- godotforums.org (last year)
+- r/godot Reddit (top + new, last 6 months)
+- Hacker News submissions tagged Godot (last year)
+- github.com/topics/godot-4 — top 100 repos, prioritize ones with `tests/` dirs
+- Recent blog posts via Google with `"godot 4.6" filetype:md` etc.
+- bitwes/Gut issues + recent commits (post-#608 era)
+- chickensoft-games/GodotTestDriver — patterns even though it's C#
+- Godot Steamworld dev twitch streams / YouTube post-mortems
+
+**How to execute:** Use `/schedule` to spawn a background remote agent with the spec above. Agent should produce a single artifact at `research/tools/godot-4.6-current-intel.md`, properly formatted, source-cited, and scenario-rich enough that the user can run a few small tests in the morning to validate the highest-value claims before encoding any of them.
+
+**Notes:** This is the kind of thing that decays — a crawl run today is more valuable than a crawl run six months from now. Re-run quarterly while we're actively in this project.
+
+---
+
+## 13. Eventually: extract reusable artifacts to a portable starter kit
 
 **Why:** When several items above are stable and used routinely, the team's time savings compound by re-using them on a new project (card/rogue-like, future Metroidvania) without re-authoring.
 **Source:** Internal — see `research/README.md` long-term vision.

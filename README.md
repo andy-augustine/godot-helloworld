@@ -32,8 +32,7 @@ The point of the project: explore what AI-driven game development feels like whe
 | [`CLAUDE.md`](CLAUDE.md) | Project rules Claude Code follows on every session |
 | [`plans/`](plans/) | In-progress multi-phase plans. Completed plans live in `plans/done/` for reference. |
 | [`research/`](research/) | Source-of-truth notes from evaluations of external tools and approaches — read before re-evaluating something |
-| [`backlog/`](backlog/) | Things we want to act on later, split into [`tooling-pipeline.md`](backlog/tooling-pipeline.md) (portable) and [`gamedev.md`](backlog/gamedev.md) (project-specific) |
-| [`early-requirements/`](early-requirements/) | Worked examples of detailed prompts that produced features in this repo |
+| [`backlog/`](backlog/) | Things we want to act on later, split into [`gamedev.md`](backlog/gamedev.md) (game features), [`tooling-pipeline.md`](backlog/tooling-pipeline.md) (game-dev tooling), and [`claude-collab.md`](backlog/claude-collab.md) (meta-collaboration process) |
 
 ---
 
@@ -53,9 +52,10 @@ The point of the project: explore what AI-driven game development feels like whe
 1. **Open Godot** with the project (the plugin auto-starts the WebSocket server on port 6505).
 2. **Open a terminal** in the project directory.
 3. **Start Claude Code**: `claude`.
-4. Give Claude a prompt — see [`early-requirements/v1-animated-platformer.md`](early-requirements/v1-animated-platformer.md) for an example of a detailed spec.
-5. Claude uses godot-mcp-pro tools to create scenes, write scripts, and run the game — reading real errors back.
-6. Godot hot-reloads changed files automatically.
+4. Type **`/orient`** to anchor the session on the current ROADMAP, active plan (if any), and project conventions.
+5. Give Claude a prompt — for major capabilities, ask for a phased plan first; for bug fixes / tweaks / one-shot edits, just describe what you want.
+6. Claude uses godot-mcp-pro tools to create scenes, write scripts, and run the game — reading real errors back. Godot hot-reloads changed files automatically.
+7. Type **`/wrapup`** at the end of the session to walk the post-ship docs sweep, archive shipped plans, surface backlog candidates, and verify clean tree before closing.
 
 ---
 
@@ -63,9 +63,7 @@ The point of the project: explore what AI-driven game development feels like whe
 
 Short prompts produce generic results. For real features, you'll want **detailed specs** — exact numbers, geometry, scope, non-obvious design decisions, and explicit "not in scope" callouts.
 
-Start with [`early-requirements/v1-animated-platformer.md`](early-requirements/v1-animated-platformer.md) — it's a full spec of the animated-player phase of this project, specific enough that a fresh AI could rebuild what's here from the spec alone. The appendix breaks down the patterns that make a spec like that effective.
-
-Short version: numbers beat adjectives, state what's NOT in scope, explain non-obvious decisions, use tables for anything repetitive. If you couldn't hand your prompt to a new human and get a recognizable result back, it's too vague.
+Short version: numbers beat adjectives, state what's NOT in scope, explain non-obvious decisions, use tables for anything repetitive. If you couldn't hand your prompt to a new human and get a recognizable result back, it's too vague. The `plans/` and `plans/done/` folders have real examples — pick one whose scope feels comparable to what you're trying to brief.
 
 ---
 

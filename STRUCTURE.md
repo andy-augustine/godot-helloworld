@@ -58,11 +58,10 @@ godot-helloworld/
 ├── plans/                      ← in-progress multi-phase plans
 │   └── done/                   ← completed plans, kept for context
 │
-├── tests/                      ← test scenes + RESULTS.md (synthetic-drag recipe)
+├── tests/                      ← test scenes + RESULTS.md + README (how-we-test guide)
 ├── research/                   ← evaluations of external tools/approaches; intel crawl outputs
-├── backlog/                    ← future ideas, not yet plans (gamedev + tooling-pipeline)
-├── early-requirements/         ← worked examples of detailed prompts
-├── screenshots/                ← debug/QA screenshots
+├── backlog/                    ← future ideas, not yet plans (gamedev + tooling-pipeline + claude-collab)
+├── screenshots/                ← debug/QA screenshots (gitignored)
 ├── addons/godot_mcp/           ← godot-mcp-pro plugin (vendored — required by Claude)
 ├── CLAUDE.md                   ← rules Claude Code follows on every session
 ├── SETUP.md / README.md / TESTING.md / GODOT_NOTES.md / STRUCTURE.md  ← docs

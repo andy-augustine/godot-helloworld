@@ -246,8 +246,12 @@ func _handle_horizontal(delta: float) -> void:
 # Returns true when currently dashing — caller short-circuits gravity / jump /
 # horizontal control. Air-dash refreshes on the next is_on_floor() transition.
 func _handle_dash(delta: float) -> bool:
-	# Refresh air dash on the rising edge of grounded.
-	if is_on_floor() and not _was_grounded:
+	# Refresh air dash whenever grounded. The rising-edge check (was: `not
+	# _was_grounded`) never fired because _was_grounded is updated at the END
+	# of the landing frame in _update_animation, so by the time _handle_dash
+	# sees it on frame N+1, _was_grounded is already true. Just use plain
+	# is_on_floor() — refreshing every grounded frame is harmless.
+	if is_on_floor():
 		_air_dash_used = false
 
 	# Tick cooldown

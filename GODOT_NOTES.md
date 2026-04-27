@@ -1,10 +1,8 @@
 # Godot Notes — a Rosetta Stone
 
-Godot/GDScript concepts mapped to **Unreal** and **Unity** equivalents. The aim is to read this once and then read the rest of the codebase without stalling on unfamiliar syntax.
+**Audience:** developers coming from **Unreal** or **Unity** who want to read this codebase without stalling on unfamiliar Godot syntax. Read top-to-bottom once, then skim back for anything specific.
 
-Scoped to constructs that actually appear in this project — not a full Godot reference. Where Godot's idiom genuinely differs from both Unreal and Unity, that's called out.
-
-For the project's architecture and data flow (separate from the engine itself), see [`STRUCTURE.md`](STRUCTURE.md).
+This is *only* a translation primer — Godot constructs that appear in this project, mapped to their Unreal / Unity equivalents. It is not a Godot reference (use the [official docs](https://docs.godotengine.org/en/stable/) for that), not a project-architecture doc (use [`STRUCTURE.md`](STRUCTURE.md)), and not a list of common engine traps (those live in the auto-memory feedback files for Claude sessions; if you're a human and want them, search the issue tracker on the Godot repo).
 
 ---
 
@@ -289,34 +287,4 @@ func _draw() -> void:
 
 ---
 
-## Common gotchas (things that look wrong but aren't)
-
-- **Indentation is significant.** GDScript is Python-shaped — tabs, no braces. Use tabs (Godot's editor enforces this).
-- **`func _name():` with leading underscore is convention, not enforcement.** It marks "engine callback" or "private", but anyone can still call it.
-- **`var x = preload(...)` runs at parse time.** Use this for things you always need; use `load()` for paths chosen at runtime.
-- **`await` only works inside an `async`-style function** — but in GDScript, every function can `await`. No `async` keyword needed.
-- **`null` checks with `is_instance_valid(node)`**, not just `if node:`. Freed nodes can still hold a non-null reference for a frame.
-- **`queue_free()` is deferred** — the node is freed at the end of the current frame, not immediately. Don't access it after calling.
-- **Setters fire on `@export`'d properties even from the editor** — that's why `Room.bounds` and `Door.direction` use a setter that calls `queue_redraw()`. It keeps the editor visualization in sync.
-- **Nodes referenced via `$Path` resolve at runtime, not parse time.** Typos in `$Foo/Bar` only blow up when the line executes.
-- **Godot's import scanner ignores `.gitignore` but respects `.gdignore`.** If you keep gitignored asset scratch directories inside the project (e.g. `_audio_workshop/` with hundreds of OGG files we don't ship), drop an empty `.gdignore` file inside them — otherwise Godot tries to import every asset on every reload and the Errors panel fills with `Cannot open file from path 'res://...'`. Two-file gotcha: `.gitignore` in the parent stops Git tracking the directory; `.gdignore` inside the directory stops Godot scanning it.
-
----
-
-## Where this maps in the codebase
-
-If you want to see each idea above in real code, here's the shortest path:
-
-| Concept | See |
-|---|---|
-| Lifecycle (`_ready`, `_physics_process`) | `player/player.gd` top |
-| `@export` properties | `camera/GameCamera.gd` top, `doors/Door.gd` top |
-| `@onready` + `$Path` | `player/player.gd` `_anim`, `_rig`, particle vars |
-| Signals (define + emit + connect) | `doors/Door.gd` (`signal player_entered`), `World.gd` (`_connect_room_doors`) |
-| Groups | `player.tscn` ("player"), `GameCamera._ready()` (`add_to_group("camera")`) |
-| `CharacterBody2D` + `move_and_slide` | `player/player.gd` `_physics_process` |
-| `Area2D.body_entered` | `doors/Door.gd` `_on_body_entered` |
-| `PackedScene` instancing | `World.gd` `_start_transition` (loads + instantiates target room) |
-| `Tween` | `World.gd` `_start_transition` (parallel position tweens) |
-| `@tool` + `_draw()` | `rooms/Room.gd`, `doors/Door.gd` |
-| `AnimationPlayer` + state→anim | `player/player.gd` `_update_animation` |
+For where each of these constructs actually lives in this project's code, see [`STRUCTURE.md`](STRUCTURE.md) — it's the per-file responsibility map and the runtime scene tree.

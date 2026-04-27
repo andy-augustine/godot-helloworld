@@ -80,10 +80,9 @@ Archiving the plan is not the whole job. Before saying a feature is shipped, wal
 1. **`ROADMAP.md`** — update:
    - The `Updated YYYY-MM-DD` line at the top.
    - The `Most recent ship` row in the at-a-glance table (one tight sentence + link to the archived plan).
-   - The `Where things live` tree if any new top-level dirs/files were created (e.g. a new `hud/`, `skills/`, `enemies/`).
    - The `Backlog top picks` row if items were addressed or priorities have shifted.
    - The `Open questions / decisions pending` section if any listed questions are now answered (delete the resolved line, or move it under recent ship if the answer is load-bearing).
-2. **`STRUCTURE.md`** folder map — same rule as the ROADMAP tree: any new top-level dir gets a one-line entry with the scenes/scripts it contains.
+2. **`STRUCTURE.md`** folder map — single source of truth for the folder tree. Any new top-level dir gets a one-line entry with the scenes/scripts it contains. (ROADMAP intentionally does NOT duplicate this; it links to STRUCTURE.)
 3. **`backlog/<area>.md`** — if the ship addressed a backlog item, mark it `**Status:** complete (YYYY-MM-DD)` with a link to the archived plan. Don't delete — leave the historical context.
 4. **Memory files** — if the work surfaced a new GDScript / MCP / scene-editing rule worth carrying forward, fold it into the matching `feedback_*.md` in the auto-memory directory. Don't write a one-off rule that only matters for this one feature.
 5. **Skill / slash command docs** — if you built a new skill or slash command as part of the ship, mention it in the relevant doc (`backlog/tooling-pipeline.md` or wherever it was originally proposed).

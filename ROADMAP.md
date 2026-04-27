@@ -21,39 +21,7 @@ Updated 2026-04-27.
 
 ## Where things live
 
-```
-ROADMAP.md                ← this file. The TOC.
-README.md                 ← project front door (what this is, links)
-CLAUDE.md                 ← rules every Claude session follows
-SETUP.md                  ← Mac + Windows install steps
-STRUCTURE.md              ← folder layout + runtime data flow
-GODOT_NOTES.md            ← Godot ↔ Unreal/Unity primer
-TESTING.md                ← MCP timing pitfalls + working test patterns
-
-plans/                    ← in-flight specs. One per active capability.
-plans/done/               ← shipped specs, kept for historical context.
-backlog/                  ← future ideas (writer's room, raw to mostly-baked)
-  ├── gamedev.md          ← gameplay systems, content, polish for THIS game
-  └── tooling-pipeline.md ← skills, conventions, hooks (portable across projects)
-research/                 ← evaluations of external tools/approaches
-  └── tools/              ← per-tool/per-repo deep dives
-
-audio/                    ← AudioManager autoload (game code)
-camera/                   ← GameCamera scene + script
-doors/                    ← Door scene + script (room transition triggers)
-hud/                      ← HUD root + HealthBar + SkillCard / SkillCardSlot / SkillsPanel + AbilityStrip
-inventory/                ← Inventory autoload + Pickup scene + Abilities registry (movement abilities)
-player/                   ← Player scene + controller script
-rooms/                    ← Room template + StartingRoom + SecondRoom + ThirdRoom
-skills/                   ← Skill class + Skills autoload (active-card state; future: weapon swap)
-assets/                   ← committed asset content (audio currently)
-World.tscn / World.gd     ← entry scene (top-level coordinator)
-
-addons/godot_mcp/         ← godot-mcp-pro plugin (vendored — load-bearing infra)
-tests/                    ← test scenes + RESULTS.md (synthetic-drag recipe lives here)
-early-requirements/       ← worked-example prompts that produced features
-screenshots/              ← debug/QA captures (gitignored where appropriate)
-```
+Folder layout and per-file responsibilities live in [`STRUCTURE.md`](STRUCTURE.md) — single source of truth, kept current via the post-ship docs sweep in [`CLAUDE.md`](CLAUDE.md). No separate tree here so the two don't drift apart.
 
 ---
 

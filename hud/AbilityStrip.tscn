@@ -1,6 +1,13 @@
-[gd_scene format=3 load_steps=2]
+[gd_scene format=3 load_steps=3]
 
 [ext_resource type="Script" path="res://hud/AbilityStrip.gd" id="1_strip"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stripbg"]
+bg_color = Color(0.06, 0.06, 0.08, 0.55)
+border_width_top = 1
+border_color = Color(0.4, 0.45, 0.55, 0.25)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
 
 [node name="AbilityStrip" type="Control"]
 anchors_preset = 12
@@ -13,3 +20,18 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("1_strip")
+
+[node name="Background" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -34.0
+offset_right = 240.0
+offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stripbg")

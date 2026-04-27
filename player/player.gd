@@ -89,7 +89,11 @@ const DEATH_TILT_DEG: float = 22.0        # rig rotation at end of collapse
 @onready var _land_dust: CPUParticles2D = $Rig/LandDust
 @onready var _run_dust: CPUParticles2D = $Rig/RunDust
 @onready var _wall_sparks: CPUParticles2D = $Rig/WallSlideSparks
+@onready var _dash_trail: CPUParticles2D = $Rig/DashTrail
 @onready var _wall_slide_audio: AudioStreamPlayer = $WallSlideAudio
+const DASH_TINT := Color(1.0, 0.85, 0.55, 1.0)  # warm cream while dashing
+const _NORMAL_TINT := Color(1, 1, 1, 1)
+var _was_dashing: bool = false
 var _facing: int = 1
 var _was_grounded: bool = true
 var _was_wall_sliding: bool = false
@@ -245,7 +249,14 @@ func _handle_dash(delta: float) -> bool:
 		_dash_timer = max(_dash_timer - delta, 0.0)
 		velocity.x = float(_dash_dir) * DASH_SPEED
 		velocity.y = 0.0
+		_was_dashing = true
 		return true
+
+	# Edge: just stopped dashing — clear visual feedback
+	if _was_dashing:
+		_was_dashing = false
+		_rig.modulate = _NORMAL_TINT
+		_dash_trail.emitting = false
 
 	# Trigger check — gated on Inventory ownership.
 	if not Input.is_action_just_pressed("dash"):
@@ -276,6 +287,11 @@ func _handle_dash(delta: float) -> bool:
 	var cam: Node = get_tree().get_first_node_in_group("camera")
 	if cam and cam.has_method("add_shake"):
 		cam.add_shake(DASH_CAMERA_SHAKE)
+	# Visual feedback — warm tint + trail particles aimed against motion
+	_rig.modulate = DASH_TINT
+	_dash_trail.direction = Vector2(-_dash_dir, 0)
+	_dash_trail.emitting = true
+	_was_dashing = true
 	return true
 
 

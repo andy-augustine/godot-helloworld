@@ -91,6 +91,18 @@ const DEATH_TILT_DEG: float = 22.0        # rig rotation at end of collapse
 @onready var _wall_sparks: CPUParticles2D = $Rig/WallSlideSparks
 @onready var _dash_trail: CPUParticles2D = $Rig/DashTrail
 @onready var _wall_slide_audio: AudioStreamPlayer = $WallSlideAudio
+@onready var _ground_shadow: Polygon2D = $GroundShadow
+@onready var _shadow_raycast: RayCast2D = $ShadowRaycast
+
+# Shadow projection — shadow stays on the floor below the player even mid-air.
+# Distance falloff: shadow shrinks + dims as the player flies higher, so a fast
+# ascent reads as "lifting off" and a fall reads as "approaching ground" before
+# they actually land. Raycast probes down 600px; beyond that, shadow hides.
+const SHADOW_FOOT_OFFSET: float = 4.0      # px above ground the shadow draws (just-above-surface)
+const SHADOW_MAX_DISTANCE: float = 280.0   # distance at which shrink/dim saturate
+const SHADOW_MIN_SCALE: float = 0.55       # scale at SHADOW_MAX_DISTANCE
+const SHADOW_MIN_ALPHA: float = 0.18       # alpha at SHADOW_MAX_DISTANCE
+const SHADOW_BASE_ALPHA: float = 0.45      # alpha at zero distance (matches the polygon's authored color)
 const DASH_TINT := Color(1.0, 0.85, 0.55, 1.0)  # warm cream while dashing
 const _NORMAL_TINT := Color(1, 1, 1, 1)
 var _was_dashing: bool = false
@@ -121,6 +133,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		_post_move_update()
 		_update_animation()
+		_update_ground_shadow()
 		return
 	_apply_gravity(delta)
 	_handle_jump(delta)
@@ -128,6 +141,7 @@ func _physics_process(delta: float) -> void:
 	_handle_wall_slide(delta)
 	_pre_move_vel_y = velocity.y
 	move_and_slide()
+	_update_ground_shadow()
 	_post_move_update()
 	_update_animation()
 
@@ -306,6 +320,32 @@ func _handle_dash(delta: float) -> bool:
 	_dash_trail.emitting = true
 	_was_dashing = true
 	return true
+
+
+# ── Ground shadow ──────────────────────────────────────────────────────────────
+# top_level Polygon2D under Player. Each physics tick we raycast straight down
+# to find the surface and pin the shadow there so it stays planted on the floor
+# regardless of jump height. Scale + alpha falloff with vertical distance gives
+# the "rising / falling toward something" read without any other VFX.
+func _update_ground_shadow() -> void:
+	if _ground_shadow == null or _shadow_raycast == null:
+		return
+	# RayCast is a child of Player so its origin moves with the player automatically.
+	# force_raycast_update is needed when we want the *current* tick's collision
+	# (RayCast2D normally polls at the start of the frame; we just moved).
+	_shadow_raycast.force_raycast_update()
+	if not _shadow_raycast.is_colliding():
+		_ground_shadow.visible = false
+		return
+	_ground_shadow.visible = true
+	var hit_point: Vector2 = _shadow_raycast.get_collision_point()
+	_ground_shadow.global_position = Vector2(global_position.x, hit_point.y - SHADOW_FOOT_OFFSET)
+	# Distance falloff
+	var distance: float = absf(hit_point.y - global_position.y)
+	var t: float = clampf(distance / SHADOW_MAX_DISTANCE, 0.0, 1.0)
+	var scl: float = lerpf(1.0, SHADOW_MIN_SCALE, t)
+	_ground_shadow.scale = Vector2(scl, scl)
+	_ground_shadow.modulate.a = lerpf(SHADOW_BASE_ALPHA, SHADOW_MIN_ALPHA, t) / SHADOW_BASE_ALPHA
 
 
 # ── Wall slide ─────────────────────────────────────────────────────────────────

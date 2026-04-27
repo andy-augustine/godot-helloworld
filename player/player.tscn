@@ -699,12 +699,6 @@ scale_amount_max = 6.5
 color = Color(1, 0.6, 0.15, 0.95)
 color_ramp = SubResource("Gradient_yw30f")
 
-[node name="GroundShadow" type="Polygon2D" parent="Rig"]
-position = Vector2(0, 34)
-z_index = -10
-color = Color(0, 0, 0, 0.45)
-polygon = PackedVector2Array(-13, 0, -11, -3, 0, -4, 11, -3, 13, 0, 11, 3, 0, 4, -11, 3)
-
 [node name="IdleAura" type="CPUParticles2D" parent="Rig"]
 position = Vector2(0, -8)
 amount = 6
@@ -723,6 +717,16 @@ color = Color(0.5, 0.85, 1.0, 0.55)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=811606432]
 libraries/ = SubResource("AnimationLibrary_hg6s5")
+
+[node name="GroundShadow" type="Polygon2D" parent="."]
+top_level = true
+z_index = -10
+color = Color(0, 0, 0, 0.45)
+polygon = PackedVector2Array(-13, 0, -11, -3, 0, -4, 11, -3, 13, 0, 11, 3, 0, 4, -11, 3)
+
+[node name="ShadowRaycast" type="RayCast2D" parent="."]
+target_position = Vector2(0, 600)
+collision_mask = 1
 
 [node name="WallSlideAudio" type="AudioStreamPlayer" parent="." unique_id=1980988198]
 stream = ExtResource("2_wallslide")

@@ -13,6 +13,11 @@ Source-of-truth notes from evaluations of external tools, frameworks, and approa
 | [`tools/godot-drag-drop-api.md`](tools/godot-drag-drop-api.md) | Godot 4 native drag/drop API + canonical synthetic-drag recipe for `execute_game_script` |
 | [`tools/godogen-playtest-deep-dive.md`](tools/godogen-playtest-deep-dive.md) | Focused dive: does godogen offer better playtest than mcp-pro? (No.) |
 | [`tools/playtest-extension-strategy.md`](tools/playtest-extension-strategy.md) | Synthesis: should we extend mcp-pro, build sibling MCP, or build a CLI framework? Ranked actions. |
+| [`tools/godot-mcp-pro-issue-draft.md`](tools/godot-mcp-pro-issue-draft.md) | Drafted upstream issue for the godot-mcp-pro GUI drag-test bug (commit `c9c8ac4`) |
+| [`tools/godot-4.6-current-intel.md`](tools/godot-4.6-current-intel.md) | Canonical Godot 4.6 / GDScript community intel deliverable, refreshed monthly via `/refresh-godot-intel` |
+| [`tools/godot-4.6-drag-test-current-intel.md`](tools/godot-4.6-drag-test-current-intel.md) | Focused intel on the synthetic-drag investigation that produced the working recipe |
+
+The `crawl/` subfolder holds the runbook + scratch outputs for the monthly intel refresh — see [`crawl/PLAN.md`](crawl/PLAN.md).
 
 ## How to use this folder
 

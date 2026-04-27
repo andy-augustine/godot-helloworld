@@ -1,6 +1,17 @@
 # Plan: information-architecture refactor — startup → standardized
 
-**Status:** in progress (claimed by Andy + Claude, branch `main`, 2026-04-27)
+**Status:** complete (2026-04-27). All 9 phases shipped end-to-end + self-tested via the new `/wrapup` itself.
+
+**Commits:**
+- `6d76e89` Plan
+- `ef99ead` P1 — delete early-requirements, brief plans/done entry
+- `7a7935d` P2 — TESTING.md → tests/README.md
+- `a9a32dd` P3 — prune GODOT_NOTES.md to original Cole-targeted scope
+- `9ac2992` P4 — drop ROADMAP folder tree, point at STRUCTURE
+- `3c4aa52` P5 — tidy research/ (move stray file, update README)
+- `9e1bb6d` P6 — add backlog/claude-collab.md (third category)
+- `3b4944c` P7 — add /wrapup slash command
+- `e317191` P8 — CLAUDE.md frames /orient + /wrapup as bookends
 
 This plan refactors the project's *metadata* (docs, folders, conventions) — NOT the code. The goal is to move from the "grinding through startup + learning" phase, where useful artifacts accumulated wherever was convenient, into a "we know what we're doing" baseline that's:
 

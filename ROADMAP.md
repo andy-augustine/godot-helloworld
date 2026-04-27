@@ -10,10 +10,11 @@ Updated 2026-04-27.
 
 | | |
 |---|---|
-| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md) or [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md) |
-| **Most recent ship** | Pickups system — dash as the first permanent ability. New `Inventory` autoload tracks owned movement abilities (separate from the active-card `Skills` system). HUD ability strip (bottom-center, JUMPS / RUNS / CLIMBS) lights up on grant. SecondRoom extended with PlatformD; the gap requires dash to clear. ThirdRoom stub closes the loop. Plan archived at [`plans/done/pickups.md`](plans/done/pickups.md). |
+| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md), [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md), or [`backlog/claude-collab.md`](backlog/claude-collab.md) |
+| **Most recent ship** | Information-architecture refactor — startup → standardized. Killed duplications (TESTING.md → tests/README.md, ROADMAP folder-tree → STRUCTURE single source), pruned GODOT_NOTES.md back to "Godot for Unreal/Unity devs", deleted obsolete `early-requirements/`, added `backlog/claude-collab.md` as third backlog category, added `/wrapup` slash command for end-of-session pipeline. Plan archived at [`plans/done/refactor-info-architecture.md`](plans/done/refactor-info-architecture.md). |
+| **Previous ship** | Pickups system — dash as the first permanent ability + air-dash refresh fix + Room 2 redesign decoupling level layout from the card system. Plan archived at [`plans/done/pickups.md`](plans/done/pickups.md). |
 | **Recent research artifacts** | Overnight Godot 4.6 / GDScript community intel crawl → [`research/tools/godot-4.6-current-intel.md`](research/tools/godot-4.6-current-intel.md) (refreshed monthly via `/refresh-godot-intel`). Synthetic-drag findings filed upstream as a godot-mcp-pro issue draft. |
-| **Backlog top picks** | Visually distinct rooms (gamedev #1) — bring SecondRoom + ThirdRoom out of placeholder grey. Then enemies (gamedev #9) for meaningful damage. Future ability pickups (double-jump in Room 3, wall-climb in Room 4) follow the dash pattern. GUT 9.6.0 evaluation in tooling-pipeline remains open. See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
+| **Backlog top picks** | Visually distinct rooms (gamedev #1) — bring SecondRoom + ThirdRoom out of placeholder grey. Then enemies (gamedev #9) for meaningful damage. Future ability pickups (double-jump in Room 3, wall-climb in Room 4) follow the dash pattern. From [`claude-collab.md`](backlog/claude-collab.md): `/preflight` command and the "skills earned" affordances doc are next-up after we use `/wrapup` enough to find its rough edges. |
 | **Stage** | Solo lead + side-Claude sessions. Team of 6 collaborators planned for onboarding. |
 | **Workflow mode** | Sequential — one Claude actively using MCP at a time. See "Lifecycle" below. |
 

@@ -1,4 +1,13 @@
-# Draft GitHub issue for godot-mcp-pro
+# Draft GitHub issue for godot-mcp-pro — FILED 2026-04-26
+
+> **Status:** filed and PR opened.
+>
+> - Issue: https://github.com/youichi-uda/godot-mcp-pro/issues/24
+> - PR: https://github.com/youichi-uda/godot-mcp-pro/pull/25 (linked via `Closes #24`)
+> - Fork branch: https://github.com/andy-augustine/godot-mcp-pro/tree/fix/synthetic-drag-gui-routing
+> - Local fork clone: `/Users/claudeprojectlt8/code/personal/godot-mcp-pro-fork`
+>
+> Kept as a record of the body that was filed. Not a working draft anymore — edit the live issue / PR if anything needs to change.
 
 **Tracker:** https://github.com/youichi-uda/godot-mcp-pro/issues/new
 

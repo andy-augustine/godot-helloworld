@@ -26,7 +26,8 @@ godot-helloworld/
 ├── rooms/
 │   ├── Room.tscn / Room.gd     ← base template — exports `bounds: Rect2`, draws bounds in editor
 │   ├── StartingRoom.tscn       ← first room — platforms, doors, environment
-│   └── SecondRoom.tscn         ← second room (clone for transition plumbing)
+│   ├── SecondRoom.tscn         ← second room — gated on dash (PlatformC→PlatformD gap)
+│   └── ThirdRoom.tscn          ← stub closing the dash loop (TO BE CONTINUED label)
 │
 ├── doors/
 │   ├── Door.tscn               ← Area2D + collision + Spawn marker + visual
@@ -40,11 +41,19 @@ godot-helloworld/
 │   ├── HealthBar.tscn / .gd    ← segmented bar w/ green→yellow→red gradient + crit pulse
 │   ├── SkillCard.tscn / .gd    ← single skill card (drag source)
 │   ├── SkillCardSlot.tscn / .gd← inventory + active slot (drop targets)
-│   └── SkillsPanel.tscn / .gd  ← top-right panel composing slots + cards
+│   ├── SkillsPanel.tscn / .gd  ← top-right panel composing slots + cards
+│   └── AbilityStrip.tscn / .gd ← bottom-center movement-ability strip (JUMPS/RUNS/CLIMBS)
 │
-├── skills/                     ← skill data + state autoload
+├── skills/                     ← active-card state autoload
 │   ├── Skill.gd                ← Resource subclass — id, name, description, icon
-│   └── Skills.gd               ← Skills autoload — owned skills + currently-active slot
+│   └── Skills.gd               ← Skills autoload — owned cards + currently-active slot
+│                                  (future: repurposed for weapon swap)
+│
+├── inventory/                  ← movement-ability ownership + pickup scene
+│   ├── abilities.gd            ← static REGISTRY for all defined movement abilities
+│   ├── Inventory.gd            ← Inventory autoload — permanent owned abilities
+│   ├── Pickup.gd / .tscn       ← reusable pickup (Area2D + visual + sparkle + audio)
+│                                  ability granted via @export var ability_id
 │
 ├── plans/                      ← in-progress multi-phase plans
 │   └── done/                   ← completed plans, kept for context

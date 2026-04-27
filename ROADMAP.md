@@ -10,10 +10,10 @@ Updated 2026-04-27.
 
 | | |
 |---|---|
-| **Active plans** | none — pickups system about to start (gamedev #7). Otherwise pick from [`backlog/gamedev.md`](backlog/gamedev.md) or [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md) |
-| **Most recent ship** | Skill cards — drag-and-drop inventory + active slot. 5 phases: data layer + Skills autoload, HUD scaffolding, drag-drop equip/swap/deactivate, polish (pulse / hover-lift / drop flash), recipe validation. Plan archived at [`plans/done/skill-cards.md`](plans/done/skill-cards.md). |
+| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md) or [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md) |
+| **Most recent ship** | Pickups system — dash as the first permanent ability. New `Inventory` autoload tracks owned movement abilities (separate from the active-card `Skills` system). HUD ability strip (bottom-center, JUMPS / RUNS / CLIMBS) lights up on grant. SecondRoom extended with PlatformD; the gap requires dash to clear. ThirdRoom stub closes the loop. Plan archived at [`plans/done/pickups.md`](plans/done/pickups.md). |
 | **Recent research artifacts** | Overnight Godot 4.6 / GDScript community intel crawl → [`research/tools/godot-4.6-current-intel.md`](research/tools/godot-4.6-current-intel.md) (refreshed monthly via `/refresh-godot-intel`). Synthetic-drag findings filed upstream as a godot-mcp-pro issue draft. |
-| **Backlog top picks** | Pickups system (gamedev #7) — about to become active. Then visually distinct second room (gamedev #1) for room-system payoff, enemies (gamedev #9) once pickups is in, GUT 9.6.0 evaluation (tooling-pipeline; flagged by the intel crawl as a direct fit for the TESTING.md timing pitfalls). See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
+| **Backlog top picks** | Visually distinct rooms (gamedev #1) — bring SecondRoom + ThirdRoom out of placeholder grey. Then enemies (gamedev #9) for meaningful damage. Future ability pickups (double-jump in Room 3, wall-climb in Room 4) follow the dash pattern. GUT 9.6.0 evaluation in tooling-pipeline remains open. See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
 | **Stage** | Solo lead + side-Claude sessions. Team of 6 collaborators planned for onboarding. |
 | **Workflow mode** | Sequential — one Claude actively using MCP at a time. See "Lifecycle" below. |
 
@@ -41,10 +41,11 @@ research/                 ← evaluations of external tools/approaches
 audio/                    ← AudioManager autoload (game code)
 camera/                   ← GameCamera scene + script
 doors/                    ← Door scene + script (room transition triggers)
-hud/                      ← HUD root + HealthBar + SkillCard / SkillCardSlot / SkillsPanel
+hud/                      ← HUD root + HealthBar + SkillCard / SkillCardSlot / SkillsPanel + AbilityStrip
+inventory/                ← Inventory autoload + Pickup scene + Abilities registry (movement abilities)
 player/                   ← Player scene + controller script
-rooms/                    ← Room template + StartingRoom + SecondRoom
-skills/                   ← Skill class + Skills autoload (active-slot state)
+rooms/                    ← Room template + StartingRoom + SecondRoom + ThirdRoom
+skills/                   ← Skill class + Skills autoload (active-card state; future: weapon swap)
 assets/                   ← committed asset content (audio currently)
 World.tscn / World.gd     ← entry scene (top-level coordinator)
 

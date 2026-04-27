@@ -1,6 +1,15 @@
 # Plan: Pickups system — dash as the first ability
 
-**Status:** in progress (claimed by Andy + Claude, branch `main`, 2026-04-27)
+**Status:** complete (2026-04-27). All 5 phases shipped end-to-end.
+
+**Commits:**
+- `3a29f50` Plan
+- `39dca7c` P0 — Inventory autoload + abilities registry + dash input action
+- `4c84794` P1 — dash mechanic, gated by Inventory
+- `b911ad3` P2 — HUD ability strip (bottom-center, three categories)
+- `05bcae7` P3 — SecondRoom dash-gating + ThirdRoom stub + DashPickup
+- `894b571` P4 — polish: dash trail, rig tint, strip background
+- `2c6fa4c` P5 — document Skills→weapon-swap pivot, backlog updates
 
 The genre-defining loop: pickups grant permanent movement abilities; rooms are designed so each new ability is required to clear the room it's found in. Dash ships first; future rooms add double-jump, wall-climb, etc.
 

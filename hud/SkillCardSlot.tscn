@@ -2,6 +2,18 @@
 
 [ext_resource type="Script" uid="uid://bp47bgqdgs0ky" path="res://hud/SkillCardSlot.gd" id="1_eq5kp"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eq5kp"]
+bg_color = Color(0.08, 0.08, 0.1, 0.4)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.55, 0.6, 0.55)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="SkillCardSlot" type="Control" unique_id=352913953]
 custom_minimum_size = Vector2(64, 88)
 layout_mode = 3
@@ -10,8 +22,8 @@ size_flags_horizontal = 4
 script = ExtResource("1_eq5kp")
 
 [node name="EmptyPanel" type="Panel" parent="." unique_id=1357951113]
-modulate = Color(0.5, 0.5, 0.55, 0.6)
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_eq5kp")

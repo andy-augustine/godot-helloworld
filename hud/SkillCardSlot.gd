@@ -55,6 +55,16 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 		# Equip (or swap, if active slot was occupied — Skills.set_active +
 		# active_changed → SkillsPanel._rebuild handles the card movement)
 		Skills.set_active(dropped)
+		_flash(dropped.color)
 	elif src.kind == SlotKind.ACTIVE:
 		# Drag-back from active to inventory — deactivate
 		Skills.set_active(null)
+		_flash(Color(0.7, 0.7, 0.75))
+
+
+# Brief modulate flash on drop in the dropped skill's color, fading back to
+# white over ~0.4s. Tints the slot + card together (modulate composes).
+func _flash(color: Color) -> void:
+	modulate = color
+	var tw := create_tween()
+	tw.tween_property(self, "modulate", Color.WHITE, 0.4)

@@ -73,9 +73,9 @@ func _build() -> void:
 
 
 func _make_icon(id: StringName, cat_idx: int) -> Control:
-	var wrap := VBoxContainer.new()
-	wrap.alignment = BoxContainer.ALIGNMENT_CENTER
-	wrap.add_theme_constant_override("separation", 2)
+	var cell := VBoxContainer.new()
+	cell.alignment = BoxContainer.ALIGNMENT_CENTER
+	cell.add_theme_constant_override("separation", 2)
 
 	var box := ColorRect.new()
 	box.custom_minimum_size = ICON_SIZE
@@ -83,27 +83,27 @@ func _make_icon(id: StringName, cat_idx: int) -> Control:
 	box.set_meta("category_color", _CATEGORY_HUE[cat_idx])
 	box.set_meta("ability_id", id)
 	box.pivot_offset = ICON_SIZE * 0.5
-	wrap.add_child(box)
+	cell.add_child(box)
 
 	var caption := Label.new()
 	caption.text = _short_label(Abilities.display_name(id))
 	caption.add_theme_font_size_override("font_size", LABEL_FONT_SIZE)
 	caption.add_theme_color_override("font_color", TITLE_COLOR)
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wrap.add_child(caption)
+	cell.add_child(caption)
 
 	_icons[id] = box
-	return wrap
+	return cell
 
 
 # DASH stays DASH; DOUBLE JUMP -> 2X JMP; HIGH JUMP -> HI JMP; WALL CLIMB -> WLL CLM.
 # Avoids long captions overflowing the 28px icon width.
-func _short_label(name: String) -> String:
-	match name:
+func _short_label(full_name: String) -> String:
+	match full_name:
 		"DOUBLE JUMP": return "2X JMP"
 		"HIGH JUMP": return "HI JMP"
 		"WALL CLIMB": return "WLL CLM"
-		_: return name
+		_: return full_name
 
 
 func _refresh_all() -> void:

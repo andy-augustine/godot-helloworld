@@ -251,9 +251,28 @@ func _handle_horizontal(delta: float) -> void:
 	var decel: float = DECELERATION if is_grounded else AIR_DECELERATION
 
 	if dir != 0.0:
-		velocity.x = move_toward(velocity.x, dir * MOVE_SPEED * Skills.get_speed_multiplier(), accel * delta)
+		velocity.x = move_toward(velocity.x, dir * MOVE_SPEED * Skills.get_speed_multiplier() * _slow_zone_multiplier(), accel * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, decel * delta)
+
+
+# ── Slow-zone API (used by hazards/CoolantPool) ────────────────────────────────
+# Stack via a counter so two overlapping slow zones don't independently set/clear
+# the flag and end up "off" while the player is still in one of them.
+const SLOW_ZONE_SPEED_MULT: float = 0.32
+var _slow_zone_count: int = 0
+
+
+func enter_slow_zone() -> void:
+	_slow_zone_count += 1
+
+
+func exit_slow_zone() -> void:
+	_slow_zone_count = max(_slow_zone_count - 1, 0)
+
+
+func _slow_zone_multiplier() -> float:
+	return SLOW_ZONE_SPEED_MULT if _slow_zone_count > 0 else 1.0
 
 
 # ── Dash ───────────────────────────────────────────────────────────────────────

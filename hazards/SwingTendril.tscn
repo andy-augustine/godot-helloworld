@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://hazards/SwingTendril.gd" id="1_swing"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_swing_platform"]
+size = Vector2(72, 14)
+
+[node name="SwingTendril" type="Node2D"]
+script = ExtResource("1_swing")
+
+[node name="Pivot" type="Node2D" parent="."]
+
+[node name="TendrilLine" type="Polygon2D" parent="Pivot"]
+color = Color(0.55, 0.88, 1, 0.85)
+polygon = PackedVector2Array(-2, 0, 2, 0, 2, 180, -2, 180)
+
+[node name="TendrilGlow" type="Polygon2D" parent="Pivot"]
+color = Color(0.55, 0.88, 1, 0.3)
+polygon = PackedVector2Array(-5, 0, 5, 0, 5, 180, -5, 180)
+
+[node name="PivotCap" type="Polygon2D" parent="Pivot"]
+color = Color(0.7, 0.92, 1, 1)
+polygon = PackedVector2Array(-6, -6, 6, -6, 6, 6, -6, 6)
+
+[node name="PlatformBody" type="AnimatableBody2D" parent="Pivot"]
+position = Vector2(0, 180)
+sync_to_physics = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Pivot/PlatformBody"]
+shape = SubResource("RectangleShape2D_swing_platform")
+
+[node name="PlatformShadow" type="Polygon2D" parent="Pivot/PlatformBody"]
+position = Vector2(1, 3)
+color = Color(0, 0, 0, 0.4)
+polygon = PackedVector2Array(-36, -7, 36, -7, 36, 7, -36, 7)
+
+[node name="PlatformOutline" type="Polygon2D" parent="Pivot/PlatformBody"]
+color = Color(0.18, 0.4, 0.55, 1)
+polygon = PackedVector2Array(-38, -9, 38, -9, 38, 9, -38, 9)
+
+[node name="PlatformBodyVisual" type="Polygon2D" parent="Pivot/PlatformBody"]
+color = Color(0.55, 0.85, 1, 1)
+polygon = PackedVector2Array(-36, -7, 36, -7, 36, 7, -36, 7)
+
+[node name="PlatformHighlight" type="Polygon2D" parent="Pivot/PlatformBody"]
+color = Color(0.85, 0.96, 1, 0.95)
+polygon = PackedVector2Array(-34, -7, 34, -7, 34, -4, -34, -4)
+
+[node name="PlatformGlow" type="ColorRect" parent="Pivot/PlatformBody"]
+offset_left = -46.0
+offset_top = -16.0
+offset_right = 46.0
+offset_bottom = 16.0
+color = Color(0.55, 0.88, 1, 0.22)

@@ -323,6 +323,20 @@ offset_right = 18.0
 offset_bottom = -232.0
 color = Color(0.51, 0.524, 0.636, 1)
 
+[node name="StripLightHalo" type="ColorRect" parent="WallLeft/Visual"]
+offset_left = 13.0
+offset_top = -222.0
+offset_right = 22.0
+offset_bottom = 222.0
+color = Color(0.55, 0.88, 1, 0.18)
+
+[node name="StripLight" type="ColorRect" parent="WallLeft/Visual"]
+offset_left = 16.0
+offset_top = -220.0
+offset_right = 19.0
+offset_bottom = 220.0
+color = Color(0.6, 0.92, 1, 0.92)
+
 [node name="WallRight" type="StaticBody2D" parent="."]
 position = Vector2(1016, 374)
 
@@ -358,6 +372,20 @@ offset_top = -174.0
 offset_right = 18.0
 offset_bottom = -172.0
 color = Color(0.51, 0.524, 0.636, 1)
+
+[node name="StripLightHalo" type="ColorRect" parent="WallRight/Visual"]
+offset_left = -22.0
+offset_top = -162.0
+offset_right = -13.0
+offset_bottom = 162.0
+color = Color(0.55, 0.88, 1, 0.18)
+
+[node name="StripLight" type="ColorRect" parent="WallRight/Visual"]
+offset_left = -19.0
+offset_top = -160.0
+offset_right = -16.0
+offset_bottom = 160.0
+color = Color(0.6, 0.92, 1, 0.92)
 
 [node name="Ceiling" type="StaticBody2D" parent="."]
 position = Vector2(576, 180)

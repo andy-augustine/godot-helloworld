@@ -99,15 +99,9 @@ I have a working test harness against a real Control drag-and-drop UI (a skill-c
 
 ### Environment
 
-- Godot 4.6.2-stable (official, hash `71f334935`)
+- Godot 4.6.2-stable
 - godot-mcp-pro v1.12.0
-- macOS 25.4.0 (Apple Silicon M4)
-- Project on GitHub: https://github.com/andy-augustine/godot-helloworld
-   - The empirical investigation and recipe are documented at:
-     - `tests/RESULTS.md` (the working recipe)
-     - `research/tools/godot-4.6-drag-test-current-intel.md` (background crawl)
-     - `addons/godot_mcp/commands/input_commands.gd` + `mcp_input_service.gd` (the locally applied patch)
-   - Plan archive at `plans/done/skill-cards.md` traces the full investigation path.
+- macOS
 
 ### Bonus / aside (not blocking the bug fix)
 
@@ -117,8 +111,7 @@ Separate issue we observed but couldn't isolate: `Input.parse_input_event(event)
 
 ## Notes for filing
 
-- The issue is filed by you, not me — copy the body above into https://github.com/youichi-uda/godot-mcp-pro/issues/new.
+- Copy the body above into https://github.com/youichi-uda/godot-mcp-pro/issues/new.
 - Title field: keep the title above as-is.
 - Body field: everything from "Summary" through "## Bonus" goes into the body (markdown supported).
-- The "Environment" section's GitHub link is to your project; verify it's public before filing if you'd rather keep it private (the issue still reads fine without that link).
-- If the maintainer asks for a minimal repro project, the pattern from `tests/RESULTS.md` Form A is self-contained — copy-paste-ready for a fresh project with any drag/drop Control.
+- The Environment section is intentionally minimal. If the maintainer asks for hardware/repo/repro project, respond at that point — don't volunteer it upfront.

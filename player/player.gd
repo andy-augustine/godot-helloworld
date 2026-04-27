@@ -41,6 +41,12 @@ const WALL_JUMP_VELOCITY: Vector2 = Vector2(240.0, -480.0)  # x away from wall, 
 const COYOTE_TIME: float = 0.15
 const JUMP_BUFFER_TIME: float = 0.10
 
+# Dash (gated on Inventory.has(&"dash"))
+const DASH_SPEED: float = 720.0
+const DASH_DURATION: float = 0.18
+const DASH_COOLDOWN: float = 0.4
+const DASH_CAMERA_SHAKE: float = 2.0
+
 # ── State ──────────────────────────────────────────────────────────────────────
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
@@ -48,6 +54,12 @@ var _is_jumping: bool = false  # true while holding jump after leaving ground
 var _wall_jump_direction: int = 0  # -1 left, 0 none, +1 right (set on wall-jump)
 var _wall_jump_lock_timer: float = 0.0  # brief lock so player can't immediately re-grab
 const WALL_JUMP_LOCK: float = 0.15
+
+# Dash state
+var _dash_timer: float = 0.0       # >0 while dashing
+var _dash_cooldown_timer: float = 0.0
+var _air_dash_used: bool = false   # one air dash per air-time, refreshed on land
+var _dash_dir: int = 0             # frozen at dash-start (-1 / +1)
 
 # Health
 const MAX_HEALTH: int = 100
@@ -83,6 +95,12 @@ var _was_grounded: bool = true
 var _was_wall_sliding: bool = false
 var _current_anim: String = ""
 var _pre_move_vel_y: float = 0.0
+
+# Inventory is referenced dynamically via the scene tree rather than the
+# autoload symbol because Inventory was added mid-session and Godot only
+# registers autoload symbols at editor startup. After the next editor
+# restart this can be simplified to direct `Inventory.has(...)` calls.
+@onready var _inventory: Node = get_node_or_null("/root/Inventory")
 const WALL_SLIDE_AUDIO_VOLUME: float = -16.0  # baseline; fade-out tweens to -40 then stops
 
 const FACING_LERP: float = 0.3  # per-frame smoothing factor for facing flip
@@ -92,8 +110,15 @@ const HEAVY_LANDING_MAX_VEL: float = 1700.0  # shake intensity saturates here
 
 
 func _physics_process(delta: float) -> void:
-	_apply_gravity(delta)
 	_tick_timers(delta)
+	# Dash short-circuits gravity / horizontal control while active.
+	if _handle_dash(delta):
+		_pre_move_vel_y = velocity.y
+		move_and_slide()
+		_post_move_update()
+		_update_animation()
+		return
+	_apply_gravity(delta)
 	_handle_jump(delta)
 	_handle_horizontal(delta)
 	_handle_wall_slide(delta)
@@ -202,6 +227,56 @@ func _handle_horizontal(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, dir * MOVE_SPEED * Skills.get_speed_multiplier(), accel * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, decel * delta)
+
+
+# ── Dash ───────────────────────────────────────────────────────────────────────
+# Returns true when currently dashing — caller short-circuits gravity / jump /
+# horizontal control. Air-dash refreshes on the next is_on_floor() transition.
+func _handle_dash(delta: float) -> bool:
+	# Refresh air dash on the rising edge of grounded.
+	if is_on_floor() and not _was_grounded:
+		_air_dash_used = false
+
+	# Tick cooldown
+	_dash_cooldown_timer = max(_dash_cooldown_timer - delta, 0.0)
+
+	# Currently dashing: hold velocity, count down, exit when timer hits 0.
+	if _dash_timer > 0.0:
+		_dash_timer = max(_dash_timer - delta, 0.0)
+		velocity.x = float(_dash_dir) * DASH_SPEED
+		velocity.y = 0.0
+		return true
+
+	# Trigger check — gated on Inventory ownership.
+	if not Input.is_action_just_pressed("dash"):
+		return false
+	if _inventory == null or not _inventory.has(&"dash"):
+		return false
+	if _dash_cooldown_timer > 0.0:
+		return false
+	if not is_on_floor() and _air_dash_used:
+		return false
+
+	# Direction priority: input axis if pressed, else current facing.
+	var input_dir: float = Input.get_axis("move_left", "move_right")
+	if input_dir != 0.0:
+		_dash_dir = int(signf(input_dir))
+	else:
+		_dash_dir = _facing
+
+	_dash_timer = DASH_DURATION
+	_dash_cooldown_timer = DASH_COOLDOWN
+	if not is_on_floor():
+		_air_dash_used = true
+
+	# Hit feedback shared with landings/heavy-hits — small camera shake + audio
+	# cue. Audio key 'dash' is silent until a registered SFX lands; the call
+	# is in place so the wiring is complete (per backlog #16 pattern).
+	AudioManager.play_sfx("dash", 0.0, -4.0)
+	var cam: Node = get_tree().get_first_node_in_group("camera")
+	if cam and cam.has_method("add_shake"):
+		cam.add_shake(DASH_CAMERA_SHAKE)
+	return true
 
 
 # ── Wall slide ─────────────────────────────────────────────────────────────────

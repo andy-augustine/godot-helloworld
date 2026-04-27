@@ -1,8 +1,15 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://rooms/Room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://doors/Door.tscn" id="2_door"]
 [ext_resource type="PackedScene" path="res://inventory/Pickup.tscn" id="3_pickup"]
+[ext_resource type="Shader" path="res://shaders/gradient_bg.gdshader" id="4_grad"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_starting_bg"]
+shader = ExtResource("4_grad")
+shader_parameter/color_top = Color(0.13, 0.15, 0.22, 1)
+shader_parameter/color_bottom = Color(0.22, 0.25, 0.36, 1)
+shader_parameter/noise_amount = 0.025
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
 size = Vector2(1400, 40)
@@ -37,6 +44,32 @@ bounds = Rect2(116, 200, 920, 468)
 spawn_points = {
 "default": Vector2(576, 500)
 }
+
+[node name="Background" type="ColorRect" parent="."]
+z_index = -10
+material = SubResource("ShaderMaterial_starting_bg")
+offset_left = 116.0
+offset_top = 200.0
+offset_right = 1036.0
+offset_bottom = 668.0
+mouse_filter = 2
+
+[node name="AmbientParticles" type="CPUParticles2D" parent="."]
+position = Vector2(576, 434)
+z_index = -9
+amount = 30
+lifetime = 8.0
+preprocess = 8.0
+emission_shape = 3
+emission_rect_extents = Vector2(460, 234)
+direction = Vector2(0, -0.5)
+spread = 30.0
+gravity = Vector2(0, -6)
+initial_velocity_min = 4.0
+initial_velocity_max = 12.0
+scale_amount_min = 1.2
+scale_amount_max = 2.8
+color = Color(0.85, 0.88, 0.95, 0.07)
 
 [node name="Ground" type="StaticBody2D" parent="."]
 position = Vector2(576, 648)

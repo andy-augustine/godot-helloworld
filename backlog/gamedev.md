@@ -72,7 +72,9 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ## Missing systems (the big ones)
 
-### 7. Pickups system (Metroid-style permanent upgrades)
+### 7. Pickups system (Metroid-style permanent upgrades) — **complete (2026-04-27)**
+
+**Status:** Shipped in 5 phases. Plan archived at [`plans/done/pickups.md`](../plans/done/pickups.md). Dash is the first pickup, gated on `Inventory.has(&"dash")`; SecondRoom requires it to clear PlatformC→PlatformD; ThirdRoom stub closes the loop. Future rooms add their own ability per the same pattern (Room 3 = double-jump, Room 4 = wall-climb).
 
 **Why:** The genre-defining loop. Without pickups, there's no progression, no reason to revisit, no payoff for traversal. Even one pickup (double jump, dash) would change how the game plays.
 **Source:** Internal — gameplay analysis.
@@ -183,6 +185,20 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 - **Floating damage numbers.** A short-lived `Label` that spawns at hit position, drifts up, fades. Mostly meaningful with multi-tier damage values, i.e. once enemies have damage variation.
 
 **Notes:** Cross-references: #9 (enemies) gates knockback + meaningful damage numbers; #11 (audio music) gates critical music. The hit-flash and audio assets can ship independently of any other work whenever there's appetite.
+
+---
+
+### 17. Migrate turbo / high_jump from Skills (cards) to Inventory (always-on)
+
+**Why:** The pickups system (#7) split movement abilities (always-on, in `Inventory`) from active card buffs (swappable, in `Skills`). The two existing cards — `turbo` (+50% speed) and `high_jump` (+50% jump) — were left in the card system as a bridge artifact: their behaviour is passive, so card-swap UX doesn't actively harm anything. But conceptually they're movement abilities and belong in Inventory. The trigger to migrate is the weapon system landing, when the cards become weapons and turbo/high_jump no longer fit there at all.
+
+**Source:** Internal — see [`plans/done/pickups.md`](../plans/done/pickups.md) "Decision C" and the comment block at the top of [`skills/Skills.gd`](../skills/Skills.gd).
+
+**Effort:** ~2 hours. Add multiplier helpers to Inventory (so the player.gd reads stay one-liners), grant turbo/high_jump from existing pickups (placed in future rooms), remove from Skills.gd's startup population, register in `Abilities.REGISTRY` (already there as locked entries — the strip will light them up automatically). One commit.
+
+**Deliverable:** Inventory grows `get_speed_multiplier()` and `get_jump_multiplier()` reading from owned abilities. player.gd's two `Skills.get_*_multiplier()` calls switch to Inventory equivalents. Skills.gd no longer instantiates turbo/high_jump in `_ready`.
+
+**Notes:** Sequence: do this AFTER the weapon system lands or in the same plan, so the cards have somewhere meaningful to go. Until then, the bridge state is fine.
 
 ---
 

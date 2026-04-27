@@ -6,7 +6,22 @@ extends Node
 # user://skills.json so it survives quit/relaunch. Death-system impact on the
 # active slot is deferred — depends on the eventual game style.
 #
-# See plans/skill-cards.md for design rationale.
+# See plans/done/skill-cards.md for design rationale.
+#
+# ── Future direction (queued, not yet implemented) ─────────────────────────────
+# This autoload is being repurposed for WEAPON SWAP. The drag-and-drop card UI
+# in hud/SkillsPanel etc. is the right substrate for "swap which weapon is
+# wielded" — an active choice the player makes mid-combat — but it is wrong
+# for permanent movement abilities (dash, double-jump, wall-climb), which the
+# genre demands be always-on. Movement abilities now live in the Inventory
+# autoload (inventory/Inventory.gd), surfaced via the HUD AbilityStrip.
+#
+# The existing turbo / high_jump cards remain functional as a bridge artifact —
+# they are passive multipliers (speed / jump height), close enough to "weapon-
+# like" that they aren't doing harm. When a real weapon system lands, they get
+# migrated to Inventory (always-on once acquired) and Skill becomes Weapon.
+# Tracked at backlog/gamedev.md "Migrate turbo/high_jump from Skills to
+# Inventory".
 
 const SAVE_PATH := "user://skills.json"
 

@@ -23,6 +23,10 @@ const POOL_SIZE := 8
 const SFX: Dictionary = {
 	"jump": preload("res://assets/audio/sfx/jump.ogg"),
 	"heavy_landing": preload("res://assets/audio/sfx/heavy_landing.ogg"),
+	"dash": preload("res://assets/audio/sfx/dash.ogg"),
+	"pickup": preload("res://assets/audio/sfx/pickup.ogg"),
+	"player_hit": preload("res://assets/audio/sfx/player_hit.ogg"),
+	"player_death": preload("res://assets/audio/sfx/player_death.ogg"),
 }
 
 var _player_pool: Array[AudioStreamPlayer] = []

@@ -58,9 +58,16 @@ No scene/script changes. One commit.
 
 ---
 
-### Phase 2 — Procedural-static across all 3 rooms (uniform pass)
+### Phase 2 — Procedural-static across all 3 rooms + Stage 1 polish pass
 
-Apply body+outline+shadow+highlight stacked-node treatment to every existing platform / wall / ground / ceiling in `StartingRoom`, `SecondRoom`, `ThirdRoom`. Single shared color scheme this phase (palette divergence comes in Phase 4) — focus is purely on the **depth lift** off flat ColorRects.
+**Scope expanded mid-phase 2026-04-27 at user direction** — what started as "depth lift on level geometry" became a comprehensive Stage 1 polish pass covering rooms, doors, pickups, HUD layout, audio, and player particles. The unifying theme: every visible element in the StartingRoom view gets bumped from prototype tier to procedural tier in a single ship.
+
+Sub-phases (all in one commit):
+
+- **2a — Audio.** Download Kenney CC0 packs (interface-sounds, impact-sounds, digital-audio) to `/tmp/kenney/`, pick + copy 4 missing SFX (`dash`, `pickup`, `player_hit`, `player_death`) into `assets/audio/sfx/`, register all 4 in `AudioManager.SFX`. Closes the dash-SFX runtime warning + the deferred audio assets bullet from `gamedev #16`.
+- **2b — Procedural-static (level geometry).** Apply body+outline+shadow+highlight stacked-node treatment to every platform / wall / ground in `StartingRoom`, `SecondRoom`, `ThirdRoom`. Tuned params: shadow +6y offset alpha 0.4, outline 50% darken, 4px highlight on platforms / 2px on walls. Per-room body colors preserved (palette intent already baked in). Doors get the same treatment plus an inner-glow rect for "passable gateway" affordance.
+- **2c — HUD layout.** Move `AbilityStrip` from bottom to top-center (anchor preset 12 → 10), so it sits between HealthBar (top-left) and SkillsPanel ACTIVE/INVENTORY (top-right). Resolves player-vs-strip overlap at ground level. Polish `HealthBar._draw` with drop shadow, gloss top stripe, bottom-darken depth shade, top-edge highlight, outer rim — segmented bar reads as embossed rather than flat.
+- **2d — Pickup procedural-animated + player particles.** Pickup `Visual` becomes Node2D with Body+Outline+Highlight+InnerGlow ColorRects, runtime-tinted from ability category. PickupAudio node removed; pickup sound now flows through `AudioManager.play_sfx("pickup")`. `LandDust`/`RunDust` amount + spread + velocity bumped for more dramatic foot-smoke. `DashTrail` amount 24→40, lifetime 0.32→0.5, gradient ramp added (orange-yellow → orange → faded).
 
 **Pattern (per platform):**
 

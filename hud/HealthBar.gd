@@ -62,7 +62,13 @@ func _draw() -> void:
 	var h: float = BAR_HEIGHT
 	var fill_ratio: float = _display / _maximum if _maximum > 0.0 else 0.0
 
-	# Background
+	# Drop shadow — sits behind the bar, suggests depth against backdrop
+	draw_rect(Rect2(1, 2, w, h), Color(0, 0, 0, 0.45))
+
+	# Outer outline (procedural-animated tier border)
+	draw_rect(Rect2(-1, -1, w + 2, h + 2), Color(0.05, 0.05, 0.08, 0.85))
+
+	# Background well
 	draw_rect(Rect2(0, 0, w, h), COLOR_BG)
 
 	# Health-based color: green (full) → yellow (half) → red (low).
@@ -76,12 +82,23 @@ func _draw() -> void:
 	# Critical pulse stacks on top: brightens toward white at the sin peaks
 	if _critical_pulse > 0.0:
 		fill_color = fill_color.lerp(Color(1, 1, 1), _critical_pulse)
-	draw_rect(Rect2(0, 0, w * fill_ratio, h), fill_color)
 
-	# Segment dividers
+	var fill_w: float = w * fill_ratio
+	# Body fill
+	draw_rect(Rect2(0, 0, fill_w, h), fill_color)
+	# Top gloss highlight — top 35% of the fill, lightened toward white
+	var gloss_h: float = h * 0.35
+	draw_rect(Rect2(0, 0, fill_w, gloss_h), fill_color.lerp(Color(1, 1, 1), 0.25))
+	# Bottom shade — bottom 30%, darkened slightly for grounded depth
+	var shade_h: float = h * 0.3
+	draw_rect(Rect2(0, h - shade_h, fill_w, shade_h), fill_color.darkened(0.2))
+
+	# Segment dividers — subtle, on top of the fill
 	for i in range(1, _segments):
 		var x: float = (w / float(_segments)) * float(i)
 		draw_line(Vector2(x, 0), Vector2(x, h), COLOR_SEG_LINE, SEG_GAP)
 
-	# Outer border
-	draw_rect(Rect2(0, 0, w, h), Color(1, 1, 1, 0.15), false, 1.0)
+	# Outer top-edge highlight
+	draw_line(Vector2(0, 0), Vector2(w, 0), Color(1, 1, 1, 0.25), 1.0)
+	# Outer rim
+	draw_rect(Rect2(0, 0, w, h), Color(1, 1, 1, 0.18), false, 1.0)

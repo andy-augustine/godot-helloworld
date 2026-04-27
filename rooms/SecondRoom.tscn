@@ -41,12 +41,35 @@ position = Vector2(900, 780)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
 shape = SubResource("RectangleShape2D_ground")
 
-[node name="Visual" type="ColorRect" parent="Ground"]
+[node name="Visual" type="Node2D" parent="Ground"]
+
+[node name="Shadow" type="ColorRect" parent="Ground/Visual"]
+offset_left = -900.0
+offset_top = -14.0
+offset_right = 900.0
+offset_bottom = 26.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="Ground/Visual"]
+offset_left = -902.0
+offset_top = -22.0
+offset_right = 902.0
+offset_bottom = 22.0
+color = Color(0.19, 0.21, 0.3, 1)
+
+[node name="Body" type="ColorRect" parent="Ground/Visual"]
 offset_left = -900.0
 offset_top = -20.0
 offset_right = 900.0
 offset_bottom = 20.0
 color = Color(0.38, 0.42, 0.6, 1)
+
+[node name="Highlight" type="ColorRect" parent="Ground/Visual"]
+offset_left = -898.0
+offset_top = -20.0
+offset_right = 898.0
+offset_bottom = -16.0
+color = Color(0.566, 0.594, 0.72, 1)
 
 [node name="PlatformA" type="StaticBody2D" parent="."]
 position = Vector2(260, 660)
@@ -54,12 +77,35 @@ position = Vector2(260, 660)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformA"]
 shape = SubResource("RectangleShape2D_plat_a")
 
-[node name="Visual" type="ColorRect" parent="PlatformA"]
+[node name="Visual" type="Node2D" parent="PlatformA"]
+
+[node name="Shadow" type="ColorRect" parent="PlatformA/Visual"]
+offset_left = -100.0
+offset_top = -4.0
+offset_right = 100.0
+offset_bottom = 16.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="PlatformA/Visual"]
+offset_left = -102.0
+offset_top = -12.0
+offset_right = 102.0
+offset_bottom = 12.0
+color = Color(0.19, 0.21, 0.3, 1)
+
+[node name="Body" type="ColorRect" parent="PlatformA/Visual"]
 offset_left = -100.0
 offset_top = -10.0
 offset_right = 100.0
 offset_bottom = 10.0
 color = Color(0.38, 0.42, 0.6, 1)
+
+[node name="Highlight" type="ColorRect" parent="PlatformA/Visual"]
+offset_left = -98.0
+offset_top = -10.0
+offset_right = 98.0
+offset_bottom = -6.0
+color = Color(0.566, 0.594, 0.72, 1)
 
 [node name="PlatformB" type="StaticBody2D" parent="."]
 position = Vector2(450, 530)
@@ -67,12 +113,35 @@ position = Vector2(450, 530)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformB"]
 shape = SubResource("RectangleShape2D_plat_b")
 
-[node name="Visual" type="ColorRect" parent="PlatformB"]
+[node name="Visual" type="Node2D" parent="PlatformB"]
+
+[node name="Shadow" type="ColorRect" parent="PlatformB/Visual"]
+offset_left = -80.0
+offset_top = -4.0
+offset_right = 80.0
+offset_bottom = 16.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="PlatformB/Visual"]
+offset_left = -82.0
+offset_top = -12.0
+offset_right = 82.0
+offset_bottom = 12.0
+color = Color(0.19, 0.21, 0.3, 1)
+
+[node name="Body" type="ColorRect" parent="PlatformB/Visual"]
 offset_left = -80.0
 offset_top = -10.0
 offset_right = 80.0
 offset_bottom = 10.0
 color = Color(0.38, 0.42, 0.6, 1)
+
+[node name="Highlight" type="ColorRect" parent="PlatformB/Visual"]
+offset_left = -78.0
+offset_top = -10.0
+offset_right = 78.0
+offset_bottom = -6.0
+color = Color(0.566, 0.594, 0.72, 1)
 
 [node name="PlatformC" type="StaticBody2D" parent="."]
 position = Vector2(640, 380)
@@ -80,12 +149,35 @@ position = Vector2(640, 380)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformC"]
 shape = SubResource("RectangleShape2D_plat_c")
 
-[node name="Visual" type="ColorRect" parent="PlatformC"]
+[node name="Visual" type="Node2D" parent="PlatformC"]
+
+[node name="Shadow" type="ColorRect" parent="PlatformC/Visual"]
+offset_left = -80.0
+offset_top = -4.0
+offset_right = 80.0
+offset_bottom = 16.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="PlatformC/Visual"]
+offset_left = -82.0
+offset_top = -12.0
+offset_right = 82.0
+offset_bottom = 12.0
+color = Color(0.225, 0.25, 0.35, 1)
+
+[node name="Body" type="ColorRect" parent="PlatformC/Visual"]
 offset_left = -80.0
 offset_top = -10.0
 offset_right = 80.0
 offset_bottom = 10.0
 color = Color(0.45, 0.5, 0.7, 1)
+
+[node name="Highlight" type="ColorRect" parent="PlatformC/Visual"]
+offset_left = -78.0
+offset_top = -10.0
+offset_right = 78.0
+offset_bottom = -6.0
+color = Color(0.615, 0.65, 0.79, 1)
 
 [node name="PlatformD" type="StaticBody2D" parent="."]
 position = Vector2(1180, 380)
@@ -93,12 +185,35 @@ position = Vector2(1180, 380)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformD"]
 shape = SubResource("RectangleShape2D_plat_d")
 
-[node name="Visual" type="ColorRect" parent="PlatformD"]
+[node name="Visual" type="Node2D" parent="PlatformD"]
+
+[node name="Shadow" type="ColorRect" parent="PlatformD/Visual"]
+offset_left = -100.0
+offset_top = -4.0
+offset_right = 100.0
+offset_bottom = 16.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="PlatformD/Visual"]
+offset_left = -102.0
+offset_top = -12.0
+offset_right = 102.0
+offset_bottom = 12.0
+color = Color(0.225, 0.25, 0.35, 1)
+
+[node name="Body" type="ColorRect" parent="PlatformD/Visual"]
 offset_left = -100.0
 offset_top = -10.0
 offset_right = 100.0
 offset_bottom = 10.0
 color = Color(0.45, 0.5, 0.7, 1)
+
+[node name="Highlight" type="ColorRect" parent="PlatformD/Visual"]
+offset_left = -98.0
+offset_top = -10.0
+offset_right = 98.0
+offset_bottom = -6.0
+color = Color(0.615, 0.65, 0.79, 1)
 
 [node name="WallLeft" type="StaticBody2D" parent="."]
 position = Vector2(20, 400)
@@ -106,12 +221,35 @@ position = Vector2(20, 400)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
 shape = SubResource("RectangleShape2D_wallL")
 
-[node name="Visual" type="ColorRect" parent="WallLeft"]
+[node name="Visual" type="Node2D" parent="WallLeft"]
+
+[node name="Shadow" type="ColorRect" parent="WallLeft/Visual"]
+offset_left = -20.0
+offset_top = -394.0
+offset_right = 20.0
+offset_bottom = 406.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="WallLeft/Visual"]
+offset_left = -22.0
+offset_top = -402.0
+offset_right = 22.0
+offset_bottom = 402.0
+color = Color(0.16, 0.175, 0.26, 1)
+
+[node name="Body" type="ColorRect" parent="WallLeft/Visual"]
 offset_left = -20.0
 offset_top = -400.0
 offset_right = 20.0
 offset_bottom = 400.0
 color = Color(0.32, 0.35, 0.52, 1)
+
+[node name="Highlight" type="ColorRect" parent="WallLeft/Visual"]
+offset_left = -18.0
+offset_top = -400.0
+offset_right = 18.0
+offset_bottom = -398.0
+color = Color(0.524, 0.545, 0.664, 1)
 
 [node name="WallRight" type="StaticBody2D" parent="."]
 position = Vector2(1780, 400)
@@ -119,12 +257,35 @@ position = Vector2(1780, 400)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
 shape = SubResource("RectangleShape2D_wallR")
 
-[node name="Visual" type="ColorRect" parent="WallRight"]
+[node name="Visual" type="Node2D" parent="WallRight"]
+
+[node name="Shadow" type="ColorRect" parent="WallRight/Visual"]
+offset_left = -20.0
+offset_top = -394.0
+offset_right = 20.0
+offset_bottom = 406.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="WallRight/Visual"]
+offset_left = -22.0
+offset_top = -402.0
+offset_right = 22.0
+offset_bottom = 402.0
+color = Color(0.16, 0.175, 0.26, 1)
+
+[node name="Body" type="ColorRect" parent="WallRight/Visual"]
 offset_left = -20.0
 offset_top = -400.0
 offset_right = 20.0
 offset_bottom = 400.0
 color = Color(0.32, 0.35, 0.52, 1)
+
+[node name="Highlight" type="ColorRect" parent="WallRight/Visual"]
+offset_left = -18.0
+offset_top = -400.0
+offset_right = 18.0
+offset_bottom = -398.0
+color = Color(0.524, 0.545, 0.664, 1)
 
 [node name="Ceiling" type="StaticBody2D" parent="."]
 position = Vector2(900, -20)

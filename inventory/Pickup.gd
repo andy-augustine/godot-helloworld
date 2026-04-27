@@ -12,9 +12,12 @@ extends Area2D
 @export var float_amplitude: float = 4.0   # vertical bob amplitude
 @export var float_period: float = 1.4      # full bob cycle in seconds
 
-@onready var _visual: ColorRect = $Visual
+@onready var _visual: Node2D = $Visual
+@onready var _body: ColorRect = $Visual/Body
+@onready var _outline: ColorRect = $Visual/Outline
+@onready var _highlight: ColorRect = $Visual/Highlight
+@onready var _inner_glow: ColorRect = $Visual/InnerGlow
 @onready var _sparkle: CPUParticles2D = $Sparkle
-@onready var _audio: AudioStreamPlayer = $PickupAudio
 
 var _t: float = 0.0
 var _origin_y: float = 0.0
@@ -35,11 +38,17 @@ func _ready() -> void:
 		return
 
 	body_entered.connect(_on_body_entered)
-	# Color the visual + sparkle to the ability's category if registered
+	# Color the procedural-animated stack + sparkle to the ability's category.
+	# Outline = body darkened 50%, highlight = body lightened 35%, glow = body
+	# lightened 25% with reduced alpha. Computed here so per-instance ability_id
+	# drives palette without scene-level color authoring per pickup.
 	if Abilities.has_ability(ability_id):
 		var cat: int = Abilities.category(ability_id)
 		var hue := _hue_for(cat)
-		_visual.color = hue
+		_body.color = hue
+		_outline.color = hue.darkened(0.5)
+		_highlight.color = hue.lightened(0.45)
+		_inner_glow.color = Color(hue.lightened(0.25), 0.5)
 		_sparkle.color = hue
 
 
@@ -65,18 +74,18 @@ func _on_body_entered(body: Node2D) -> void:
 
 	inv.grant(ability_id)
 	# Burst on grab — restart particles for a satisfying poof
-	_sparkle.amount = 28
-	_sparkle.initial_velocity_max = 180.0
-	_sparkle.lifetime = 0.6
+	_sparkle.amount = 32
+	_sparkle.initial_velocity_max = 220.0
+	_sparkle.lifetime = 0.7
 	_sparkle.restart()
-	_audio.play()
+	AudioManager.play_sfx("pickup", 0.05, -4.0)
 	# Disable further triggers while the burst plays out, then free.
 	# set_deferred is required because we're inside a body_entered callback
 	# (mid physics flush). See feedback_gdscript_practices.md rule 8.
 	set_deferred("monitoring", false)
 	_visual.visible = false
 	# Brief delay so particles + audio finish
-	get_tree().create_timer(0.7).timeout.connect(queue_free)
+	get_tree().create_timer(0.8).timeout.connect(queue_free)
 
 
 func _hue_for(cat: int) -> Color:

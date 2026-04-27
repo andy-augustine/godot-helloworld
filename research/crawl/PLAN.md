@@ -16,6 +16,20 @@ This is a self-contained runbook. A fresh Claude session reading it should be ab
 2. **Auto-proceed on surprise.** If the pre-scan finds something concerning (e.g., Godot 4.7 just released, a major regression announced), DO NOT pause to ask the user. Note the surprise prominently in the synthesis output and proceed with the plan as written. The user explicitly chose this default so they don't get woken up.
 3. **Output path is fixed.** `research/tools/godot-4.6-current-intel.md`.
 
+## Model selection per role
+
+The orchestrating session (the post-`/clear` session running this plan) should be **Opus 4.7** — multi-step coordination + judgment calls + synthesis-quality evaluation make Opus's reasoning worth it. Set this BEFORE running the plan; switching mid-run is awkward.
+
+Per-agent model overrides (pass via `Agent` tool's `model` parameter):
+
+| Phase | Model | Why |
+|---|---|---|
+| Phase 0 pre-scan | `sonnet` | Bounded source-id + ranking task. Sonnet sufficient. |
+| Phase 1 topic agents (×5) | `sonnet` | Tight briefs, web fetch + summarize. Sonnet speed/cost matters at 5× parallel. |
+| Phase 2 synthesis | `opus` | Cross-cutting analysis: dedupe across 6 inputs, rank by relevance, identify contributors, recommend cadence. Worth Opus's reasoning premium. |
+
+If for any reason Opus isn't available for the synthesis step, fall back to Sonnet — the briefs are tight enough that Sonnet produces a usable deliverable; just slightly less sharp on cross-cutting judgment.
+
 ## Project context (for the agents)
 
 A 2D Metroidvania platformer in Godot 4.6.2 using GDScript. Driven via the godot-mcp-pro MCP plugin from Claude Code. Already-encoded knowledge that agents should NOT re-discover and re-document:
@@ -30,7 +44,7 @@ If the crawl finds *contradictions* with any of the above, surface them prominen
 
 ## Phase 0 — Pre-scan (single agent, ~30 min, foreground)
 
-**Dispatch as**: `subagent_type: general-purpose`
+**Dispatch as**: `subagent_type: general-purpose`, `model: sonnet`
 
 **Output file**: `research/crawl/sourcemap.md`
 
@@ -92,7 +106,7 @@ If the crawl finds *contradictions* with any of the above, surface them prominen
 
 ## Phase 1 — Five parallel topic agents (~45 min each, background, dispatched together)
 
-**Dispatch all five in a single message** as `subagent_type: general-purpose` with `run_in_background: true`. Pass each agent the path to `research/crawl/sourcemap.md` and tell them to use it as their source list.
+**Dispatch all five in a single message** as `subagent_type: general-purpose`, `model: sonnet`, with `run_in_background: true`. Pass each agent the path to `research/crawl/sourcemap.md` and tell them to use it as their source list.
 
 When all five have signaled completion (you'll get notifications), proceed to Phase 2.
 
@@ -172,7 +186,7 @@ When all five have signaled completion (you'll get notifications), proceed to Ph
 
 ## Phase 2 — Synthesis (single agent, ~30 min, foreground after all 5 finish)
 
-**Dispatch as**: `subagent_type: general-purpose`
+**Dispatch as**: `subagent_type: general-purpose`, `model: opus`
 
 **Output file**: `research/tools/godot-4.6-current-intel.md` (the canonical deliverable per backlog #12)
 

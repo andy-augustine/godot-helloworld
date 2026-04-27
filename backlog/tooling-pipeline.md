@@ -109,11 +109,13 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ---
 
-## 9. Add procedural-visual-quality bar (`godot-assets`-style note)
+## 9. Add procedural-visual-quality bar (`godot-assets`-style note) — **in progress (2026-04-27)**
+
+**Status:** being closed inside the [`visually-distinct-rooms`](../plans/visually-distinct-rooms.md) ship. Policy doc lands at [`ART_CONVENTIONS.md`](../ART_CONVENTIONS.md) in Phase 1 of that plan; first instances (procedural-static on level geometry, procedural-background per room) ship in Phases 2–4. Will be marked complete here at end of ship.
 
 **Why:** Currently the player rig is hand-authored polygons; future entities (enemies, NPCs, pickups) need a quality bar so they don't regress to flat shapes. godot-ai-builder's "body + outline + shadow + highlight + animation" rule is a good baseline.
 **Source:** [`research/tools/godot-ai-builder.md`](../research/tools/godot-ai-builder.md) — `skills/godot-assets/SKILL.md`.
-**Effort:** 1 hour.
+**Effort:** 1 hour. *(Now bundled into visually-distinct-rooms — net effort there is the same since the policy needed to land with the first instance anyway.)*
 **Deliverable:** A short doc — could be `STRUCTURE.md` addendum or a new `art-conventions.md` — covering: minimum visual elements per entity, color discipline (palette per project), animation expectations, references to the player rig as the existing example.
 **Notes:** Lower priority; activates when we add the first new entity type.
 
@@ -126,6 +128,29 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 **Effort:** Half day spike.
 **Deliverable:** A standalone test: pick one player-equivalent character, run reference → pose → video → frame extract → loop trim. Compare output quality and cost vs. hand-authoring. Document results in a new research note (`research/spikes/grok-video-sprites.md`) regardless of outcome — this is research, not feature work.
 **Notes:** Cost-uncertain. Defer until we actually need a second character (enemies pass).
+
+---
+
+## 10b. Spike — drive godot-ai-builder end-to-end as Claude, using our game as the spec
+
+**Why:** godot-ai-builder is well-articulated docs (we've already lifted the visual-tier table from `godot-assets/SKILL.md` into [`ART_CONVENTIONS.md`](../ART_CONVENTIONS.md)) but we haven't validated which of its concepts are *load-bearing* in their pipeline vs. just well-written prose. The cleanest way to find out: install it in a sandbox, hand-write the inputs (PRD/GDD-equivalents) from our existing game so it has a real spec, then drive the full Director pipeline (PRD → Foundation → Abilities → Enemies → UI → Polish → QA) with Claude as the user. Compare its output against our hand-built artifact. Outcomes inform whether the rest of their work (scoring tools, `stop-guard.sh`, `build_state.json` checkpoints, the 6-phase Director protocol) is worth deeper extraction or whether the table was the only thing worth lifting.
+
+**Source:** [`research/tools/godot-ai-builder.md`](../research/tools/godot-ai-builder.md). Repo: https://github.com/HubDev-AI/godot-ai-builder.
+
+**Effort:** Half-day spike (sandbox install + spec authoring + pipeline run + write-up). Could go to a full day if the pipeline produces enough to do real comparison.
+
+**Deliverable:** `research/spikes/godot-ai-builder-replay.md` capturing:
+- Side-by-side: their generated artifact vs our equivalent (player controller, room/door system, pickup, HUD).
+- Which of their concepts proved load-bearing at runtime vs. doc-only: visual tiers, polish/feedback table, `godot-distiller`, `godot_evaluate_quality_gates`, `godot_score_poc_quality`, build_state checkpoints, the Director protocol's 6-phase gating.
+- Recommendation on each: lift / lift-with-changes / leave.
+- Honest cost note (compute, time-to-output, agent-loop quality).
+
+**Notes:**
+- Sequence **after** [`visually-distinct-rooms`](../plans/visually-distinct-rooms.md) ships — that ship is what gives us a real comparison artifact for their procedural-visual quality bar (we'll have applied their tier table; the spike asks "did the rest of their pipeline matter too?").
+- Pairs with item #10 (Grok-video sprite spike) — both are "evaluate an AI-driven content pipeline." If we're running one this quarter, may as well batch.
+- This is a Claude-drives-Claude experiment by design: we want to know what the abandoned tool produces for a *prepared* user, since that's the realistic future where the user has high-end LLM keys and is willing to feed it real specs. Side-effect: it stress-tests our own ability to author specs that an external agent can act on, which is useful regardless of the verdict on the tool.
+- Risk: their tool may be mostly thin runtime under thoughtful prose. If so, the spike's value is the negative result and the spec-authoring exercise itself.
+- Has hard dependencies on user-provided AI keys (Grok / OpenAI / Gemini / etc.) if the pipeline calls out to LLMs — needs a setup step before the spike runs. User has high-end licenses, so this is a setup detail, not a blocker.
 
 ---
 

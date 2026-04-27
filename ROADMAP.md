@@ -10,7 +10,7 @@ Updated 2026-04-27.
 
 | | |
 |---|---|
-| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md), [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md), or [`backlog/claude-collab.md`](backlog/claude-collab.md) |
+| **Active plans** | [`visually-distinct-rooms`](plans/visually-distinct-rooms.md) — Phase 1 (plan + visual-tier policy doc + backlog #10b) shipping now; Phases 2–5 lift StartingRoom / SecondRoom / ThirdRoom from prototype-tier flat ColorRects to procedural-tier (body+outline+shadow+highlight + per-room palette + per-room background layer). Closes [`gamedev`](backlog/gamedev.md) #1 and [`tooling-pipeline`](backlog/tooling-pipeline.md) #9. |
 | **Most recent ship** | Information-architecture refactor — startup → standardized. Killed duplications (TESTING.md → tests/README.md, ROADMAP folder-tree → STRUCTURE single source), pruned GODOT_NOTES.md back to "Godot for Unreal/Unity devs", deleted obsolete `early-requirements/`, added `backlog/claude-collab.md` as third backlog category, added `/wrapup` slash command for end-of-session pipeline. Plan archived at [`plans/done/refactor-info-architecture.md`](plans/done/refactor-info-architecture.md). |
 | **Previous ship** | Pickups system — dash as the first permanent ability + air-dash refresh fix + Room 2 redesign decoupling level layout from the card system. Plan archived at [`plans/done/pickups.md`](plans/done/pickups.md). |
 | **Recent research artifacts** | Overnight Godot 4.6 / GDScript community intel crawl → [`research/tools/godot-4.6-current-intel.md`](research/tools/godot-4.6-current-intel.md) (refreshed monthly via `/refresh-godot-intel`). Synthetic-drag findings filed upstream as a godot-mcp-pro issue draft. |

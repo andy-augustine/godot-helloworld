@@ -2,7 +2,7 @@
 
 The single entry point for "what's going on with this project?" — read this first if you're a fresh Claude session, a new collaborator, or returning after time away.
 
-Updated 2026-04-27 (post-Phase-2).
+Updated 2026-04-27 (post-visually-distinct-rooms ship).
 
 ---
 
@@ -10,11 +10,11 @@ Updated 2026-04-27 (post-Phase-2).
 
 | | |
 |---|---|
-| **Active plans** | [`visually-distinct-rooms`](plans/visually-distinct-rooms.md) — Phases 1+2 shipped (plan + ART_CONVENTIONS.md + Stage 1 polish across rooms/doors/HUD/pickups/audio/player); Phases 3 (procedural-background per room), 4 (palette divergence + signature elements), 5 (coherence + archive) pending. |
-| **Most recent ship** | Stage 1 polish via `visually-distinct-rooms` Phases 1+2 — adopted godot-ai-builder visual-tier table as policy ([`ART_CONVENTIONS.md`](ART_CONVENTIONS.md)), applied procedural-static stack to all level geometry across 3 rooms + doors + ceilings, procedural-animated to pickups, moved AbilityStrip to top-center, sizzled HealthBar (halo + shimmer + caps + pips), wired 4 missing SFX from Kenney CC0 packs, added player ground shadow + idle aura. Commits [`add0827`](https://github.com/local) → [`023a925`](https://github.com/local). Closes [`tooling-pipeline`](backlog/tooling-pipeline.md) #9 + part of [`gamedev`](backlog/gamedev.md) #1 + audio bullet of [`gamedev`](backlog/gamedev.md) #16. |
+| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md), [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md), or [`backlog/claude-collab.md`](backlog/claude-collab.md) |
+| **Most recent ship** | **Visually distinct rooms — "Hollow Threshold" theme.** All 3 rooms got palette divergence + procedural-background gradient + per-room signature mechanic. SecondRoom got a plasma fissure (tick damage that bypasses iframes — failing the dash drops you in, walking out kills you). ThirdRoom got an energy tendril swing (AnimatableBody2D pendulum platform with sync_to_physics) + coolant pool slow-zone (32% speed). StartingRoom got cyan strip-lights as the institutional sci-fi accent. New systems: `hazards/` (PlasmaFissure, CoolantPool, SwingTendril) and `shaders/` (gradient_bg). Plan archived at [`plans/done/visually-distinct-rooms.md`](plans/done/visually-distinct-rooms.md). Commits [`add0827`](https://github.com/andy-augustine/godot-helloworld/commit/add0827) → [`8a40f0d`](https://github.com/andy-augustine/godot-helloworld/commit/8a40f0d). |
 | **Previous ship** | Information-architecture refactor — startup → standardized. Plan archived at [`plans/done/refactor-info-architecture.md`](plans/done/refactor-info-architecture.md). |
 | **Recent research artifacts** | Overnight Godot 4.6 / GDScript community intel crawl → [`research/tools/godot-4.6-current-intel.md`](research/tools/godot-4.6-current-intel.md) (refreshed monthly via `/refresh-godot-intel`). Synthetic-drag findings filed upstream as a godot-mcp-pro issue draft. |
-| **Backlog top picks** | Visually distinct rooms (gamedev #1) — bring SecondRoom + ThirdRoom out of placeholder grey. Then enemies (gamedev #9) for meaningful damage. Future ability pickups (double-jump in Room 3, wall-climb in Room 4) follow the dash pattern. From [`claude-collab.md`](backlog/claude-collab.md): `/preflight` command and the "skills earned" affordances doc are next-up after we use `/wrapup` enough to find its rough edges. |
+| **Backlog top picks** | Enemies (gamedev #9) is now the highest-leverage next major capability — combat without progression is hollow, but combat without environments is a movement showcase, and we now have environments. Pairs with HUD ability indicators (gamedev #8 sub-pieces). Tilemaps (gamedev #2) once we want more than 3 rooms. AI-driven art pipeline spike (tooling-pipeline #10b) is unlocked since we have a real game to drive godot-ai-builder against. |
 | **Stage** | Solo lead + side-Claude sessions. Team of 6 collaborators planned for onboarding. |
 | **Workflow mode** | Sequential — one Claude actively using MCP at a time. See "Lifecycle" below. |
 

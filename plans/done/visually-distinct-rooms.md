@@ -1,5 +1,41 @@
 # Plan: Visually distinct rooms — adopt procedural visual-tier policy + lift StartingRoom / SecondRoom / ThirdRoom off prototype
 
+**Status:** complete (2026-04-27). All five phases + four follow-ups shipped.
+
+**Theme adopted:** *Hollow Threshold* — abandoned subterranean research facility. Automated systems still humming, people long gone. The deeper you go, the less it looks human-built. Sci-fi minimalism (Metroid Prime corridors / Hyper Light Drifter / Forgotten Crossroads pushed sci-fi) over fantasy or steampunk.
+
+**Per-room outcome:**
+- **StartingRoom — "The Vestibule"** — safe entry. Cool blue-grey palette. Cyan vertical strip-lights on inner walls (matches player's ChestLight/Visor). No new mechanic — baseline cradle.
+- **SecondRoom — "The Reactor Chamber"** — hot energy zone. Warm gradient backdrop with rising ember particles. Plasma fissure on the floor between PlatformC and PlatformD: 25 dmg per 0.4s tick, bypasses iframes, walking through ≈ death. Failing the dash drops you in. Teaches dash through punishment.
+- **ThirdRoom — "The Cryo Reservoir"** — cool unknown zone. Cool teal-violet gradient + falling cyan dust. Energy tendril swing (AnimatableBody2D platform on a 180px tendril, ±55° swing, sync_to_physics carrying the player) + coolant pool slow-zone (32% movement speed). Walking the room is impractical; the swing is the answer.
+
+**Implementation commits:**
+- [`add0827`](https://github.com/andy-augustine/godot-helloworld/commit/add0827) P1 — plan + ART_CONVENTIONS.md + backlog #10b
+- [`0c94c90`](https://github.com/andy-augustine/godot-helloworld/commit/0c94c90) P2 — Stage 1 polish (rooms, doors, audio, HUD, pickups, particles)
+- [`04bb29b`](https://github.com/andy-augustine/godot-helloworld/commit/04bb29b) P2 follow-up — door fix, ceilings, healthbar sizzle
+- [`023a925`](https://github.com/andy-augustine/godot-helloworld/commit/023a925) P2 follow-up — player rig sizzle (shadow + idle aura)
+- [`118882b`](https://github.com/andy-augustine/godot-helloworld/commit/118882b) Mid-ship docs sweep
+- [`7846141`](https://github.com/andy-augustine/godot-helloworld/commit/7846141) P2 follow-up — ground shadow raycast-projected
+- [`f2d4974`](https://github.com/andy-augustine/godot-helloworld/commit/f2d4974) P3 — procedural-background per room (gradient_bg shader + ambient particles)
+- [`137403a`](https://github.com/andy-augustine/godot-helloworld/commit/137403a) P4a — SecondRoom plasma fissure + warm background
+- [`f22cd43`](https://github.com/andy-augustine/godot-helloworld/commit/f22cd43) P4b — ThirdRoom swing tendril + coolant pool
+- [`8a40f0d`](https://github.com/andy-augustine/godot-helloworld/commit/8a40f0d) P4c — StartingRoom cyan strip-lights
+
+**Closes:** [`gamedev`](../backlog/gamedev.md) #1 (visually distinct rooms), [`tooling-pipeline`](../backlog/tooling-pipeline.md) #9 (procedural-visual-quality bar), and the audio sub-bullet of [`gamedev`](../backlog/gamedev.md) #16.
+
+**New systems landed (worth noting in STRUCTURE.md):**
+- `shaders/` — first project shader (`gradient_bg.gdshader`).
+- `hazards/` — first hazard subsystem. PlasmaFissure, CoolantPool, SwingTendril. Each follows the procedural-animated tier (entity with body+outline+highlight+shadow+animation). Pattern: Area2D root + visual subtree + script handling collision callbacks.
+
+**Gameplay additions worth carrying forward:**
+- `Player.take_environmental_damage(amount)` — bypasses iframes, lighter feedback. For continuous hazards (lava-equivalents) where standing-in-it is the damage event.
+- `Player.enter_slow_zone()` / `exit_slow_zone()` — counter-stacked slow-zone API. For coolant-pool-equivalents.
+- `AnimatableBody2D` + `sync_to_physics=true` as the moving-platform pattern. Carries the player kinematically when its parent transform changes.
+
+---
+
+## Original plan content (preserved for historical record)
+
 **Status:** in progress (claimed by Andy + Claude, branch main, 2026-04-27)
 
 This plan is multi-phase ("polish mode" per [`CLAUDE.md`](../CLAUDE.md)) because it (a) introduces a project-wide visual-quality policy that all future entities and rooms inherit and (b) applies that policy across three rooms with per-room palette divergence and signature visual elements. Phase order is policy-first → infra-first → divergence-second → polish-last.

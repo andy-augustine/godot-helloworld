@@ -36,6 +36,14 @@ godot-helloworld/
 ├── audio/
 │   └── AudioManager.gd         ← AudioManager autoload — bus routing, SFX/music helpers
 │
+├── hazards/                    ← procedural-animated tier hazards (drop into rooms)
+│   ├── PlasmaFissure.tscn/.gd  ← tick-damage Area2D, bypasses iframes (Reactor Chamber)
+│   ├── CoolantPool.tscn/.gd    ← Area2D that calls player.enter_slow_zone() (Cryo Reservoir)
+│   └── SwingTendril.tscn/.gd   ← AnimatableBody2D pendulum platform (Cryo Reservoir)
+│
+├── shaders/
+│   └── gradient_bg.gdshader    ← procedural-background gradient (per-room ShaderMaterial params)
+│
 ├── hud/                        ← in-game UI
 │   ├── HUD.tscn / HUD.gd       ← top-level HUD coordinator
 │   ├── HealthBar.tscn / .gd    ← segmented bar w/ green→yellow→red gradient + crit pulse

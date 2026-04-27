@@ -10,7 +10,9 @@ Roughly grouped: deferred-from-shipped-work first, then "missing systems," then 
 
 These were called out as "explicitly NOT in scope this round" in the camera/room plan. The system shipped, these are the natural follow-ups.
 
-### 1. Visually distinct rooms
+### 1. Visually distinct rooms — **complete (2026-04-27)**
+
+**Status:** Shipped via [`plans/done/visually-distinct-rooms.md`](../plans/done/visually-distinct-rooms.md). "Hollow Threshold" theme adopted. Each room got palette divergence + procedural-background gradient + signature mechanic: SecondRoom plasma fissure, ThirdRoom swing tendril + coolant pool, StartingRoom strip-light accent. Closed in same ship: tooling-pipeline #9 (procedural-visual-quality bar) and the audio sub-bullet of #16. Net scope significantly exceeded the original "1-2h per room palette" estimate — became a Stage 1 polish pass + first-pass gameplay hazards.
 
 **Why:** `SecondRoom.tscn` is a plumbing-only clone of `StartingRoom`. Transitions don't yet feel like "going somewhere new." Even a tinted background / different platform color would dramatically lift the room-system payoff.
 **Source:** Internal — `plans/done/camera-room-system.md` "Explicitly NOT in scope this round" section.

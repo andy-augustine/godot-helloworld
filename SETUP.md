@@ -303,3 +303,14 @@ The MCP Pro panel inside Godot shows a **green dot** when a Claude session is co
 | `node build/setup.js doctor` fails | Node version too old | Need 18+; check with `node --version` |
 | Godot doesn't open scripts in VS Code | Exec path wrong | Re-check Step 8 — full path to the binary, not just the app folder |
 | Port 6505 errors after a crash | Stale process holding the port | Quit Godot fully, kill any lingering Node processes, reopen |
+
+---
+
+## What's next
+
+Once everything's installed and Claude is connected:
+
+- **[ROADMAP.md](ROADMAP.md)** — current state of the project, active plans, what to pick up next.
+- **[STRUCTURE.md](STRUCTURE.md)** — folder layout and how the pieces talk to each other.
+- **[GODOT_PRIMER.md](GODOT_PRIMER.md)** — Godot/GDScript Rosetta stone. **Read this first if you're coming from Unreal or Unity** — it maps every Godot construct used in this codebase to its Unreal/Unity equivalent so you can read the rest without stalling on syntax.
+- **[CLAUDE.md](CLAUDE.md)** — the rules every Claude session follows, including the `/orient` and `/wrapup` session bookends.

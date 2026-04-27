@@ -1,4 +1,4 @@
-# Godot Notes — a Rosetta Stone
+# Godot Primer — for Unreal / Unity developers
 
 **Audience:** developers coming from **Unreal** or **Unity** who want to read this codebase without stalling on unfamiliar Godot syntax. Read top-to-bottom once, then skim back for anything specific.
 

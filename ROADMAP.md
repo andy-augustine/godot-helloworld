@@ -77,7 +77,7 @@ A `WORKFLOW.md` will be drafted closer to the team-onboarding day; not premature
 2. **CLAUDE.md** — project rules
 3. **STRUCTURE.md** — code architecture
 4. **tests/README.md** — only if planning to drive the running game via MCP
-5. **GODOT_NOTES.md** — only when GDScript / Godot construct uncertainty arises
+5. **GODOT_PRIMER.md** — only when GDScript / Godot construct uncertainty arises
 6. **plans/** — current in-flight work; if any
 7. **backlog/** — only when picking new work
 8. **research/** — only when evaluating something new
@@ -92,7 +92,7 @@ Skip anything not relevant to the immediate task.
 2. **SETUP.md** — install everything
 3. **This file** — orient on what's going on
 4. **STRUCTURE.md** — get the lay of the land
-5. **GODOT_NOTES.md** — if coming from Unreal/Unity background
+5. **GODOT_PRIMER.md** — if coming from Unreal/Unity background
 6. Pick a backlog item or open plan and start
 
 ---

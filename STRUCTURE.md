@@ -2,7 +2,7 @@
 
 How the project is laid out and how the pieces talk to each other. Aimed at someone **directing changes** ("make the deadzone bigger", "add a new room", "change what happens on a hard landing") rather than writing GDScript by hand.
 
-For Godot/GDScript syntax and Unreal/Unity equivalents in depth, see [`GODOT_NOTES.md`](GODOT_NOTES.md). Quick analogies appear inline here.
+For Godot/GDScript syntax and Unreal/Unity equivalents in depth, see [`GODOT_PRIMER.md`](GODOT_PRIMER.md). Quick analogies appear inline here.
 
 ---
 
@@ -64,7 +64,7 @@ godot-helloworld/
 ├── screenshots/                ← debug/QA screenshots (gitignored)
 ├── addons/godot_mcp/           ← godot-mcp-pro plugin (vendored — required by Claude)
 ├── CLAUDE.md                   ← rules Claude Code follows on every session
-├── SETUP.md / README.md / GODOT_NOTES.md / STRUCTURE.md  ← root docs
+├── SETUP.md / README.md / GODOT_PRIMER.md / STRUCTURE.md  ← root docs
 ├── tests/README.md             ← how-we-test guide (lives next to test code)
 └── .godot/, *.uid, .DS_Store   ← gitignored; auto-regenerated
 ```

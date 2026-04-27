@@ -54,7 +54,7 @@ Scan these docs for stale claims relative to what shipped this session:
 - `ROADMAP.md` — does the "Most recent ship" row match reality? Is "Active plans" correct? Are "Backlog top picks" still right after this session's changes? Are any "Open questions" now resolved?
 - `STRUCTURE.md` — folder map current? Per-file responsibilities still accurate for any scripts touched?
 - `tests/README.md` — any new test patterns this session that should be documented?
-- `GODOT_NOTES.md` — only check if a Godot/GDScript construct used this session was novel (rare). Don't add gotchas; those go in memory.
+- `GODOT_PRIMER.md` — only check if a Godot/GDScript construct used this session was novel (rare). Don't add gotchas; those go in memory.
 - `CLAUDE.md` — any new convention emerged this session that should be a rule?
 
 Surface each drift candidate with the proposed one-line fix. Wait for **confirm / skip** per item.

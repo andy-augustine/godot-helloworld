@@ -33,7 +33,7 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ## 3. Adopt the document protocol — `PLAN.md` + `MEMORY.md`
 
-**Why:** godogen's stage-to-stage communication via versioned files is robust against context compaction. We already have `STRUCTURE.md` / `TESTING.md` / `GODOT_NOTES.md` and a `plans/` folder; adding the missing two pieces matches the full protocol. `MEMORY.md` is especially valuable — it's the engine-quirks accumulator.
+**Why:** godogen's stage-to-stage communication via versioned files is robust against context compaction. We already have `STRUCTURE.md` / `tests/README.md` / `GODOT_PRIMER.md` and a `plans/` folder; adding the missing two pieces matches the full protocol. `MEMORY.md` is especially valuable — it's the engine-quirks accumulator.
 **Source:** [`research/tools/godogen.md`](../research/tools/godogen.md) — `PROJECT.md` Document Protocol section.
 **Effort:** 30 min for the convention, ongoing for content.
 **Deliverable:** Two new files at the project root:

@@ -27,7 +27,7 @@ The point of the project: explore what AI-driven game development feels like whe
 | [`ROADMAP.md`](ROADMAP.md) | **Start here** — single TOC for "what's going on with this project" — active work, recent ships, backlog, lifecycle, where everything lives |
 | [`SETUP.md`](SETUP.md) | End-to-end install for **macOS and Windows** — Godot, Node, VS Code, Claude Code, godot-mcp-pro, Git |
 | [`STRUCTURE.md`](STRUCTURE.md) | Folder layout, data flow between scenes, Unreal/Unity analogies for the architecture |
-| [`GODOT_NOTES.md`](GODOT_NOTES.md) | Godot/GDScript ↔ Unreal/Unity Rosetta stone — scenes vs prefabs, signals vs events, etc. For developers coming from Unreal or Unity. |
+| [`GODOT_PRIMER.md`](GODOT_PRIMER.md) | Godot/GDScript Rosetta stone for developers coming from **Unreal or Unity** — scenes vs prefabs, signals vs events, etc. |
 | [`CLAUDE.md`](CLAUDE.md) | Project rules Claude Code follows on every session |
 | [`tests/README.md`](tests/README.md) | How to drive the running game through MCP without fighting async/physics timing |
 | [`plans/`](plans/) | In-progress multi-phase plans. Completed plans live in `plans/done/` for reference. |

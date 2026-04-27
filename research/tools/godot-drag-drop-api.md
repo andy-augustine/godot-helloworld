@@ -6,9 +6,13 @@
 | Researched | 2026-04-26 |
 | Pairs with | [`../../TESTING.md`](../../TESTING.md) — MCP async-latency pattern |
 
-## ⚠️ Update 2026-04-26 — provisional finding, re-verification pending
+## ⚠️ Update 2026-04-26 — earlier doubt resolved by crawl, see follow-up doc
 
-**Re-verification needed before treating as fact.** The original claim ("Recipe A doesn't work in Godot 4.6.2") was made during a session where (a) the user was using the mouse concurrently with my synthetic-input tests, and (b) several of my probe scripts had GDScript Parse Errors I didn't always check `get_editor_errors` for after each call. Some or all of the conclusion may be wrong. The observations below are kept as a working hypothesis until re-tested under hands-off conditions with the GDScript practices documented in `feedback_godot_mcp_scene_editing.md` and the godogen docs the user surfaced. Concrete observations as recorded:
+A targeted research crawl ([`godot-4.6-drag-test-current-intel.md`](godot-4.6-drag-test-current-intel.md)) shows **Recipe A is still the correct pattern in Godot 4.6.2** — no matching tracker issue, no regression, GUT 9.6.0 (Feb 2026) explicitly added 4.6 compat with Recipe-A-style synthetic input. Our prior session's failure ("Recipe A doesn't work") was almost certainly user-side: real OS mouse events were competing with synthetic events, and several probe scripts had GDScript Parse Errors that weren't checked. The observations below are retained as the *recorded data*, but the conclusion was wrong. **Do not extract a "synthetic drag is broken" claim into a skill or memory — it isn't.** Pending: hands-off re-test using the diagnostic-first plan in §3 of the follow-up doc.
+
+Two technical corrections also derived from the crawl, applied to other research docs (`godot-mcp-pro-internals.md`, `tests/RESULTS.md`):
+- `Viewport.push_input(event, true)` — second arg is `in_local_coords` (coordinate-space hint), NOT "skip GUI". `push_input` is the canonical GUI delivery path for the viewport.
+- `Control.force_drag(data, preview)` followed by a synthetic release **does not** complete the drag. That's not a regression — there's no "complete force_drag" API. The release-and-drop logic is event-driven and expects the full press → motion → release sequence; force_drag short-circuits the press half but the dispatcher has no synchronized release path. Recorded data observations:
 
 - `Input.parse_input_event(InputEventMouseButton)` and `Viewport.push_input(event)` both fail to trigger `_gui_input` on the topmost Control under the press position. Hooked a counter to `card.gui_input` signal — fires 0 times immediately and 0 times after a 300 ms wait.
 - Because `_gui_input` never fires, the GUI dispatcher never registers a "potential drag" from the source. Subsequent motion events past threshold do not call `_get_drag_data`. The recipe's `button_mask` / `use_accumulated_input` / frame-pacing details are all moot — the events don't reach GUI dispatch at all.

@@ -61,10 +61,12 @@ If `auto_release=true` (default), appends a release event and writes both with f
 
 #### Inject into game (mcp_input_service.gd:81-93)
 `_dispatch_event()` uses TWO injection paths:
-1. **GUI-safe path**: `Input.parse_input_event(event)` — standard path, GUI layer may consume
-2. **Unhandled path**: `get_viewport().push_input(event, true)` — bypasses GUI, reaches `_unhandled_input()`
+1. **Standard path**: `Input.parse_input_event(event)` — full input pipeline, including GUI dispatch.
+2. **"Unhandled" path**: `get_viewport().push_input(event, true)` — see correction note below.
 
-Auto-enables unhandled for mouse drag (button_mask > 0) to fix camera pan/drag when UI overlays consume events.
+> **Correction (2026-04-26, sourced from [`godot-4.6-drag-test-current-intel.md`](godot-4.6-drag-test-current-intel.md) Q3):** the addon-side comment at `mcp_input_service.gd:78-79` claims path 2 "bypasses GUI". That's wrong. **`Viewport.push_input(event, in_local_coords: bool = false)` is the canonical GUI delivery path for the viewport.** The second arg is a *coordinate-space hint*: `false` (default) → Godot transforms the event's `position` by the viewport's final transform; `true` → take position as-is in viewport-local coords. It does NOT skip Control hit-testing. Per Sauermann ([godot#72657](https://github.com/godotengine/godot/issues/72657), [godot#73557](https://github.com/godotengine/godot/issues/73557), maintainer for the GUI domain). The `_dispatch_event` code happens to work for the camera-pan use case it was written for, but the code comment / mental model is misleading. To genuinely skip GUI dispatch (for camera-pan-style cases where you want the event to reach `_unhandled_input` directly), use `push_unhandled_input(event)` instead.
+
+Auto-enables the "unhandled" path for mouse drag (button_mask > 0). For drag-and-drop tests we want the standard path; pass `unhandled: false` explicitly when calling `simulate_sequence` (per the addon source, this avoids the auto-promotion).
 
 ### simulate_sequence (most relevant for drag)
 

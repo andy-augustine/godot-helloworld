@@ -7,17 +7,22 @@
 | Runner | `tests/run_drag_recipe.gd` |
 | Project SHA | (top of `main` at validation time) |
 
-## Caveat — re-verification pending
+## Status — earlier finding REVISED, recipe stands
 
-The session that produced this file had two confounders identified after the fact:
-1. The user was using the mouse concurrently with the synthetic-input tests. Real OS events were competing with synthetic ones in the same GUI dispatch queue.
-2. Several probe scripts had GDScript Parse Errors (`Cannot infer the type of "prev"`, `INCOMPATIBLE_TERNARY`, etc.) that weren't caught at the time because `get_editor_errors` wasn't checked after every call.
+The session that produced this file recorded "synthetic drag is broken in Godot 4.6.2." A targeted research crawl ([`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md), 2026-04-26) **revised that conclusion**: the recipe is still correct in Godot 4.6, GUT 9.6.0 (Feb 2026) explicitly added 4.6 compat for the same pattern, and no matching tracker issue exists. Our session's failure was almost certainly:
+1. **Mouse-in-window confounder** — the user was using the mouse during the synthetic-input tests; real OS events were competing in the GUI queue.
+2. **GDScript Parse Errors** — several probe scripts had untyped `:=` declarations that didn't compile (`Cannot infer the type of "prev"`, `INCOMPATIBLE_TERNARY`, etc.); `get_editor_errors` wasn't checked after every call.
+3. **Possibly an invisible Control** above the press position absorbing events — the most-cited diagnosis in the [Jan 2026 forum thread](https://forum.godotengine.org/t/mouse-input-events-broken-after-going-from-4-5-1-4-6/131730) that initially looked like a 4.6 regression but wasn't.
 
-The findings below are recorded as a working hypothesis. **Do not treat as established fact until re-verified hands-off, with `get_editor_errors` after every script execution, and with explicit GDScript types per the godogen GDScript practices.** A re-test is queued.
+A hands-off re-test using the diagnostic-first plan from the follow-up doc (§3) is queued. **Do not encode the original "synthetic drag broken" finding into any skill, memory, or downstream doc.** The data below is preserved as the raw record of what was observed, but the conclusion drawn was wrong.
 
-## Headline finding (PROVISIONAL) — synthetic drag may be broken in Godot 4.6.2
+Two technical correctness fixes also baked in (applied to `godot-mcp-pro-internals.md` and `godot-drag-drop-api.md`):
+- `Viewport.push_input(event, true)` — second arg is `in_local_coords`, NOT "skip GUI".
+- `Control.force_drag(data, preview)` + synthetic release does NOT complete a drag — that's a design boundary, not a regression. There's no "complete force_drag" API.
 
-**The canonical "Recipe A" from `research/tools/godot-drag-drop-api.md §3` did not appear to work in Godot 4.6.2 in this session's tests, but the tests were polluted (see caveat above).**
+## Original headline (now retracted) — synthetic drag may be broken in Godot 4.6.2
+
+**The canonical "Recipe A" did not appear to work in Godot 4.6.2 in this session's tests, but the tests were polluted (see Status section above) and the conclusion has been retracted.**
 
 Empirical evidence collected during P5:
 

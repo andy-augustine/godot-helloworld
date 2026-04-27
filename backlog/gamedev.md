@@ -176,7 +176,7 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 **Deliverable (sub-items):**
 
-- **Audio assets — `player_hit.ogg` + `player_death.ogg`.** The call sites are already wired in `player.gd:take_damage` and `player.gd:_handle_death`, but the keys are not in `AudioManager.SFX` because `preload` would crash without the files. To activate: drop the `.ogg` files into `assets/audio/sfx/` and add two rows to `AudioManager.SFX` (per the comment in that file). Until then, both calls silently `push_warning`.
+- ~~**Audio assets — `player_hit.ogg` + `player_death.ogg`.**~~ **Done (2026-04-27)** via `visually-distinct-rooms` Phase 2. Both files now in `assets/audio/sfx/` (Kenney CC0, sourced from impactPunch_medium_002 and lowDown), registered in `AudioManager.SFX`. Also closed the dash-SFX runtime warning at the same time. See [`assets/audio/sfx/CREDITS.md`](../assets/audio/sfx/CREDITS.md).
 - **Movement-speed reduction at low health.** Floor `MOVE_SPEED` to ~70% when `_health / MAX_HEALTH < 0.25`. Risk: feels punishing without enemies to tune against. Hold until enemies (#9) ship.
 - **Critical-health music duck / ominous loop.** Depends on a music subsystem, which we don't have yet. Sequence after #11 (audio system music tracks) and #6 (transition stinger) — not before.
 - **Damage vignette / chromatic aberration.** Red glow at screen edges when low; subtle CA when critical. Shader work — own session.

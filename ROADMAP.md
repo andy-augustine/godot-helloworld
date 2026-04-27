@@ -2,7 +2,7 @@
 
 The single entry point for "what's going on with this project?" — read this first if you're a fresh Claude session, a new collaborator, or returning after time away.
 
-Updated 2026-04-27.
+Updated 2026-04-27 (post-Phase-2).
 
 ---
 
@@ -10,9 +10,9 @@ Updated 2026-04-27.
 
 | | |
 |---|---|
-| **Active plans** | [`visually-distinct-rooms`](plans/visually-distinct-rooms.md) — Phase 1 (plan + visual-tier policy doc + backlog #10b) shipping now; Phases 2–5 lift StartingRoom / SecondRoom / ThirdRoom from prototype-tier flat ColorRects to procedural-tier (body+outline+shadow+highlight + per-room palette + per-room background layer). Closes [`gamedev`](backlog/gamedev.md) #1 and [`tooling-pipeline`](backlog/tooling-pipeline.md) #9. |
-| **Most recent ship** | Information-architecture refactor — startup → standardized. Killed duplications (TESTING.md → tests/README.md, ROADMAP folder-tree → STRUCTURE single source), pruned GODOT_NOTES.md back to "Godot for Unreal/Unity devs", deleted obsolete `early-requirements/`, added `backlog/claude-collab.md` as third backlog category, added `/wrapup` slash command for end-of-session pipeline. Plan archived at [`plans/done/refactor-info-architecture.md`](plans/done/refactor-info-architecture.md). |
-| **Previous ship** | Pickups system — dash as the first permanent ability + air-dash refresh fix + Room 2 redesign decoupling level layout from the card system. Plan archived at [`plans/done/pickups.md`](plans/done/pickups.md). |
+| **Active plans** | [`visually-distinct-rooms`](plans/visually-distinct-rooms.md) — Phases 1+2 shipped (plan + ART_CONVENTIONS.md + Stage 1 polish across rooms/doors/HUD/pickups/audio/player); Phases 3 (procedural-background per room), 4 (palette divergence + signature elements), 5 (coherence + archive) pending. |
+| **Most recent ship** | Stage 1 polish via `visually-distinct-rooms` Phases 1+2 — adopted godot-ai-builder visual-tier table as policy ([`ART_CONVENTIONS.md`](ART_CONVENTIONS.md)), applied procedural-static stack to all level geometry across 3 rooms + doors + ceilings, procedural-animated to pickups, moved AbilityStrip to top-center, sizzled HealthBar (halo + shimmer + caps + pips), wired 4 missing SFX from Kenney CC0 packs, added player ground shadow + idle aura. Commits [`add0827`](https://github.com/local) → [`023a925`](https://github.com/local). Closes [`tooling-pipeline`](backlog/tooling-pipeline.md) #9 + part of [`gamedev`](backlog/gamedev.md) #1 + audio bullet of [`gamedev`](backlog/gamedev.md) #16. |
+| **Previous ship** | Information-architecture refactor — startup → standardized. Plan archived at [`plans/done/refactor-info-architecture.md`](plans/done/refactor-info-architecture.md). |
 | **Recent research artifacts** | Overnight Godot 4.6 / GDScript community intel crawl → [`research/tools/godot-4.6-current-intel.md`](research/tools/godot-4.6-current-intel.md) (refreshed monthly via `/refresh-godot-intel`). Synthetic-drag findings filed upstream as a godot-mcp-pro issue draft. |
 | **Backlog top picks** | Visually distinct rooms (gamedev #1) — bring SecondRoom + ThirdRoom out of placeholder grey. Then enemies (gamedev #9) for meaningful damage. Future ability pickups (double-jump in Room 3, wall-climb in Room 4) follow the dash pattern. From [`claude-collab.md`](backlog/claude-collab.md): `/preflight` command and the "skills earned" affordances doc are next-up after we use `/wrapup` enough to find its rough edges. |
 | **Stage** | Solo lead + side-Claude sessions. Team of 6 collaborators planned for onboarding. |

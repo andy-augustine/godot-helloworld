@@ -109,9 +109,9 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ---
 
-## 9. Add procedural-visual-quality bar (`godot-assets`-style note) — **in progress (2026-04-27)**
+## 9. Add procedural-visual-quality bar (`godot-assets`-style note) — **complete (2026-04-27)**
 
-**Status:** being closed inside the [`visually-distinct-rooms`](../plans/visually-distinct-rooms.md) ship. Policy doc lands at [`ART_CONVENTIONS.md`](../ART_CONVENTIONS.md) in Phase 1 of that plan; first instances (procedural-static on level geometry, procedural-background per room) ship in Phases 2–4. Will be marked complete here at end of ship.
+**Status:** shipped via [`visually-distinct-rooms`](../plans/visually-distinct-rooms.md) Phases 1+2. Policy doc at [`ART_CONVENTIONS.md`](../ART_CONVENTIONS.md). Working first instances: procedural-static (rooms + doors + ceilings), procedural-animated (Pickup). Procedural-background still pending in Phase 3 of that plan.
 
 **Why:** Currently the player rig is hand-authored polygons; future entities (enemies, NPCs, pickups) need a quality bar so they don't regress to flat shapes. godot-ai-builder's "body + outline + shadow + highlight + animation" rule is a good baseline.
 **Source:** [`research/tools/godot-ai-builder.md`](../research/tools/godot-ai-builder.md) — `skills/godot-assets/SKILL.md`.
@@ -264,6 +264,20 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 **How to execute:** Use `/schedule` to spawn a background remote agent with the spec above. Agent should produce a single artifact at `research/tools/godot-4.6-current-intel.md`, properly formatted, source-cited, and scenario-rich enough that the user can run a few small tests in the morning to validate the highest-value claims before encoding any of them.
 
 **Notes:** This is the kind of thing that decays — a crawl run today is more valuable than a crawl run six months from now. Re-run quarterly while we're actively in this project.
+
+---
+
+## 12b. MCP gap: `clear_output` doesn't clear `get_editor_errors` debugger residue
+
+**Why:** During the `visually-distinct-rooms` Phase 2 work, dash-SFX `push_warning` lines from a *prior* playtest persisted in `get_editor_errors` output even after a `clear_output` call returned `{"cleared": true}`. They only disappeared after a full editor reopen. Worked around at the time by recognizing them as residue, but mid-session noise like that wastes round trips disambiguating "is this from my edit or stale?". The two MCP tools read different sources: `clear_output` clears the Output panel, `get_editor_errors` reads the Debugger panel.
+
+**Source:** Internal — observed 2026-04-27 during Phase 2 verification, [commit 0c94c90](https://github.com/local) era.
+
+**Effort:** Small — likely a one-line fix in godot-mcp-pro's tools.js to also clear the debugger-panel array on `clear_output`. Could ship upstream as a PR.
+
+**Deliverable:** Either (a) upstream PR to godot-mcp-pro making `clear_output` also wipe the debugger-panel residue, OR (b) a separate MCP tool `clear_debugger` that does it. Pair the change with a test that runs play → produce_warning → stop → clear_output → assert get_editor_errors is empty.
+
+**Notes:** Low priority — workaround (recognize residue, ignore) is fine for now. Worth doing as a portfolio improvement when contributing back to godot-mcp-pro for the synthetic-drag findings draft already in the queue.
 
 ---
 

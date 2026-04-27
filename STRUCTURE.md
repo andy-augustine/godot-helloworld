@@ -241,4 +241,4 @@ Just wrappers — the script holds the logic; the scene exists so the script can
 
 - **No external state-machine plugin** — the player uses an `enum`-and-`match` pattern in `_physics_process`. Simple and visible.
 - **No TileMapLayer** — rooms use hand-placed `StaticBody2D` platforms. Tile art is a future phase.
-- **No save/load**, **no UI/HUD**, **no enemies**, **no pickups** — scoped out. Add them as new top-level subsystems following the same pattern (own scene + script + group tag if other systems need to find them).
+- **No save/load**, **no enemies** — scoped out. Add them as new top-level subsystems following the same pattern (own scene + script + group tag if other systems need to find them). HUD (`hud/`) and pickups (`inventory/`) have shipped; see those folders.

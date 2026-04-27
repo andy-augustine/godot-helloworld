@@ -2,7 +2,7 @@
 
 The single entry point for "what's going on with this project?" — read this first if you're a fresh Claude session, a new collaborator, or returning after time away.
 
-Updated 2026-04-26.
+Updated 2026-04-27.
 
 ---
 
@@ -10,9 +10,10 @@ Updated 2026-04-26.
 
 | | |
 |---|---|
-| **Active plans** | none — pick from [`backlog/gamedev.md`](backlog/gamedev.md) or [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md) |
-| **Most recent ship** | HUD + player health system: integer health pool, segmented bar w/ green→yellow→red gradient + critical-pulse, hit-stop, rig-collapse death sequence with screen fade. Plan archived at [`plans/done/hud-health.md`](plans/done/hud-health.md). |
-| **Backlog top picks** | Pickups system (gamedev #7), enemies (gamedev #9 — gates knockback + meaningful damage), visually distinct second room (gamedev #1), HUD/health polish follow-ups (gamedev #16). See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
+| **Active plans** | none — pickups system about to start (gamedev #7). Otherwise pick from [`backlog/gamedev.md`](backlog/gamedev.md) or [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md) |
+| **Most recent ship** | Skill cards — drag-and-drop inventory + active slot. 5 phases: data layer + Skills autoload, HUD scaffolding, drag-drop equip/swap/deactivate, polish (pulse / hover-lift / drop flash), recipe validation. Plan archived at [`plans/done/skill-cards.md`](plans/done/skill-cards.md). |
+| **Recent research artifacts** | Overnight Godot 4.6 / GDScript community intel crawl → [`research/tools/godot-4.6-current-intel.md`](research/tools/godot-4.6-current-intel.md) (refreshed monthly via `/refresh-godot-intel`). Synthetic-drag findings filed upstream as a godot-mcp-pro issue draft. |
+| **Backlog top picks** | Pickups system (gamedev #7) — about to become active. Then visually distinct second room (gamedev #1) for room-system payoff, enemies (gamedev #9) once pickups is in, GUT 9.6.0 evaluation (tooling-pipeline; flagged by the intel crawl as a direct fit for the TESTING.md timing pitfalls). See [`backlog/gamedev.md`](backlog/gamedev.md) and [`backlog/tooling-pipeline.md`](backlog/tooling-pipeline.md). |
 | **Stage** | Solo lead + side-Claude sessions. Team of 6 collaborators planned for onboarding. |
 | **Workflow mode** | Sequential — one Claude actively using MCP at a time. See "Lifecycle" below. |
 
@@ -40,12 +41,17 @@ research/                 ← evaluations of external tools/approaches
 audio/                    ← AudioManager autoload (game code)
 camera/                   ← GameCamera scene + script
 doors/                    ← Door scene + script (room transition triggers)
+hud/                      ← HUD root + HealthBar + SkillCard / SkillCardSlot / SkillsPanel
 player/                   ← Player scene + controller script
 rooms/                    ← Room template + StartingRoom + SecondRoom
+skills/                   ← Skill class + Skills autoload (active-slot state)
 assets/                   ← committed asset content (audio currently)
 World.tscn / World.gd     ← entry scene (top-level coordinator)
 
+addons/godot_mcp/         ← godot-mcp-pro plugin (vendored — load-bearing infra)
+tests/                    ← test scenes + RESULTS.md (synthetic-drag recipe lives here)
 early-requirements/       ← worked-example prompts that produced features
+screenshots/              ← debug/QA captures (gitignored where appropriate)
 ```
 
 ---

@@ -32,9 +32,26 @@ godot-helloworld/
 │   ├── Door.tscn               ← Area2D + collision + Spawn marker + visual
 │   └── Door.gd                 ← target room path, target door name, direction, signal
 │
+├── audio/
+│   └── AudioManager.gd         ← AudioManager autoload — bus routing, SFX/music helpers
+│
+├── hud/                        ← in-game UI
+│   ├── HUD.tscn / HUD.gd       ← top-level HUD coordinator
+│   ├── HealthBar.tscn / .gd    ← segmented bar w/ green→yellow→red gradient + crit pulse
+│   ├── SkillCard.tscn / .gd    ← single skill card (drag source)
+│   ├── SkillCardSlot.tscn / .gd← inventory + active slot (drop targets)
+│   └── SkillsPanel.tscn / .gd  ← top-right panel composing slots + cards
+│
+├── skills/                     ← skill data + state autoload
+│   ├── Skill.gd                ← Resource subclass — id, name, description, icon
+│   └── Skills.gd               ← Skills autoload — owned skills + currently-active slot
+│
 ├── plans/                      ← in-progress multi-phase plans
 │   └── done/                   ← completed plans, kept for context
 │
+├── tests/                      ← test scenes + RESULTS.md (synthetic-drag recipe)
+├── research/                   ← evaluations of external tools/approaches; intel crawl outputs
+├── backlog/                    ← future ideas, not yet plans (gamedev + tooling-pipeline)
 ├── early-requirements/         ← worked examples of detailed prompts
 ├── screenshots/                ← debug/QA screenshots
 ├── addons/godot_mcp/           ← godot-mcp-pro plugin (vendored — required by Claude)

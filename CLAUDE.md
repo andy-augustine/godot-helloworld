@@ -72,3 +72,20 @@ This does NOT apply to bug fixes, tweaks, one-line changes, or routine refactors
 ## Plan archiving
 
 Multi-phase plans live in `plans/` while in progress. When a plan is fully shipped, move it to `plans/done/` in the same commit (or a follow-up cleanup commit) and update its top-of-file status line to `**Status:** complete (YYYY-MM-DD)` with a one-line note pointing at the implementation commit(s). Don't delete completed plans — the historical record is useful for context on why decisions were made.
+
+### Post-ship docs sweep (run before declaring "done")
+
+Archiving the plan is not the whole job. Before saying a feature is shipped, walk this checklist and update anything stale. The cost of skipping it is that ROADMAP.md drifts out of sync within one or two ships and stops being trustworthy as the project's TOC.
+
+1. **`ROADMAP.md`** — update:
+   - The `Updated YYYY-MM-DD` line at the top.
+   - The `Most recent ship` row in the at-a-glance table (one tight sentence + link to the archived plan).
+   - The `Where things live` tree if any new top-level dirs/files were created (e.g. a new `hud/`, `skills/`, `enemies/`).
+   - The `Backlog top picks` row if items were addressed or priorities have shifted.
+   - The `Open questions / decisions pending` section if any listed questions are now answered (delete the resolved line, or move it under recent ship if the answer is load-bearing).
+2. **`STRUCTURE.md`** folder map — same rule as the ROADMAP tree: any new top-level dir gets a one-line entry with the scenes/scripts it contains.
+3. **`backlog/<area>.md`** — if the ship addressed a backlog item, mark it `**Status:** complete (YYYY-MM-DD)` with a link to the archived plan. Don't delete — leave the historical context.
+4. **Memory files** — if the work surfaced a new GDScript / MCP / scene-editing rule worth carrying forward, fold it into the matching `feedback_*.md` in the auto-memory directory. Don't write a one-off rule that only matters for this one feature.
+5. **Skill / slash command docs** — if you built a new skill or slash command as part of the ship, mention it in the relevant doc (`backlog/tooling-pipeline.md` or wherever it was originally proposed).
+
+Treat the docs sweep as part of the ship, not as optional cleanup. A shipped feature that didn't update the roadmap is half-shipped.

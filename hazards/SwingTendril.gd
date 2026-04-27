@@ -13,6 +13,7 @@ extends Node2D
 @export var phase_offset: float = 0.0   # 0..TAU; advances the starting angle for cycling levels
 
 @onready var _pivot: Node2D = $Pivot
+@onready var _platform: AnimatableBody2D = $Pivot/PlatformBody
 
 var _time: float = 0.0
 
@@ -24,4 +25,10 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	_time += delta
 	var phase: float = _time * TAU / swing_period
-	_pivot.rotation = deg_to_rad(swing_amplitude_deg) * sin(phase)
+	var rot: float = deg_to_rad(swing_amplitude_deg) * sin(phase)
+	# Pivot rotates the tendril visually + arcs the platform's position around
+	# the swing radius. PlatformBody counter-rotates by the same amount so its
+	# global rotation stays 0 — the platform-top stays level so the player
+	# can stand on it without sliding off at the extremes.
+	_pivot.rotation = rot
+	_platform.rotation = -rot

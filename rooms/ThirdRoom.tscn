@@ -136,6 +136,36 @@ position = Vector2(480, -20)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ceiling"]
 shape = SubResource("RectangleShape2D_ceiling3")
 
+[node name="Visual" type="Node2D" parent="Ceiling"]
+
+[node name="Shadow" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -480.0
+offset_top = -94.0
+offset_right = 480.0
+offset_bottom = 26.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -482.0
+offset_top = -102.0
+offset_right = 482.0
+offset_bottom = 22.0
+color = Color(0.16, 0.23, 0.21, 1)
+
+[node name="Body" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -480.0
+offset_top = -100.0
+offset_right = 480.0
+offset_bottom = 20.0
+color = Color(0.32, 0.46, 0.42, 1)
+
+[node name="Highlight" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -478.0
+offset_top = 16.0
+offset_right = 478.0
+offset_bottom = 20.0
+color = Color(0.524, 0.622, 0.594, 1)
+
 [node name="ToBeContinued" type="Label" parent="."]
 offset_left = 280.0
 offset_top = 220.0

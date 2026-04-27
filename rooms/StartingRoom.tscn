@@ -332,6 +332,36 @@ position = Vector2(576, 180)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ceiling"]
 shape = SubResource("RectangleShape2D_ceiling")
 
+[node name="Visual" type="Node2D" parent="Ceiling"]
+
+[node name="Shadow" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -460.0
+offset_top = -194.0
+offset_right = 460.0
+offset_bottom = 26.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -462.0
+offset_top = -202.0
+offset_right = 462.0
+offset_bottom = 22.0
+color = Color(0.175, 0.19, 0.275, 1)
+
+[node name="Body" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -460.0
+offset_top = -200.0
+offset_right = 460.0
+offset_bottom = 20.0
+color = Color(0.35, 0.38, 0.55, 1)
+
+[node name="Highlight" type="ColorRect" parent="Ceiling/Visual"]
+offset_left = -458.0
+offset_top = 16.0
+offset_right = 458.0
+offset_bottom = 20.0
+color = Color(0.545, 0.566, 0.685, 1)
+
 [node name="HighJumpPickup" parent="." instance=ExtResource("3_pickup")]
 position = Vector2(976, 266)
 ability_id = &"high_jump"

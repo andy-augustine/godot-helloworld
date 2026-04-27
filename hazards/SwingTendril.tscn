@@ -22,31 +22,30 @@ polygon = PackedVector2Array(-5, 0, 5, 0, 5, 180, -5, 180)
 color = Color(0.7, 0.92, 1, 1)
 polygon = PackedVector2Array(-6, -6, 6, -6, 6, 6, -6, 6)
 
-[node name="PlatformBody" type="AnimatableBody2D" parent="Pivot"]
-position = Vector2(0, 180)
-sync_to_physics = true
+[node name="PlatformBody" type="AnimatableBody2D" parent="."]
+sync_to_physics = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Pivot/PlatformBody"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlatformBody"]
 shape = SubResource("RectangleShape2D_swing_platform")
 
-[node name="PlatformShadow" type="Polygon2D" parent="Pivot/PlatformBody"]
+[node name="PlatformShadow" type="Polygon2D" parent="PlatformBody"]
 position = Vector2(1, 3)
 color = Color(0, 0, 0, 0.4)
 polygon = PackedVector2Array(-36, -7, 36, -7, 36, 7, -36, 7)
 
-[node name="PlatformOutline" type="Polygon2D" parent="Pivot/PlatformBody"]
+[node name="PlatformOutline" type="Polygon2D" parent="PlatformBody"]
 color = Color(0.18, 0.4, 0.55, 1)
 polygon = PackedVector2Array(-38, -9, 38, -9, 38, 9, -38, 9)
 
-[node name="PlatformBodyVisual" type="Polygon2D" parent="Pivot/PlatformBody"]
+[node name="PlatformBodyVisual" type="Polygon2D" parent="PlatformBody"]
 color = Color(0.55, 0.85, 1, 1)
 polygon = PackedVector2Array(-36, -7, 36, -7, 36, 7, -36, 7)
 
-[node name="PlatformHighlight" type="Polygon2D" parent="Pivot/PlatformBody"]
+[node name="PlatformHighlight" type="Polygon2D" parent="PlatformBody"]
 color = Color(0.85, 0.96, 1, 0.95)
 polygon = PackedVector2Array(-34, -7, 34, -7, 34, -4, -34, -4)
 
-[node name="PlatformGlow" type="ColorRect" parent="Pivot/PlatformBody"]
+[node name="PlatformGlow" type="ColorRect" parent="PlatformBody"]
 offset_left = -46.0
 offset_top = -16.0
 offset_right = 46.0

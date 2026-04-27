@@ -182,7 +182,7 @@ func _handle_jump(_delta: float) -> void:
 		_consume_jump_buffer()
 		var wall_dir: int = _get_wall_direction()
 		velocity.x = -float(wall_dir) * WALL_JUMP_VELOCITY.x
-		velocity.y = WALL_JUMP_VELOCITY.y * Skills.get_jump_multiplier()
+		velocity.y = WALL_JUMP_VELOCITY.y * _jump_multiplier()
 		_is_jumping = true
 		_coyote_timer = 0.0
 		_wall_jump_direction = -wall_dir
@@ -193,7 +193,7 @@ func _handle_jump(_delta: float) -> void:
 	# --- Floor / coyote jump ---
 	if (can_floor_jump or can_coyote_jump) and buffered_jump:
 		_consume_jump_buffer()
-		velocity.y = JUMP_VELOCITY * Skills.get_jump_multiplier()
+		velocity.y = JUMP_VELOCITY * _jump_multiplier()
 		_is_jumping = true
 		_coyote_timer = 0.0
 		AudioManager.play_sfx("jump", 0.1, -6)
@@ -212,6 +212,15 @@ func _handle_jump(_delta: float) -> void:
 
 func _consume_jump_buffer() -> void:
 	_jump_buffer_timer = 0.0
+
+
+# Jump-velocity multiplier from owned movement abilities. Inventory-driven so
+# the jump-height boost is permanent once the high_jump pickup is collected.
+# Returns 1.0 if Inventory autoload isn't reachable yet (early in _ready).
+func _jump_multiplier() -> float:
+	if _inventory == null:
+		return 1.0
+	return _inventory.get_jump_multiplier()
 
 
 # ── Horizontal movement ────────────────────────────────────────────────────────

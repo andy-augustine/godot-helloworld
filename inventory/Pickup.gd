@@ -23,6 +23,17 @@ var _origin_y: float = 0.0
 func _ready() -> void:
 	add_to_group("pickup")
 	_origin_y = position.y
+
+	# If the player already owns this ability (e.g. they re-entered the room),
+	# don't render at all — there's no proper room-state autoload yet, so the
+	# pickup is responsible for its own "already collected" check. When room-
+	# state persistence lands (backlog/gamedev.md, eventually), this becomes
+	# the room state's job and pickups can simplify.
+	var inv := get_node_or_null("/root/Inventory")
+	if inv and ability_id != &"" and inv.has(ability_id):
+		queue_free()
+		return
+
 	body_entered.connect(_on_body_entered)
 	# Color the visual + sparkle to the ability's category if registered
 	if Abilities.has_ability(ability_id):

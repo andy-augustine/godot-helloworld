@@ -1,7 +1,8 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://rooms/Room.gd" id="1_room"]
 [ext_resource type="PackedScene" path="res://doors/Door.tscn" id="2_door"]
+[ext_resource type="PackedScene" path="res://inventory/Pickup.tscn" id="3_pickup"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
 size = Vector2(1400, 40)
@@ -146,6 +147,10 @@ position = Vector2(576, 180)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Ceiling"]
 shape = SubResource("RectangleShape2D_ceiling")
+
+[node name="HighJumpPickup" parent="." instance=ExtResource("3_pickup")]
+position = Vector2(976, 266)
+ability_id = &"high_jump"
 
 [node name="DoorR" parent="." instance=ExtResource("2_door")]
 position = Vector2(1016, 588)

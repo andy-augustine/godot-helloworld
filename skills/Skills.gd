@@ -31,6 +31,11 @@ var active: Skill = null
 signal active_changed(new_active: Skill, prev_active: Skill)
 
 func _ready() -> void:
+	# Turbo remains as the lone bridge artifact in the card system. high_jump
+	# moved to the Inventory autoload (granted by HighJumpPickup in
+	# StartingRoom) so it stays always-on once acquired — see
+	# plans/done/pickups.md "Decision C" and the room-coupling discussion in
+	# the 2026-04-27 follow-up.
 	var turbo := Skill.new()
 	turbo.id = &"turbo"
 	turbo.display_name = "TURBO"
@@ -39,15 +44,7 @@ func _ready() -> void:
 	turbo.speed_multiplier = 1.5
 	turbo.jump_multiplier = 1.0
 
-	var high_jump := Skill.new()
-	high_jump.id = &"high_jump"
-	high_jump.display_name = "HIGH JUMP"
-	high_jump.description = "+50% jump height"
-	high_jump.color = Color("9b6cff")
-	high_jump.speed_multiplier = 1.0
-	high_jump.jump_multiplier = 1.5
-
-	inventory = [turbo, high_jump]
+	inventory = [turbo]
 	_load()
 
 
@@ -62,10 +59,6 @@ func set_active(skill: Skill) -> void:
 
 func get_speed_multiplier() -> float:
 	return active.speed_multiplier if active else 1.0
-
-
-func get_jump_multiplier() -> float:
-	return active.jump_multiplier if active else 1.0
 
 
 func _save() -> void:

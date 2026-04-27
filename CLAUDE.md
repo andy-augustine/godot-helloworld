@@ -57,11 +57,15 @@ godot-mcp-pro is configured in `~/.claude/settings.json`:
 
 **Read `tests/README.md` before writing any QA/playtest sequence that drives the running game through MCP.** It documents how MCP async timing interacts with physics (short version: `simulate_action` followed by separate `capture_frames` calls will miss mid-motion states because of tool round-trip latency) and lists the four working patterns. The reflexive habits live in the auto-memory feedback files; `tests/README.md` summarises them for human readers.
 
-## Starting a session
+## Session bookends — `/orient` and `/wrapup`
 
-For quick tasks (bug fixes, single-file edits, Q&A, exploration) — just state what you need. No orientation overhead needed.
+The session has two structured bookends. Use them for any non-trivial work; skip both for quick one-shot bug fixes / Q&A / exploration.
 
-For resuming feature work or picking up an in-flight plan after `/clear` or a fresh launch, type **`/orient`** — that slash command reads ROADMAP.md and any active plan in `plans/`, then confirms with you before any code changes. The command lives at `.claude/commands/orient.md` if you want to tweak its behavior.
+**`/orient`** — at the **start** of a session that's resuming feature work or picking up an in-flight plan after `/clear` or a fresh launch. Reads ROADMAP.md, finds any active plan in `plans/`, confirms the approach with you before any code changes. Lives at `.claude/commands/orient.md`.
+
+**`/wrapup`** — at the **end** of a session, before closing or `/clear`. Walks an 8-step interactive checklist: clean tree, playtest stopped, plan reconciliation (post-ship docs sweep on anything shipped), backlog graduation candidates, lessons-learned candidates for the auto-memory feedback files, doc drift sweep, scheduled-task verify, final summary. Surfaces candidates per item and waits for go/skip — it does not auto-commit and does not encode memory rules without evidence (commit hash + repro + test). Lives at `.claude/commands/wrapup.md`.
+
+Both are safe to invoke even mid-session if you want to checkpoint.
 
 ## Working style on new capabilities
 

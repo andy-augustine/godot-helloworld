@@ -1,18 +1,26 @@
 extends Node
 
-# Drag-recipe validation runner. Originally intended to validate the synthetic
-# drag-and-drop recipe from research/tools/godot-drag-drop-api.md against the
-# real SkillsPanel UI. Empirical finding (2026-04-26, Godot 4.6.2): synthetic
-# mouse events via Input.parse_input_event and Viewport.push_input do NOT
-# trigger _gui_input on Controls — so the canonical Recipe A doesn't work in
-# this Godot version. See tests/RESULTS.md for details.
+# Drag-recipe validation runner.
 #
-# This runner instead exercises the slot's drop-handling logic via direct
-# _drop_data invocation. That's a unit test of the slot code, not an
-# end-to-end drag test, but it catches regressions in slot routing rules
-# (ACTIVE vs INVENTORY, swap, deactivate, negative-control rejections).
+# Two modes:
 #
-# Invoke via execute_game_script:
+# 1. run_all() — direct mode: invokes target_slot._can_drop_data / _drop_data
+#    directly. Fast, deterministic, doesn't exercise GUI hit-test or state
+#    machine. Validates slot routing rules (ACTIVE vs INVENTORY, swap,
+#    deactivate, inv→inv reject, same-slot reject).
+#
+# 2. The synthetic-drag mode is invoked from outside this runner via the
+#    godot-mcp-pro simulate_sequence MCP tool. See tests/RESULTS.md for the
+#    working JSON recipe; the key gotchas are:
+#      - relative_x / relative_y MUST be populated on every motion event
+#        (Godot's drag-detection threshold accumulates relative deltas)
+#      - unhandled: false MUST be set explicitly on every motion event
+#        (otherwise the addon auto-promotes to push_input(event, true)
+#        which interferes with normal GUI hit-testing)
+#      - frame_delay >= 1 so events spread across frames
+#    Two local addon patches are also required — see TESTING.md Pattern 4.
+#
+# Invoke direct mode via execute_game_script:
 #   var R = load("res://tests/run_drag_recipe.gd").new()
 #   get_tree().root.add_child(R)
 #   for line in R.run_all(): _mcp_print(line)

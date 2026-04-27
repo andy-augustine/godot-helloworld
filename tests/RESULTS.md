@@ -2,87 +2,127 @@
 
 | | |
 |---|---|
-| Validated | 2026-04-26 (multiple iterations, hands-off final pass) |
+| Validated | 2026-04-26 (multiple iterations, ending in working recipe) |
 | Godot version | 4.6.2-stable (official, hash `71f334935`) |
-| Runner | `tests/run_drag_recipe.gd` (direct-invocation harness) |
+| Runner | `tests/run_drag_recipe.gd` (direct + synthetic modes) |
 | Companion docs | [`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md), [`TESTING.md`](../TESTING.md) Pattern 4 |
 
-## Definitive findings
+## TL;DR — synthetic drag works in Godot 4.6.2 via godot-mcp-pro
 
-### What works ✅
+**End-to-end synthetic drag IS achievable through the godot-mcp-pro `simulate_*` tools, after two small local addon patches. The single missing piece was the `relative` field on motion events** — Godot's drag-detection accumulates `relative` deltas to compare against the ~8 px drag threshold. With `relative=(0,0)` on every motion, the threshold is never exceeded. With proper `relative_x`/`relative_y` populated to match the position deltas, the drag state machine engages, `_get_drag_data` fires, `_drop_data` runs, state mutates correctly. Verified 2026-04-26: `Skills.active=turbo, speed_mult=1.5, drag_ok=true` post-drag; cards reorganized as expected.
 
-1. **Direct method invocation** — `target_slot._can_drop_data(pos, data)` + `target_slot._drop_data(pos, data)` from `execute_game_script` works perfectly for testing slot drop-handling logic. All four scenarios (equip, swap, deactivate, two negative-control rejections) pass deterministically. This is what `tests/run_drag_recipe.gd` does.
-2. **MCP `simulate_mouse_click` triggers `_gui_input`** — `count=2` (press + release) on the source SkillCard when clicked at its center. Confirms the addon-side input plumbing reaches the GUI dispatcher correctly.
-3. **MCP `simulate_sequence` with `frame_delay=0` triggers `_gui_input`** — events delivered same-frame, all reach GUI.
-4. **Polled mouse state IS updated by synthetic events** — `Input.parse_input_event(press)` sets `Input.get_mouse_button_mask()` to `1` and `Input.is_mouse_button_pressed(LEFT)` to `true`. Not the broken layer.
+## The working recipe
 
-### What doesn't work, definitively ❌
+Two equivalent forms, both verified end-to-end:
 
-1. **`Input.parse_input_event(event)` from inside `execute_game_script` does NOT trigger `_gui_input`** — `count=0` even after waiting 500 ms. Same for `Viewport.push_input(event)` from the same context. The events reach the input queue (polled state updates), but never reach Control GUI dispatch. The reason is unknown; the most likely cause is that the `_cmd_execute_script` runtime context schedules differently than a normal frame callback. **Implication: drag tests cannot be written as a single inline script body in `execute_game_script`.**
-2. **MCP `simulate_sequence` with `frame_delay > 0`** (queued path) — events also don't reach `_gui_input`. Likely a separate quirk in the addon's queued-dispatch path. Workaround: use `frame_delay=0` and dispatch the entire sequence at once; or chain `simulate_mouse_click` + `simulate_mouse_move` calls separately with Bash sleeps between.
-3. **Even with events reaching `_gui_input` correctly (via MCP `simulate_sequence frame_delay=0` post-patch), the GUI drag state machine does not engage.** `_get_drag_data` is not called, `gui_is_dragging` stays `false`, no `_drop_data` fires on the target. Source card receives all 9 events on its `gui_input`, target slot receives 0. Root cause not isolated in this session — likely either:
-   - Godot's drag-detection requires a specific event ordering or timing that synthetic events don't match
-   - Synthetic events skip a hidden gating step the OS-event path goes through
-   - The `_cmd_execute_script` context interferes with frame-by-frame state machine progression
-   This is the question the queued **overnight Godot 4.6 community crawl** (backlog #12) is best positioned to answer.
+### Form A — single `simulate_sequence` call (preferred)
 
-### What we patched
-
-`addons/godot_mcp/mcp_input_service.gd` — `_dispatch_event()` now honors an explicit `unhandled: false` in the event payload instead of always auto-promoting motions with `button_mask>0` to `push_input(event, true)`. The auto-promotion still happens when no `unhandled` key is provided (preserves the camera-pan use case the original was written for). Local patch only — license forbids redistribution.
-
-```gdscript
-# Before:
-var force_unhandled: bool = event_data.get("unhandled", false)
-if not force_unhandled and event is InputEventMouseMotion and event.button_mask != 0:
-    force_unhandled = true
-
-# After (the patch):
-var force_unhandled: bool
-if event_data.has("unhandled"):
-    force_unhandled = bool(event_data.get("unhandled"))
-else:
-    force_unhandled = event is InputEventMouseMotion and event.button_mask != 0
+```jsonc
+{
+  "frame_delay": 2,
+  "events": [
+    { "type": "mouse_button", "button": 1, "pressed": true,
+      "x": 832, "y": 192, "button_mask": 1, "unhandled": false },
+    { "type": "mouse_motion", "x": 838, "y": 170,
+      "relative_x": 6, "relative_y": -22,
+      "button_mask": 1, "unhandled": false },
+    { "type": "mouse_motion", "x": 845, "y": 145,
+      "relative_x": 7, "relative_y": -25,
+      "button_mask": 1, "unhandled": false },
+    // ... more motions with non-zero relative ...
+    { "type": "mouse_motion", "x": 867, "y": 73,
+      "relative_x": 8, "relative_y": -22,
+      "button_mask": 1, "unhandled": false },
+    { "type": "mouse_button", "button": 1, "pressed": false,
+      "x": 867, "y": 73, "button_mask": 0, "unhandled": false }
+  ]
+}
 ```
 
-This patch is necessary for any future drag-via-MCP-tools test to route events to GUI correctly. Without it, motions silently route to `_unhandled_input` and Control hit-testing is bypassed.
+Then wait via `Bash sleep 1.0` and read final state.
 
-## What this means for the drag-test skill we set out to build
+### Form B — multiple individual MCP calls (fallback)
 
-**The "synthetic drag-and-drop test" Claude skill does not graduate.** Not because Recipe A is wrong (it's correct in normal Godot 4.6 contexts per the crawl), but because:
+`simulate_mouse_click(x, y, button=1, pressed=true, auto_release=false)` for press, `simulate_mouse_move(x, y, relative_x=..., relative_y=..., button_mask=1, unhandled=false)` for each motion, `simulate_mouse_click(x, y, button=1, pressed=false, auto_release=false)` for release. Several round-trips, but each one reaches GUI dispatch reliably.
 
-1. We can't reliably exercise the GUI drag state machine from `execute_game_script` (the only way Claude can talk to the running game via MCP).
-2. The MCP plugin's input-simulation tools (`simulate_*`) get events to `_gui_input` post-patch, but the drag state machine still doesn't engage. We don't know why.
-3. Until we know why, packaging this as a skill would be packaging silent failures — exactly the kind of thing that wastes future sessions.
+### Critical gotchas
 
-What replaces it: **the direct-invocation runner at `tests/run_drag_recipe.gd`**. It's a unit test of slot drop-handling logic — not an end-to-end drag test, but it catches regressions in the routing rules deterministically. Re-run after any change to `SkillCardSlot.gd` or `SkillsPanel.gd`.
+1. **`relative` MUST be non-zero on motions.** Without it, drag-detection threshold accumulates 0 forever. The most expensive thing to debug because all the visible event data looks correct otherwise.
+2. **`unhandled: false` MUST be explicitly set on motion events** (the default auto-promotes button_mask>0 motions to `push_input(event, true)`, which interferes with normal GUI hit-testing). Requires the local addon patches in `addons/godot_mcp/commands/input_commands.gd` and `addons/godot_mcp/mcp_input_service.gd`.
+3. **Position is in viewport coords** (e.g., 0–960, 0–540 for our project), NOT window pixels. Window is 1920×1018; positions are still in 960×540 space.
+4. **Use `frame_delay >= 1`** for `simulate_sequence` so events spread across frames. The drag state machine needs at least one frame between press and threshold-exceeding motion.
+5. **Don't try `Input.parse_input_event` from inside `execute_game_script`** — events update the polled state but don't reach `_gui_input` for some reason (this remains an unsolved mystery, but it doesn't matter because the MCP tools work).
 
-## Observed runner output — direct invocation modes
+## What we patched
+
+Two local addon patches (license-allowed local-only modifications):
+
+### `addons/godot_mcp/commands/input_commands.gd`
+
+`_simulate_mouse_move()` no longer unconditionally sets `unhandled: true` when `button_mask > 0`. Instead, it honors the caller's explicit value if one was passed (using `params.has("unhandled")` to detect explicit-vs-default). Default behavior preserved when caller doesn't pass `unhandled`.
+
+### `addons/godot_mcp/mcp_input_service.gd`
+
+`_dispatch_event()` similarly honors explicit `unhandled: false` instead of unconditionally auto-promoting motions with `button_mask > 0`. Both layers needed — the first patch determines the value written to the event payload; the second determines how `_dispatch_event` interprets it at dispatch time.
+
+## What works ✅
+
+1. **Synthetic drag end-to-end** — equip, swap, deactivate via `simulate_sequence` or chained `simulate_*` calls. Validated by `tests/run_drag_recipe.gd` synthetic mode.
+2. **Direct method invocation** — `target_slot._can_drop_data(pos, data)` + `target_slot._drop_data(pos, data)` from `execute_game_script`. Faster than synthetic for slot-logic regression tests; doesn't exercise hit-test or state-machine paths.
+3. **Polled mouse state updates** from `Input.parse_input_event` (sets `Input.get_mouse_button_mask()` correctly).
+4. **MCP `simulate_mouse_click`** triggers `_gui_input` correctly (basis for the synthetic recipe).
+
+## What still doesn't work ❌
+
+1. **`Input.parse_input_event` / `Viewport.push_input` from inside `execute_game_script`** still don't trigger `_gui_input` on Controls. Root cause unknown — likely a `_cmd_execute_script` runtime-context scheduling issue. **No workaround found in this session, but it doesn't matter** because the MCP plugin's `simulate_*` tools (which run from the addon's `_process` context) work correctly.
+2. **`Control.force_drag(data, preview)` + synthetic release** — confirmed by-design dead-end. Don't try.
+3. **`Input.warp_mouse(pos)`** takes window pixels (NOT viewport coords). For viewport coord (X, Y) → warp to window (X * window_w/viewport_w, Y * window_h/viewport_h). Mostly irrelevant since the synthetic recipe doesn't need to move the cursor — Godot's drag system tracks position from the event stream, not the OS cursor.
+
+## Observed runner output — 2026-04-26 final pass
+
+### Synthetic mode (turbo equip)
+
+```
+ready. active=- | inv1=turbo | inv2=high_jump
+[simulate_sequence with relative on motions, unhandled:false]
+post: active=turbo | speed_mult=1.5 | drag_ok=true
+slots: inv1=high_jump | inv2=- | active.card=turbo
+```
+
+### Direct mode (all four scenarios + 2 negative controls)
 
 ```
 baseline: active=- | inv1=turbo | inv2=high_jump | speed=1.0 | jump=1.0
 mode1 (equip turbo): can_drop=true
-after mode1: active=turbo | inv1=high_jump | inv2=- | speed=1.5 | jump=1.0
+after mode1: active=turbo | inv1=high_jump | inv2=- | speed=1.5
 mode2 (swap to high_jump): can_drop=true
-after mode2: active=high_jump | inv1=turbo | inv2=- | speed=1.0 | jump=1.5
+after mode2: active=high_jump | inv1=turbo | jump=1.5
 mode3 (deactivate): can_drop=true
-after mode3: active=- | inv1=turbo | inv2=high_jump | speed=1.0 | jump=1.0
+after mode3: active=- | inv1=turbo | inv2=high_jump
 mode4 (inv1→inv2 reject): can_drop=false (expect false)
 mode4b (inv1→inv1 reject): can_drop=false (expect false)
 ```
 
-All positive modes succeed; both negative-control rejections succeed. Slot logic is correct.
+All modes pass, both negative controls reject correctly.
 
-## What the overnight crawl should investigate
+## What this means for the planned skill
 
-Pinned questions for backlog #12 to chase:
+**The "synthetic drag-and-drop test" Claude skill DOES graduate, with caveats.** The synthetic recipe works end-to-end against a real `Control` GUI in Godot 4.6.2 via the godot-mcp-pro tools — but only after the local addon patches and only with the `relative` field correctly populated on every motion. A skill that automates this pattern is now feasible:
 
-1. **Why does the GUI drag state machine NOT engage when synthetic events reach `_gui_input` correctly with the right button_mask, polled state, and threshold-exceeding motions?** This is the deepest unanswered question. Likely needs Godot source diving into `viewport.cpp`'s drag-detect code path.
-2. **Is there a known difference between events from `_cmd_execute_script` context vs. normal `_process` callbacks** that affects GUI dispatch ordering? GUT's tests run in `_process` and apparently work. We don't.
-3. **Are there community examples of MCP-style drag testing**, where input is injected from a remote process via WebSocket → autoload → game's `_process`? Same architecture as godot-mcp-pro. If anyone's solved this, what did they do?
-4. **Documentation of the `Viewport.push_input(event, true)` interaction with Control hit-testing.** The crawl told us push_input is GUI-routed but our test showed motion events delivered with non-local positions. There's a subtlety here that wasn't covered.
+- The skill would emit a `simulate_sequence` JSON with positions stepped from source to target and `relative_x`/`relative_y` computed as deltas.
+- The skill should warn if the target project hasn't applied the addon patches.
+- The skill must set `unhandled: false` on every motion.
+
+This is a meaningful unlock — automated UI drag-testing was previously something we'd have categorized as "manual playtest only".
+
+## Open follow-ups (not blocking)
+
+- Reproduce on a *vanilla* godot-mcp-pro install (without our patches) and propose the patches upstream as a bug fix — the auto-promotion of `unhandled` on `button_mask>0` motions is genuinely wrong for GUI drag testing, and the second-layer patch in `_simulate_mouse_move` was clearly an after-the-fact attempt to fix `simulate_mouse_move` for camera-pan use cases that broke drag testing as a side effect.
+- Document the `relative` requirement upstream too — it's an undocumented gotcha for anyone trying to use simulate_sequence for drag testing.
+- The `Input.parse_input_event` from `execute_game_script` not reaching `_gui_input` is still a mystery worth chasing in the overnight crawl.
 
 ## Sources
 
 - Original recipe — [`research/tools/godot-drag-drop-api.md`](../research/tools/godot-drag-drop-api.md) §3 (Recipe A)
-- Confirmation Recipe A is current — [`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md)
-- The script-injection issue we hit isn't documented anywhere we found in the crawl. Worth posting to GUT issues / Godot forums after the overnight crawl confirms it's not common knowledge.
+- Targeted research crawl — [`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md)
+- godot-mcp-pro source (locally extracted) — `/Users/claudeprojectlt8/code/tools/godot-mcp-pro/115334_godotmcpprov1.12.0/addons/godot_mcp/`

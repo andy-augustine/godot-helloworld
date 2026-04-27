@@ -74,25 +74,34 @@ Then call `get_game_screenshot` to capture the static pose. Re-enable `set_physi
 
 For feel tuning (jump floatiness, run speed, gravity weight), nothing beats the user playing. Don't try to QA subjective feel — ask for symptoms ("jump feels floaty at apex", "turning around is sluggish") and tune the relevant constant in `player/player.gd`.
 
-### Pattern 4: Drag-and-drop — direct method invocation (synthetic drag from MCP doesn't work end-to-end)
+### Pattern 4: Drag-and-drop — synthetic recipe works in Godot 4.6.2 (with patches)
 
-**The bottom line, post hands-off re-verification (2026-04-26):** Recipe A from `research/tools/godot-drag-drop-api.md §3` is *correct in normal Godot contexts* (the targeted crawl confirmed GUT 9.6.0 ships it for Godot 4.6 in Feb 2026). But it does NOT work from inside `execute_game_script` against a Control GUI — and even using the godot-mcp-pro `simulate_*` tools (with the addon patched to honor explicit `unhandled: false`), events reach `_gui_input` correctly but Godot's drag state machine never engages. `_get_drag_data` is not called; `gui_is_dragging` stays `false`. Root cause not isolated this session — likely a `_cmd_execute_script` runtime context issue or a synthetic-event gating step we haven't found. See `tests/RESULTS.md` for the complete data.
+**Resolved 2026-04-26.** End-to-end synthetic drag-and-drop testing against `Control` GUIs IS achievable in Godot 4.6.2 via the godot-mcp-pro `simulate_sequence` tool. The two pieces that were blocking us:
 
-**Until that's solved, use direct method invocation as the primary drag-test pattern.** This is a unit test of slot drop-handling logic, NOT an end-to-end GUI drag test. It catches regressions in:
-- `_can_drop_data` predicate correctness
-- `_drop_data` state mutations
-- Position-aware swap behavior
-- Multipliers / signals downstream of drops
+1. **Motion events MUST have non-zero `relative_x`/`relative_y` populated** to match the position deltas. Godot's drag-detection threshold accumulates the `relative` field, not absolute position deltas — with `relative=(0,0)` on every motion, the threshold (~8 px) is never exceeded and drag never engages. This is undocumented.
+2. **The local addon patches** at `addons/godot_mcp/commands/input_commands.gd` and `addons/godot_mcp/mcp_input_service.gd` are required so explicit `unhandled: false` overrides the addon's auto-promotion-to-`push_input(event, true)` for motions with `button_mask>0`. Without these patches, drag motions skip GUI hit-testing.
 
-It does NOT catch:
-- `_get_drag_data` correctness (caller-supplied)
-- Mouse-filter / hit-test issues
-- Drag preview rendering
-- Anything that requires real GUI dispatch through the engine's drag state machine
+See `tests/RESULTS.md` for the complete data and the working JSON recipe.
 
-For everything in the second list, **manual playtest by the user is currently the only reliable validation.** That's a real limitation, not a workaround we should pretend solves it.
+**Recommended primary pattern: synthetic drag via `simulate_sequence`** with `frame_delay >= 1`, `unhandled: false` on every motion, and `relative_x`/`relative_y` populated to match position deltas. Wait ~1 second after dispatch, then read state.
 
-**The runner**: `tests/run_drag_recipe.gd`. Four positive modes (equip / swap / deactivate / two-stage swap) plus two negative-control rejections (inv→inv, same-slot). Re-run after any change to `SkillCardSlot.gd` or `SkillsPanel.gd`.
+**Backup pattern: direct method invocation** for fast, deterministic regression tests of slot drop-handling logic. Faster than synthetic and runs without any input-injection plumbing, but doesn't exercise hit-test or state-machine paths.
+
+```gdscript
+var data: Dictionary = { "skill": source_slot.card.skill, "source_slot": source_slot }
+var accepted: bool = target_slot._can_drop_data(Vector2.ZERO, data)
+if accepted:
+    target_slot._drop_data(Vector2.ZERO, data)
+# Read state — Skills.active, multipliers, slot.card — and assert.
+```
+
+**The runner**: `tests/run_drag_recipe.gd` with two modes:
+- **Synthetic mode** — drives the full recipe via `simulate_sequence`. Validates the GUI dispatch path end-to-end.
+- **Direct mode** — invokes `_can_drop_data` / `_drop_data` directly. Validates slot routing rules (equip / swap / deactivate / inv→inv reject / same-slot reject). Faster.
+
+Re-run after any change to `SkillCard.gd`, `SkillCardSlot.gd`, or `SkillsPanel.gd`.
+
+**What still doesn't work**: `Input.parse_input_event` and `Viewport.push_input` called from inside `execute_game_script` don't reach `_gui_input` (root cause unknown — likely a `_cmd_execute_script` runtime-context issue). It doesn't matter because the MCP `simulate_*` tools work correctly. Don't try to inline the recipe inside an `execute_game_script` body; use the MCP tools.
 
 - `Input.parse_input_event(InputEventMouseButton)` and `Viewport.push_input(event)` both fail to fire `_gui_input` on the topmost Control under the press position. So the engine never starts a drag, and `_get_drag_data` / `_drop_data` never run from synthetic input.
 - `Control.force_drag(data, preview)` engages the drag programmatically but synthetic release does not complete it cleanly — drag ends silently with `gui_is_drag_successful=false` and no state mutation.

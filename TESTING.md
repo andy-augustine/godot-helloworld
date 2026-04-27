@@ -74,13 +74,25 @@ Then call `get_game_screenshot` to capture the static pose. Re-enable `set_physi
 
 For feel tuning (jump floatiness, run speed, gravity weight), nothing beats the user playing. Don't try to QA subjective feel — ask for symptoms ("jump feels floaty at apex", "turning around is sluggish") and tune the relevant constant in `player/player.gd`.
 
-### Pattern 4: Drag-and-drop — synthetic recipe + direct invocation backup
+### Pattern 4: Drag-and-drop — direct method invocation (synthetic drag from MCP doesn't work end-to-end)
 
-> **2026-04-26 — revised after research crawl.** An earlier session recorded "synthetic drag is broken in Godot 4.6.2" — that conclusion was almost certainly **user error**, not a Godot regression. The targeted crawl in `research/tools/godot-4.6-drag-test-current-intel.md` found no matching tracker issue, and GUT 9.6.0 (Feb 2026) explicitly added 4.6 compat for the same Recipe A pattern we use. Causes of the false-negative were almost certainly: (a) real OS mouse events competing with synthetic events in the GUI queue (user was using the mouse during the test), (b) GDScript Parse Errors in probe scripts that weren't checked via `get_editor_errors`, and/or (c) an invisible Control absorbing the press (a known wrong-diagnosis pattern). The recipe stands. Hands-off re-test pending — see follow-up plan in `tests/RESULTS.md`.
+**The bottom line, post hands-off re-verification (2026-04-26):** Recipe A from `research/tools/godot-drag-drop-api.md §3` is *correct in normal Godot contexts* (the targeted crawl confirmed GUT 9.6.0 ships it for Godot 4.6 in Feb 2026). But it does NOT work from inside `execute_game_script` against a Control GUI — and even using the godot-mcp-pro `simulate_*` tools (with the addon patched to honor explicit `unhandled: false`), events reach `_gui_input` correctly but Godot's drag state machine never engages. `_get_drag_data` is not called; `gui_is_dragging` stays `false`. Root cause not isolated this session — likely a `_cmd_execute_script` runtime context issue or a synthetic-event gating step we haven't found. See `tests/RESULTS.md` for the complete data.
 
-**Recommended primary pattern: Recipe A from `research/tools/godot-drag-drop-api.md §3`** — `Input.parse_input_event` with `button_mask = MOUSE_BUTTON_MASK_LEFT` on every motion event, `Input.use_accumulated_input = false`, all events queued in one `execute_game_script` (or via Timer-based dispatch if you want explicit frame pacing). Hands-off the mouse during the test. Check `get_editor_errors` after every script call. If `_gui_input` doesn't fire on the source Control, *diagnose* — don't conclude regression. Most likely cause is an invisible Control above the press position with `mouse_filter = STOP`.
+**Until that's solved, use direct method invocation as the primary drag-test pattern.** This is a unit test of slot drop-handling logic, NOT an end-to-end GUI drag test. It catches regressions in:
+- `_can_drop_data` predicate correctness
+- `_drop_data` state mutations
+- Position-aware swap behavior
+- Multipliers / signals downstream of drops
 
-**Backup pattern: direct method invocation** — if the synthetic recipe is unavailable for some reason (e.g., headless CI without DisplayServerMock), invoke the slot's drop-handling logic directly. This is a unit test of the slot code, not an end-to-end drag test:
+It does NOT catch:
+- `_get_drag_data` correctness (caller-supplied)
+- Mouse-filter / hit-test issues
+- Drag preview rendering
+- Anything that requires real GUI dispatch through the engine's drag state machine
+
+For everything in the second list, **manual playtest by the user is currently the only reliable validation.** That's a real limitation, not a workaround we should pretend solves it.
+
+**The runner**: `tests/run_drag_recipe.gd`. Four positive modes (equip / swap / deactivate / two-stage swap) plus two negative-control rejections (inv→inv, same-slot). Re-run after any change to `SkillCardSlot.gd` or `SkillsPanel.gd`.
 
 - `Input.parse_input_event(InputEventMouseButton)` and `Viewport.push_input(event)` both fail to fire `_gui_input` on the topmost Control under the press position. So the engine never starts a drag, and `_get_drag_data` / `_drop_data` never run from synthetic input.
 - `Control.force_drag(data, preview)` engages the drag programmatically but synthetic release does not complete it cleanly — drag ends silently with `gui_is_drag_successful=false` and no state mutation.

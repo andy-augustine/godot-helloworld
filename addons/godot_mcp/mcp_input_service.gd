@@ -75,14 +75,20 @@ func _dispatch_next_sequence_event() -> void:
 
 
 ## Dispatch an input event using the appropriate method.
-## Mouse drag motions (button_mask > 0) and events with "unhandled" flag
-## use push_input to bypass GUI consumption and reach _unhandled_input().
-## This fixes camera pan/drag not working when UI Controls consume mouse events.
+## Auto-promotion of mouse drag motions (button_mask > 0) was the original
+## intent — for camera pan/drag use cases where UI Controls swallow events.
+## But for UI drag-and-drop testing we WANT events to reach the GUI dispatcher
+## and update Control hit-test targeting each motion. So: respect an explicit
+## "unhandled": false in the event payload — only auto-promote if the caller
+## DIDN'T pass an unhandled key. (Local patch 2026-04-26 — see TESTING.md
+## Pattern 4 / research/tools/godot-4.6-drag-test-current-intel.md.)
 func _dispatch_event(event: InputEvent, event_data: Dictionary = {}) -> void:
-	var force_unhandled: bool = event_data.get("unhandled", false)
-	# Mouse drag motion: GUI layer often consumes these before _unhandled_input
-	if not force_unhandled and event is InputEventMouseMotion and event.button_mask != 0:
-		force_unhandled = true
+	var force_unhandled: bool
+	if event_data.has("unhandled"):
+		force_unhandled = bool(event_data.get("unhandled"))
+	else:
+		# Default: auto-promote drag motions to skip GUI (camera-pan use case).
+		force_unhandled = event is InputEventMouseMotion and event.button_mask != 0
 	if force_unhandled:
 		var vp := get_viewport()
 		if vp:

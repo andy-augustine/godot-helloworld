@@ -2,62 +2,61 @@
 
 | | |
 |---|---|
-| Validated | 2026-04-26 |
+| Validated | 2026-04-26 (multiple iterations, hands-off final pass) |
 | Godot version | 4.6.2-stable (official, hash `71f334935`) |
-| Runner | `tests/run_drag_recipe.gd` |
-| Project SHA | (top of `main` at validation time) |
+| Runner | `tests/run_drag_recipe.gd` (direct-invocation harness) |
+| Companion docs | [`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md), [`TESTING.md`](../TESTING.md) Pattern 4 |
 
-## Status — earlier finding REVISED, recipe stands
+## Definitive findings
 
-The session that produced this file recorded "synthetic drag is broken in Godot 4.6.2." A targeted research crawl ([`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md), 2026-04-26) **revised that conclusion**: the recipe is still correct in Godot 4.6, GUT 9.6.0 (Feb 2026) explicitly added 4.6 compat for the same pattern, and no matching tracker issue exists. Our session's failure was almost certainly:
-1. **Mouse-in-window confounder** — the user was using the mouse during the synthetic-input tests; real OS events were competing in the GUI queue.
-2. **GDScript Parse Errors** — several probe scripts had untyped `:=` declarations that didn't compile (`Cannot infer the type of "prev"`, `INCOMPATIBLE_TERNARY`, etc.); `get_editor_errors` wasn't checked after every call.
-3. **Possibly an invisible Control** above the press position absorbing events — the most-cited diagnosis in the [Jan 2026 forum thread](https://forum.godotengine.org/t/mouse-input-events-broken-after-going-from-4-5-1-4-6/131730) that initially looked like a 4.6 regression but wasn't.
+### What works ✅
 
-A hands-off re-test using the diagnostic-first plan from the follow-up doc (§3) is queued. **Do not encode the original "synthetic drag broken" finding into any skill, memory, or downstream doc.** The data below is preserved as the raw record of what was observed, but the conclusion drawn was wrong.
+1. **Direct method invocation** — `target_slot._can_drop_data(pos, data)` + `target_slot._drop_data(pos, data)` from `execute_game_script` works perfectly for testing slot drop-handling logic. All four scenarios (equip, swap, deactivate, two negative-control rejections) pass deterministically. This is what `tests/run_drag_recipe.gd` does.
+2. **MCP `simulate_mouse_click` triggers `_gui_input`** — `count=2` (press + release) on the source SkillCard when clicked at its center. Confirms the addon-side input plumbing reaches the GUI dispatcher correctly.
+3. **MCP `simulate_sequence` with `frame_delay=0` triggers `_gui_input`** — events delivered same-frame, all reach GUI.
+4. **Polled mouse state IS updated by synthetic events** — `Input.parse_input_event(press)` sets `Input.get_mouse_button_mask()` to `1` and `Input.is_mouse_button_pressed(LEFT)` to `true`. Not the broken layer.
 
-Two technical correctness fixes also baked in (applied to `godot-mcp-pro-internals.md` and `godot-drag-drop-api.md`):
-- `Viewport.push_input(event, true)` — second arg is `in_local_coords`, NOT "skip GUI".
-- `Control.force_drag(data, preview)` + synthetic release does NOT complete a drag — that's a design boundary, not a regression. There's no "complete force_drag" API.
+### What doesn't work, definitively ❌
 
-## Original headline (now retracted) — synthetic drag may be broken in Godot 4.6.2
+1. **`Input.parse_input_event(event)` from inside `execute_game_script` does NOT trigger `_gui_input`** — `count=0` even after waiting 500 ms. Same for `Viewport.push_input(event)` from the same context. The events reach the input queue (polled state updates), but never reach Control GUI dispatch. The reason is unknown; the most likely cause is that the `_cmd_execute_script` runtime context schedules differently than a normal frame callback. **Implication: drag tests cannot be written as a single inline script body in `execute_game_script`.**
+2. **MCP `simulate_sequence` with `frame_delay > 0`** (queued path) — events also don't reach `_gui_input`. Likely a separate quirk in the addon's queued-dispatch path. Workaround: use `frame_delay=0` and dispatch the entire sequence at once; or chain `simulate_mouse_click` + `simulate_mouse_move` calls separately with Bash sleeps between.
+3. **Even with events reaching `_gui_input` correctly (via MCP `simulate_sequence frame_delay=0` post-patch), the GUI drag state machine does not engage.** `_get_drag_data` is not called, `gui_is_dragging` stays `false`, no `_drop_data` fires on the target. Source card receives all 9 events on its `gui_input`, target slot receives 0. Root cause not isolated in this session — likely either:
+   - Godot's drag-detection requires a specific event ordering or timing that synthetic events don't match
+   - Synthetic events skip a hidden gating step the OS-event path goes through
+   - The `_cmd_execute_script` context interferes with frame-by-frame state machine progression
+   This is the question the queued **overnight Godot 4.6 community crawl** (backlog #12) is best positioned to answer.
 
-**The canonical "Recipe A" did not appear to work in Godot 4.6.2 in this session's tests, but the tests were polluted (see Status section above) and the conclusion has been retracted.**
+### What we patched
 
-Empirical evidence collected during P5:
+`addons/godot_mcp/mcp_input_service.gd` — `_dispatch_event()` now honors an explicit `unhandled: false` in the event payload instead of always auto-promoting motions with `button_mask>0` to `push_input(event, true)`. The auto-promotion still happens when no `unhandled` key is provided (preserves the camera-pan use case the original was written for). Local patch only — license forbids redistribution.
 
-1. **`Input.parse_input_event(InputEventMouseButton)` does not trigger `_gui_input`** on the topmost Control under the press position. Verified by hooking a counter to `card.gui_input` signal, dispatching a synthetic press, then reading the counter — fires 0 times immediately and 0 times after a 300 ms wait.
-2. **`Viewport.push_input(event)` also does not trigger `_gui_input`** for synthetic events. Same counter test, same result.
-3. **`Control.force_drag(data, preview)` does engage the drag** (`gui_is_dragging=true`, `gui_get_drag_data` returns the data), but synthetic release events do NOT trigger `_drop_data` on the target. The drag silently ends after a delay with `gui_is_drag_successful=false` and no state change.
+```gdscript
+# Before:
+var force_unhandled: bool = event_data.get("unhandled", false)
+if not force_unhandled and event is InputEventMouseMotion and event.button_mask != 0:
+    force_unhandled = true
 
-Because `_gui_input` never fires for synthetic input, the GUI dispatcher never registers a "potential drag" from the source Control, so neither `_get_drag_data` nor `_drop_data` ever fires from a synthetic event sequence. The recipe's `button_mask`, `use_accumulated_input`, and frame-pacing details are all moot — the events don't reach the GUI at all.
+# After (the patch):
+var force_unhandled: bool
+if event_data.has("unhandled"):
+    force_unhandled = bool(event_data.get("unhandled"))
+else:
+    force_unhandled = event is InputEventMouseMotion and event.button_mask != 0
+```
 
-This may have changed since the recipe was written. The recipe was based on:
-- Godot 4 stable docs (which indicate `parse_input_event` should reach `_input`/`_gui_input`/`_unhandled_input`)
-- GUT issue #608 (May 2024) where synthetic drag testing did work, with `button_mask` as the gotcha
-- Generic 4.x community knowledge
+This patch is necessary for any future drag-via-MCP-tools test to route events to GUI correctly. Without it, motions silently route to `_unhandled_input` and Control hit-testing is bypassed.
 
-Either Godot 4.6 introduced a regression or the recipe was always more fragile than it appeared. The exact cause hasn't been bisected — that's a follow-up if it matters.
+## What this means for the drag-test skill we set out to build
 
-## What works — direct `_drop_data` invocation
+**The "synthetic drag-and-drop test" Claude skill does not graduate.** Not because Recipe A is wrong (it's correct in normal Godot 4.6 contexts per the crawl), but because:
 
-Bypass synthetic input entirely. Get the source slot's card data, get the target slot, call `target._can_drop_data(pos, data)` to verify acceptance, then `target._drop_data(pos, data)` to execute the drop. The slot's logic + `Skills.set_active` + `SkillsPanel._rebuild` chain all run synchronously and correctly.
+1. We can't reliably exercise the GUI drag state machine from `execute_game_script` (the only way Claude can talk to the running game via MCP).
+2. The MCP plugin's input-simulation tools (`simulate_*`) get events to `_gui_input` post-patch, but the drag state machine still doesn't engage. We don't know why.
+3. Until we know why, packaging this as a skill would be packaging silent failures — exactly the kind of thing that wastes future sessions.
 
-This is a **unit test of the slot drop-handling logic, not an end-to-end drag test**. It catches regressions in:
-- `_can_drop_data` predicate (accepts valid drops, rejects invalid)
-- `_drop_data` state mutation (Skills.set_active called correctly)
-- Position-aware swap behavior (rebuild reorders cards as expected)
-- Multipliers reaching the player (verified via `Skills.get_speed_multiplier()`)
+What replaces it: **the direct-invocation runner at `tests/run_drag_recipe.gd`**. It's a unit test of slot drop-handling logic — not an end-to-end drag test, but it catches regressions in the routing rules deterministically. Re-run after any change to `SkillCardSlot.gd` or `SkillsPanel.gd`.
 
-It does NOT catch:
-- Mouse-filter regressions (events not reaching the right Control)
-- Drag preview rendering issues
-- Drag threshold / hit-test issues
-- Anything that requires real OS mouse events going through GUI dispatch
-
-For those, manual playtest by the user is the only validation.
-
-## Observed output — 2026-04-26
+## Observed runner output — direct invocation modes
 
 ```
 baseline: active=- | inv1=turbo | inv2=high_jump | speed=1.0 | jump=1.0
@@ -71,17 +70,19 @@ mode4 (inv1→inv2 reject): can_drop=false (expect false)
 mode4b (inv1→inv1 reject): can_drop=false (expect false)
 ```
 
-All four positive modes succeed. Both negative-control rejections succeed.
+All positive modes succeed; both negative-control rejections succeed. Slot logic is correct.
 
-## What this means for the planned skill
+## What the overnight crawl should investigate
 
-**The "synthetic drag-and-drop test" Claude skill we set out to build does not graduate.** The recipe it would have packaged doesn't work in current Godot. Capturing the empirical finding here is the deliverable instead.
+Pinned questions for backlog #12 to chase:
 
-What replaces it: this runner (`tests/run_drag_recipe.gd`) as a project-local regression test, plus a TESTING.md "Pattern 4" entry documenting the direct-invocation pattern + the synthetic-drag dead-end so future Claude sessions don't burn cycles trying it again.
+1. **Why does the GUI drag state machine NOT engage when synthetic events reach `_gui_input` correctly with the right button_mask, polled state, and threshold-exceeding motions?** This is the deepest unanswered question. Likely needs Godot source diving into `viewport.cpp`'s drag-detect code path.
+2. **Is there a known difference between events from `_cmd_execute_script` context vs. normal `_process` callbacks** that affects GUI dispatch ordering? GUT's tests run in `_process` and apparently work. We don't.
+3. **Are there community examples of MCP-style drag testing**, where input is injected from a remote process via WebSocket → autoload → game's `_process`? Same architecture as godot-mcp-pro. If anyone's solved this, what did they do?
+4. **Documentation of the `Viewport.push_input(event, true)` interaction with Control hit-testing.** The crawl told us push_input is GUI-routed but our test showed motion events delivered with non-local positions. There's a subtlety here that wasn't covered.
 
-## Open follow-ups (not blocking)
+## Sources
 
-- **Bisect** when synthetic drag broke. If it works in Godot 4.5 or earlier, the issue is a 4.6 regression worth filing upstream. (Not done — out of scope for this build.)
-- **Try GUT's `InputSender`** — they had it working in Godot 4.x at some point; their helper might wrap something we're missing. (Not tried.)
-- **`Engine.singleton_get("DisplayServer")` / `DisplayServer.simulate_*`** — there may be a lower-level injection point. (Not investigated.)
-- **`Input.action_press` does NOT help here** — actions don't include mouse position; drag needs spatial events.
+- Original recipe — [`research/tools/godot-drag-drop-api.md`](../research/tools/godot-drag-drop-api.md) §3 (Recipe A)
+- Confirmation Recipe A is current — [`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md)
+- The script-injection issue we hit isn't documented anywhere we found in the crawl. Worth posting to GUT issues / Godot forums after the overnight crawl confirms it's not common knowledge.

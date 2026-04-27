@@ -1,6 +1,6 @@
 # Plan: Skill Cards — drag-and-drop inventory + active slot
 
-**Status:** complete (2026-04-26). P1–P3 + P5 shipped. P4 (visual polish pass) deferred to a future opportunistic touch-up — it's optional for the system to be functional.
+**Status:** complete (2026-04-26). All five phases shipped. P4 was originally deferred but later validated via the synthetic-drag pattern unlocked in P5 (the `relative`-on-motions discovery + addon patches made mid-drag visual verification reliable).
 
 **Commits:**
 - `506f576` P1 — Skill class + Skills autoload + player coupling
@@ -9,8 +9,12 @@
 - `b14b9c0` P3 fix — mouse_filter on inner Controls
 - `66a3ea4` P3 fix — DescLabel custom_minimum_size for autowrap
 - `d6da1a6` P3 hygiene — static visuals to inspector StyleBoxFlat
-- `0d925ff` P3 — SkillCard forwards _can_drop_data/_drop_data to parent slot (swap-on-occupied)
-- (this commit) P5 — direct-invocation harness; synthetic drag dead-ends documented
+- `0d925ff` P3 — SkillCard forwards _can_drop_data/_drop_data (swap-on-occupied)
+- `fe5645e` P5 (initial, retracted) — direct-invocation harness; synthetic drag thought broken
+- `4e75a95` P5 follow-up — research crawl retracts the "broken" finding
+- `4587965` P5 hands-off re-run — addon patch #1, mystery still open
+- `8ba9fe3` P5 final — synthetic drag fully working end-to-end (relative-on-motions was the key, plus addon patch #2)
+- `338a1b0` P4 polish — equipped pulse, hover lift, drag preview, drop flash, empty-slot style
 
 **Outcome:**
 - Phases 1–3 went per plan after several `.tscn` serialization issues (duplicate `EmptyPanel` captures in SkillsPanel.tscn → HUD.tscn) which were fixed and which produced six new working-style rules now encoded in `feedback_godot_mcp_scene_editing.md` memory.

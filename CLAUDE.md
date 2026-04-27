@@ -55,7 +55,7 @@ godot-mcp-pro is configured in `~/.claude/settings.json`:
 
 ## Testing & QA
 
-**Read `TESTING.md` before writing any QA/playtest sequence that drives the running game through MCP.** It documents how MCP async timing interacts with physics (short version: `simulate_action` followed by separate `capture_frames` calls will miss mid-motion states because of tool round-trip latency). TESTING.md has the three working patterns and pitfalls to avoid.
+**Read `tests/README.md` before writing any QA/playtest sequence that drives the running game through MCP.** It documents how MCP async timing interacts with physics (short version: `simulate_action` followed by separate `capture_frames` calls will miss mid-motion states because of tool round-trip latency) and lists the four working patterns. The reflexive habits live in the auto-memory feedback files; `tests/README.md` summarises them for human readers.
 
 ## Starting a session
 

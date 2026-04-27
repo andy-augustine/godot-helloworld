@@ -107,7 +107,7 @@ A `WORKFLOW.md` will be drafted closer to the team-onboarding day; not premature
 1. **This file** — orient
 2. **CLAUDE.md** — project rules
 3. **STRUCTURE.md** — code architecture
-4. **TESTING.md** — only if planning to drive the running game via MCP
+4. **tests/README.md** — only if planning to drive the running game via MCP
 5. **GODOT_NOTES.md** — only when GDScript / Godot construct uncertainty arises
 6. **plans/** — current in-flight work; if any
 7. **backlog/** — only when picking new work

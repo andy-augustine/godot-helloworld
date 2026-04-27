@@ -64,7 +64,8 @@ godot-helloworld/
 ├── screenshots/                ← debug/QA screenshots (gitignored)
 ├── addons/godot_mcp/           ← godot-mcp-pro plugin (vendored — required by Claude)
 ├── CLAUDE.md                   ← rules Claude Code follows on every session
-├── SETUP.md / README.md / TESTING.md / GODOT_NOTES.md / STRUCTURE.md  ← docs
+├── SETUP.md / README.md / GODOT_NOTES.md / STRUCTURE.md  ← root docs
+├── tests/README.md             ← how-we-test guide (lives next to test code)
 └── .godot/, *.uid, .DS_Store   ← gitignored; auto-regenerated
 ```
 

@@ -1,8 +1,9 @@
-[gd_scene format=3 uid="uid://cflq2pk1q0uyh" load_steps=4]
+[gd_scene format=3 uid="uid://cflq2pk1q0uyh" load_steps=5]
 
 [ext_resource type="Script" uid="uid://b7ukjpe764to5" path="res://hud/HUD.gd" id="1_hud"]
 [ext_resource type="Script" uid="uid://b1teste8dggpe" path="res://hud/HealthBar.gd" id="2_bar"]
 [ext_resource type="PackedScene" uid="uid://bau0wf7f3qcsh" path="res://hud/SkillsPanel.tscn" id="3_skills"]
+[ext_resource type="PackedScene" path="res://hud/AbilityStrip.tscn" id="4_strip"]
 
 [node name="HUD" type="CanvasLayer" unique_id=1094250649]
 layer = 10
@@ -46,3 +47,5 @@ mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
 [node name="SkillsPanel" type="Control" parent="." unique_id=981143332 instance=ExtResource("3_skills")]
+
+[node name="AbilityStrip" parent="." instance=ExtResource("4_strip")]

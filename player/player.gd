@@ -534,6 +534,23 @@ func take_damage(amount: int) -> void:
 		_handle_death()
 
 
+# Environmental damage — bypasses iframes. For continuous hazards (plasma,
+# coolant, future spike traps) where the player's standing-in-it is the
+# damage event, not a discrete hit. Shorter audio cue + light shake + no
+# hit-stop so the game doesn't stutter while the player is being damaged
+# repeatedly.
+func take_environmental_damage(amount: int) -> void:
+	_health = max(_health - amount, 0)
+	health_changed.emit(_health, MAX_HEALTH)
+	AudioManager.play_sfx("player_hit", 0.15, -8.0)
+	var cam: Node = get_tree().get_first_node_in_group("camera")
+	if cam and cam.has_method("add_shake"):
+		cam.add_shake(1.5)
+	if _health == 0:
+		player_died.emit()
+		_handle_death()
+
+
 func _handle_death() -> void:
 	set_physics_process(false)
 	velocity = Vector2.ZERO

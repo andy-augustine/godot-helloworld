@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://hazards/PlasmaFissure.gd" id="1_plasma"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plasma"]
+size = Vector2(360, 60)
+
+[node name="PlasmaFissure" type="Area2D"]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1_plasma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_plasma")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="OuterGlow" type="ColorRect" parent="Visual"]
+offset_left = -210.0
+offset_top = -56.0
+offset_right = 210.0
+offset_bottom = 36.0
+color = Color(1, 0.42, 0.12, 0.22)
+
+[node name="Body" type="ColorRect" parent="Visual"]
+offset_left = -182.0
+offset_top = -32.0
+offset_right = 182.0
+offset_bottom = 30.0
+color = Color(0.95, 0.32, 0.08, 0.88)
+
+[node name="InnerGlow" type="ColorRect" parent="Visual"]
+offset_left = -176.0
+offset_top = -28.0
+offset_right = 176.0
+offset_bottom = 0.0
+color = Color(1, 0.6, 0.2, 0.7)
+
+[node name="Surface" type="ColorRect" parent="Visual"]
+offset_left = -180.0
+offset_top = -32.0
+offset_right = 180.0
+offset_bottom = -28.0
+color = Color(1, 0.88, 0.45, 0.95)
+
+[node name="Embers" type="CPUParticles2D" parent="."]
+position = Vector2(0, -16)
+amount = 24
+lifetime = 1.4
+preprocess = 1.4
+emission_shape = 3
+emission_rect_extents = Vector2(175, 4)
+direction = Vector2(0, -1)
+spread = 22.0
+gravity = Vector2(0, -45)
+initial_velocity_min = 25.0
+initial_velocity_max = 75.0
+scale_amount_min = 1.6
+scale_amount_max = 3.2
+color = Color(1, 0.66, 0.22, 0.85)
+
+[node name="DamageTimer" type="Timer" parent="."]
+wait_time = 0.4
+one_shot = false
+autostart = false

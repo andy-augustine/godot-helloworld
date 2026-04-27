@@ -25,6 +25,7 @@ const SFX: Dictionary = {
 	"heavy_landing": preload("res://assets/audio/sfx/heavy_landing.ogg"),
 	"dash": preload("res://assets/audio/sfx/dash.ogg"),
 	"pickup": preload("res://assets/audio/sfx/pickup.ogg"),
+	"skill_acquired": preload("res://assets/audio/sfx/skill_acquired.ogg"),
 	"player_hit": preload("res://assets/audio/sfx/player_hit.ogg"),
 	"player_death": preload("res://assets/audio/sfx/player_death.ogg"),
 }

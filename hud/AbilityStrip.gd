@@ -1,8 +1,9 @@
 extends Control
 
-# Bottom-of-screen iconographic strip showing all defined movement abilities,
+# Top-of-screen iconographic strip showing all defined movement abilities,
 # grouped by category (Jumps / Runs / Climbs). Locked = greyed silhouette;
-# unlocked = full color + faint glow. Just-acquired = scale-pop animation.
+# unlocked = full color + glow. Just-acquired plays the swirl-and-smack
+# sequence (PickupTornado → dramatic slot pulse → skill_acquired SFX).
 #
 # The list is driven by Abilities.REGISTRY — adding a new ability there makes
 # it appear here automatically. Live state comes from the Inventory autoload.
@@ -16,6 +17,11 @@ const TITLE_COLOR := Color(0.85, 0.9, 0.95, 0.7)
 const LOCKED_COLOR := Color(0.35, 0.38, 0.45, 0.6)
 const POP_DURATION: float = 0.35
 
+# Dramatic pulse on landing — 3x scale + color flash + return.
+const PULSE_PEAK_SCALE: float = 3.0
+const PULSE_UP_DURATION: float = 0.18
+const PULSE_DOWN_DURATION: float = 0.45
+
 const _CATEGORY_TITLES := {
 	0: "JUMPS",   # Abilities.Category.JUMPS
 	1: "RUNS",    # Abilities.Category.RUNS
@@ -28,8 +34,10 @@ const _CATEGORY_HUE := {
 	2: Color("4ad6c2"),  # Climbs— teal
 }
 
-# id -> ColorRect, used to update visual state on grant
+# id -> ColorRect (slot background); used to update visual state on grant
 var _icons: Dictionary = {}
+# id -> Node2D (icon holder for ability symbol polygons)
+var _icon_holders: Dictionary = {}
 
 
 func _ready() -> void:
@@ -83,7 +91,17 @@ func _make_icon(id: StringName, cat_idx: int) -> Control:
 	box.set_meta("category_color", _CATEGORY_HUE[cat_idx])
 	box.set_meta("ability_id", id)
 	box.pivot_offset = ICON_SIZE * 0.5
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(box)
+
+	# Symbolic icon polygons centered in the box. Locked state hides them
+	# (modulate alpha 0); unlocked shows them in the category hue lightened.
+	var icon_holder: Node2D = Node2D.new()
+	icon_holder.position = ICON_SIZE * 0.5
+	icon_holder.modulate = Color(1, 1, 1, 0)  # hidden until unlocked
+	box.add_child(icon_holder)
+	AbilityIcons.build_into(icon_holder, id, _CATEGORY_HUE[cat_idx].lightened(0.55), 0.7)
+	_icon_holders[id] = icon_holder
 
 	var caption := Label.new()
 	caption.text = _short_label(Abilities.display_name(id))
@@ -114,26 +132,60 @@ func _refresh_all() -> void:
 		_apply_state(id, inv.has(id), false)
 
 
-func _apply_state(id: StringName, owned: bool, animate: bool) -> void:
+func _apply_state(id: StringName, owned: bool, _animate: bool) -> void:
 	var box: ColorRect = _icons.get(id, null)
 	if box == null:
 		return
+	var holder: Node2D = _icon_holders.get(id, null)
 	if owned:
 		box.color = box.get_meta("category_color", Color.WHITE)
+		if holder:
+			holder.modulate = Color(1, 1, 1, 1)
 	else:
 		box.color = LOCKED_COLOR
-	if animate and owned:
-		_play_pop(box)
-
-
-func _play_pop(box: ColorRect) -> void:
-	box.scale = Vector2.ONE
-	var tween := create_tween()
-	tween.set_trans(Tween.TRANS_BACK)
-	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(box, "scale", Vector2(1.4, 1.4), POP_DURATION * 0.4)
-	tween.tween_property(box, "scale", Vector2(1.0, 1.0), POP_DURATION * 0.6)
+		if holder:
+			holder.modulate = Color(1, 1, 1, 0)
 
 
 func _on_ability_granted(id: StringName) -> void:
-	_apply_state(id, true, true)
+	var box: ColorRect = _icons.get(id, null)
+	if box == null:
+		return
+	# Light up the slot immediately (icon visible + colored). The dramatic
+	# pulse + sound triggers when the tornado lands a moment later.
+	_apply_state(id, true, false)
+	# Spawn the swirl-and-smack tornado above this slot. It self-frees.
+	var tornado_pack: PackedScene = load("res://hud/PickupTornado.tscn") as PackedScene
+	var tornado: Control = tornado_pack.instantiate() as Control
+	add_child(tornado)
+	var box_center: Vector2 = box.global_position + box.size * 0.5
+	var hue: Color = box.get_meta("category_color", Color.WHITE)
+	tornado.setup(box_center, hue)
+	tornado.smacked.connect(_on_tornado_smacked.bind(id))
+
+
+func _on_tornado_smacked(id: StringName) -> void:
+	var box: ColorRect = _icons.get(id, null)
+	if box == null:
+		return
+	AudioManager.play_sfx("skill_acquired", 0.04, -2.0)
+	_play_dramatic_pulse(box, _icon_holders.get(id, null))
+
+
+func _play_dramatic_pulse(box: ColorRect, _holder: Node2D) -> void:
+	box.scale = Vector2.ONE
+	box.modulate = Color.WHITE
+	# Up: scale to 3.0, modulate white-bright
+	var up_tween: Tween = create_tween()
+	up_tween.set_parallel(true)
+	up_tween.set_trans(Tween.TRANS_BACK)
+	up_tween.set_ease(Tween.EASE_OUT)
+	up_tween.tween_property(box, "scale", Vector2(PULSE_PEAK_SCALE, PULSE_PEAK_SCALE), PULSE_UP_DURATION)
+	up_tween.tween_property(box, "modulate", Color(1.8, 1.8, 1.8, 1), PULSE_UP_DURATION * 0.6)
+	# Down: scale + color back to normal
+	up_tween.chain()
+	up_tween.set_parallel(true)
+	up_tween.set_trans(Tween.TRANS_QUAD)
+	up_tween.set_ease(Tween.EASE_IN_OUT)
+	up_tween.tween_property(box, "scale", Vector2.ONE, PULSE_DOWN_DURATION)
+	up_tween.tween_property(box, "modulate", Color.WHITE, PULSE_DOWN_DURATION)

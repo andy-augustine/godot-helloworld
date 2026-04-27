@@ -9,6 +9,7 @@ All sound effects in this folder come from **Kenney** (https://kenney.nl) and ar
 | `wall_slide.ogg` | [Sci-Fi Sounds](https://kenney.nl/assets/sci-fi-sounds) | `spaceEngineLow_002.ogg` |
 | `dash.ogg` | [Digital Audio](https://kenney.nl/assets/digital-audio) | `phaseJump3.ogg` |
 | `pickup.ogg` | [Digital Audio](https://kenney.nl/assets/digital-audio) | `powerUp7.ogg` |
+| `skill_acquired.ogg` | [Digital Audio](https://kenney.nl/assets/digital-audio) | `powerUp10.ogg` |
 | `player_hit.ogg` | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | `impactPunch_medium_002.ogg` |
 | `player_death.ogg` | [Digital Audio](https://kenney.nl/assets/digital-audio) | `lowDown.ogg` |
 

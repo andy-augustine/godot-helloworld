@@ -50,13 +50,13 @@ theme_override_constants/separation = 6
 alignment = 1
 
 [node name="InvSlot1" type="Control" parent="VBox/InventoryRow" unique_id=713521890 instance=ExtResource("2_nn1lb")]
-custom_minimum_size = Vector2(64, 88)
+custom_minimum_size = Vector2(32, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")
 
 [node name="InvSlot2" type="Control" parent="VBox/InventoryRow" unique_id=297471924 instance=ExtResource("2_nn1lb")]
-custom_minimum_size = Vector2(64, 88)
+custom_minimum_size = Vector2(32, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")

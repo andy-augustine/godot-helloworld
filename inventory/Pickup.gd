@@ -17,6 +17,7 @@ extends Area2D
 @onready var _outline: ColorRect = $Visual/Outline
 @onready var _highlight: ColorRect = $Visual/Highlight
 @onready var _inner_glow: ColorRect = $Visual/InnerGlow
+@onready var _icon_holder: Node2D = $Visual/IconHolder
 @onready var _sparkle: CPUParticles2D = $Sparkle
 
 var _t: float = 0.0
@@ -50,6 +51,9 @@ func _ready() -> void:
 		_highlight.color = hue.lightened(0.45)
 		_inner_glow.color = Color(hue.lightened(0.25), 0.5)
 		_sparkle.color = hue
+		# Symbolic icon for this ability — drawn on top of the body so the
+		# player can recognize what's in the box at a glance.
+		AbilityIcons.build_into(_icon_holder, ability_id, hue.lightened(0.55), 0.85)
 
 
 func _process(delta: float) -> void:

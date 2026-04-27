@@ -6,17 +6,21 @@ Things we want to act on later, separated by domain. Items capture the **what** 
 
 | File | Domain | Examples |
 |---|---|---|
-| [`tooling-pipeline.md`](tooling-pipeline.md) | Skills, hooks, doc protocol, MCP usage, dev-loop conventions | `visual-qa.md` skill, polish playbook, MEMORY.md convention, forked-context experiment |
-| [`gamedev.md`](gamedev.md) | Gameplay systems, content, polish, art | Audio system, TileMapLayer art, save/load, enemies, HUD, room aesthetics |
+| [`gamedev.md`](gamedev.md) | Gameplay systems, content, polish, art for **this** game | Audio system, TileMapLayer art, save/load, enemies, HUD, room aesthetics |
+| [`tooling-pipeline.md`](tooling-pipeline.md) | Game-dev tooling — skills, hooks, doc protocol, MCP usage, conventions for **game** work | `visual-qa.md` skill, polish playbook, MEMORY.md convention, forked-context experiment |
+| [`claude-collab.md`](claude-collab.md) | Process / pipeline / tooling about **how Claude collaborates with the human dev**, project-agnostic | `/wrapup`, `/preflight`, periodic retrospective agent, skills-earned doc |
 
 ## Why split them
 
-These two backlogs evolve at different cadences and serve different audiences:
+These three backlogs evolve at different cadences and serve different audiences:
 
-- **Tooling/pipeline items** mature into reusable artifacts — skills, hooks, conventions — that should eventually be portable across game projects (card/deck, rogue-like, future Metroidvanias). When something here gets a version that's working and stable, it's a candidate to extract into a starter kit.
 - **Gamedev items** are specific to *this* game and its scope. They live and die with the project. Polish a heavy landing here, you're not lifting it elsewhere.
+- **Tooling/pipeline items** mature into reusable artifacts that should eventually be portable across **other game projects** (card/deck, rogue-like, future Metroidvanias). When something here is stable, it's a candidate to extract into a Godot starter kit.
+- **Claude-collab items** mature into reusable artifacts that are portable across **any Claude-Code-driven project**, not just games — slash commands, memory protocols, session bookends apply to a Rust backend project the same as a Godot game.
 
-Mixing the two would dilute both lists. When in doubt: ask "if I started a new Godot project tomorrow, would I want this?" — yes → tooling-pipeline, no → gamedev.
+Mixing the three dilutes all three. When in doubt:
+- "If I started a new **Godot project** tomorrow, would I want this?" — yes (about the game itself) → gamedev; yes (helps build *any* game) → tooling-pipeline.
+- "If I started **any** Claude-Code project tomorrow (not even a game), would I want this?" — yes → claude-collab.
 
 ## Mental model: writers' room → production pipeline → shooting script
 

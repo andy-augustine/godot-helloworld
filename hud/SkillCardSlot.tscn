@@ -15,7 +15,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [node name="SkillCardSlot" type="Control" unique_id=352913953]
-custom_minimum_size = Vector2(44, 56)
+custom_minimum_size = Vector2(44, 32)
 layout_mode = 3
 anchors_preset = 0
 size_flags_horizontal = 4

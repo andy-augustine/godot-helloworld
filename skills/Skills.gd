@@ -40,6 +40,7 @@ func _ready() -> void:
 	turbo.id = &"turbo"
 	turbo.display_name = "TURBO"
 	turbo.description = "+50% top speed"
+	turbo.short_desc = "+50%"
 	turbo.color = Color("ff8c1a")
 	turbo.speed_multiplier = 1.5
 	turbo.jump_multiplier = 1.0

@@ -28,9 +28,9 @@ extends Node
 
 func run_all() -> Array:
 	var panel: Node = get_tree().root.get_node("World/HUD/SkillsPanel")
-	var inv1: Node = panel.get_node("VBox/InventoryRow/InvSlot1")
-	var inv2: Node = panel.get_node("VBox/InventoryRow/InvSlot2")
-	var active: Node = panel.get_node("VBox/ActiveSlot")
+	var inv1: Node = panel.get_node("Panel/Margins/HBox/InvCluster/InvRow/InvSlot1")
+	var inv2: Node = panel.get_node("Panel/Margins/HBox/InvCluster/InvRow/InvSlot2")
+	var active: Node = panel.get_node("Panel/Margins/HBox/ActiveCluster/ActiveSlot")
 	var results: Array = []
 
 	# Reset

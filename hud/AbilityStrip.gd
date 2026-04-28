@@ -66,11 +66,16 @@ func _build() -> void:
 	row.add_theme_constant_override("separation", int(SECTION_GAP))
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# IGNORE so this fullscreen-width HBox doesn't intercept drags meant for
+	# the SkillsPanel slots underneath it. Without this, pickups can't be
+	# dragged from inventory → active because the row consumes the events.
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(row)
 
 	for cat_idx in [0, 1, 2]:
 		var col := VBoxContainer.new()
 		col.alignment = BoxContainer.ALIGNMENT_CENTER
+		col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		col.add_theme_constant_override("separation", 4)
 		row.add_child(col)
 
@@ -79,11 +84,13 @@ func _build() -> void:
 		title.add_theme_font_size_override("font_size", TITLE_FONT_SIZE)
 		title.add_theme_color_override("font_color", TITLE_COLOR)
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		col.add_child(title)
 
 		var icon_row := HBoxContainer.new()
 		icon_row.alignment = BoxContainer.ALIGNMENT_CENTER
 		icon_row.add_theme_constant_override("separation", int(ICON_GAP))
+		icon_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		col.add_child(icon_row)
 
 		var ids: Array[StringName] = Abilities.ids_in_category(cat_idx)
@@ -95,6 +102,7 @@ func _make_icon(id: StringName, cat_idx: int) -> Control:
 	var cell := VBoxContainer.new()
 	cell.alignment = BoxContainer.ALIGNMENT_CENTER
 	cell.add_theme_constant_override("separation", 2)
+	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var box := ColorRect.new()
 	box.custom_minimum_size = ICON_SIZE
@@ -119,6 +127,7 @@ func _make_icon(id: StringName, cat_idx: int) -> Control:
 	caption.add_theme_font_size_override("font_size", LABEL_FONT_SIZE)
 	caption.add_theme_color_override("font_color", TITLE_COLOR)
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(caption)
 
 	_icons[id] = box

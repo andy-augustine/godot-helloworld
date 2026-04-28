@@ -79,7 +79,10 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
 
 func _apply_visuals() -> void:
 	_name_label.text = skill.display_name
-	_desc_label.text = skill.description
+	# Cards shrunk to 44x32; long descriptions don't fit. Skill resources now
+	# carry a tight short_desc (e.g. "+50%"); fall back to the verbose one if
+	# unset so legacy cards still render.
+	_desc_label.text = skill.short_desc if skill.short_desc != "" else skill.description
 	# Duplicate the inspector-set StyleBoxFlat so per-card color tints don't
 	# mutate the shared scene resource. Static styling (corner_radius,
 	# border_width) lives on the Panel in SkillCard.tscn — tweak there.

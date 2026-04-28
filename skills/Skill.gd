@@ -9,6 +9,7 @@ extends Resource
 @export var id: StringName
 @export var display_name: String
 @export var description: String
+@export var short_desc: String   # tight 1-line desc shown on the small card (e.g. "+50%")
 @export var color: Color = Color.WHITE
 @export var speed_multiplier: float = 1.0
 @export var jump_multiplier: float = 1.0

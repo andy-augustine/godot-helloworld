@@ -91,18 +91,26 @@ const DEATH_TILT_DEG: float = 22.0        # rig rotation at end of collapse
 @onready var _wall_sparks: CPUParticles2D = $Rig/WallSlideSparks
 @onready var _dash_trail: CPUParticles2D = $Rig/DashTrail
 @onready var _wall_slide_audio: AudioStreamPlayer = $WallSlideAudio
-@onready var _ground_shadow: Polygon2D = $GroundShadow
+@onready var _ground_shadow: Sprite2D = $GroundShadow
 @onready var _shadow_raycast: RayCast2D = $ShadowRaycast
 
 # Shadow projection — shadow stays on the floor below the player even mid-air.
 # Distance falloff: shadow shrinks + dims as the player flies higher, so a fast
 # ascent reads as "lifting off" and a fall reads as "approaching ground" before
 # they actually land. Raycast probes down 600px; beyond that, shadow hides.
-const SHADOW_FOOT_OFFSET: float = 4.0      # px above ground the shadow draws (just-above-surface)
+const SHADOW_FOOT_OFFSET: float = -8.0     # px the shadow's center sits BELOW ground top.
+                                            # Negative = below ground. The visible top half blends
+                                            # into the ground edge; the bottom half overlaps the
+                                            # ground surface (visible because shadow z=1 > ground z=0)
+                                            # — this matches the apparent foot position of the rig
+                                            # (legs render to rig-y=32, ~8px below the collision capsule
+                                            # bottom). Soft texture handles the actual feathering.
 const SHADOW_MAX_DISTANCE: float = 280.0   # distance at which shrink/dim saturate
 const SHADOW_MIN_SCALE: float = 0.55       # scale at SHADOW_MAX_DISTANCE
 const SHADOW_MIN_ALPHA: float = 0.18       # alpha at SHADOW_MAX_DISTANCE
-const SHADOW_BASE_ALPHA: float = 0.45      # alpha at zero distance (matches the polygon's authored color)
+const SHADOW_BASE_ALPHA: float = 0.55      # alpha modulator at zero distance — soft texture has its own
+                                            # radial falloff baked in (peak 0.42 at center, 0 at edges),
+                                            # so this is a multiplier; .55 keeps the densest pixel near 0.23
 const DASH_TINT := Color(1.0, 0.85, 0.55, 1.0)  # warm cream while dashing
 const _NORMAL_TINT := Color(1, 1, 1, 1)
 var _was_dashing: bool = false
@@ -123,6 +131,38 @@ const FACING_LERP: float = 0.3  # per-frame smoothing factor for facing flip
 const LAND_DUST_MIN_VEL: float = 200.0  # fall velocity below which landing is silent
 const HEAVY_LANDING_MIN_VEL: float = 950.0   # below this, no camera shake (regular jumps stay quiet)
 const HEAVY_LANDING_MAX_VEL: float = 1700.0  # shake intensity saturates here
+
+
+func _ready() -> void:
+	# Soft elliptical shadow texture — built in code so we don't ship a 56x16
+	# binary image asset. The radial falloff (smoothstep-ish) baked into alpha
+	# is what gives the shadow its "haze" quality vs the previous hard-edged
+	# Polygon2D oval, which read as a dinner plate under the player's knees.
+	_ground_shadow.texture = _build_shadow_texture()
+
+
+# Returns a 56x16 RGBA8 ImageTexture with a soft radial-falloff oval. Center
+# pixel is 42% black; alpha drops as a quadratic of the elliptical distance
+# from center, hitting 0 at the texture edges. The result reads as a feathered
+# shadow with no sharp boundary — the "plate" look came from a single uniform
+# alpha across a hard polygon edge.
+func _build_shadow_texture() -> ImageTexture:
+	var w: int = 56
+	var h: int = 16
+	var img: Image = Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var cx: float = w * 0.5
+	var cy: float = h * 0.5
+	var rx: float = w * 0.5
+	var ry: float = h * 0.5
+	for y in range(h):
+		for x in range(w):
+			var dx: float = (x - cx) / rx
+			var dy: float = (y - cy) / ry
+			var d: float = sqrt(dx * dx + dy * dy)
+			var a: float = clampf(1.0 - d, 0.0, 1.0)
+			a = a * a  # quadratic falloff for softer center, sharper feather
+			img.set_pixel(x, y, Color(0, 0, 0, a * 0.42))
+	return ImageTexture.create_from_image(img)
 
 
 func _physics_process(delta: float) -> void:

@@ -15,7 +15,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [node name="SkillCard" type="Control" unique_id=1248859782]
-custom_minimum_size = Vector2(64, 88)
+custom_minimum_size = Vector2(44, 56)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_vjnma")
@@ -39,14 +39,14 @@ mouse_filter = 2
 
 [node name="NameLabel" type="Label" parent="Panel/VBox" unique_id=1080800465]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 9
 text = "NAME"
 horizontal_alignment = 1
 
 [node name="DescLabel" type="Label" parent="Panel/VBox" unique_id=1711750698]
-custom_minimum_size = Vector2(52, 0)
+custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 6
 text = "desc"
 horizontal_alignment = 1
 autowrap_mode = 2

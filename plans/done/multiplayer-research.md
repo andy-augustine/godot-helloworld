@@ -1,6 +1,6 @@
 # Plan: Multiplayer-for-Godot research crawl
 
-**Status:** ready to execute (queued 2026-04-28, user is sleeping while this runs).
+**Status:** complete (2026-04-28). Delivered `research/multiplayer/survey.md` plus 5 topic files + sourcemap. Recommended path: GodotSteam + Steam Networking Sockets transport, netfox for client-side prediction, defer dedicated-server until PvP is on the table. Commits added in the same archive sweep.
 
 **Owner:** Whichever fresh Claude session picks this up next. Should be Opus 4.7 in the orchestrating role — see model selection in the runbook.
 

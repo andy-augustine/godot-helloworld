@@ -1,9 +1,16 @@
-[gd_scene format=3 uid="uid://cflq2pk1q0uyh" load_steps=5]
+[gd_scene format=3 uid="uid://cflq2pk1q0uyh" load_steps=7]
 
 [ext_resource type="Script" uid="uid://b7ukjpe764to5" path="res://hud/HUD.gd" id="1_hud"]
 [ext_resource type="Script" uid="uid://b1teste8dggpe" path="res://hud/HealthBar.gd" id="2_bar"]
 [ext_resource type="PackedScene" uid="uid://bau0wf7f3qcsh" path="res://hud/SkillsPanel.tscn" id="3_skills"]
 [ext_resource type="PackedScene" path="res://hud/AbilityStrip.tscn" id="4_strip"]
+
+[sub_resource type="Gradient" id="Gradient_confetti"]
+offsets = PackedFloat32Array(0, 0.16, 0.32, 0.5, 0.66, 0.83, 1)
+colors = PackedColorArray(1, 0.36, 0.45, 1, 1, 0.78, 0.2, 1, 0.55, 1, 0.55, 1, 0.4, 0.78, 1, 1, 0.85, 0.5, 1, 1, 1, 0.4, 0.85, 1, 0.95, 0.95, 0.4, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_confetti"]
+gradient = SubResource("Gradient_confetti")
 
 [node name="HUD" type="CanvasLayer" unique_id=1094250649]
 layer = 10
@@ -49,3 +56,32 @@ color = Color(0, 0, 0, 1)
 [node name="SkillsPanel" type="Control" parent="." unique_id=981143332 instance=ExtResource("3_skills")]
 
 [node name="AbilityStrip" parent="." instance=ExtResource("4_strip")]
+
+[node name="FlashOverlay" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="Confetti" type="CPUParticles2D" parent="."]
+position = Vector2(944, 540)
+emitting = false
+amount = 280
+lifetime = 2.6
+one_shot = true
+explosiveness = 1.0
+direction = Vector2(-0.7071, -0.7071)
+spread = 35.0
+gravity = Vector2(0, 1100)
+initial_velocity_min = 720.0
+initial_velocity_max = 1100.0
+angular_velocity_min = -260.0
+angular_velocity_max = 260.0
+scale_amount_min = 1.0
+scale_amount_max = 2.4
+color_initial_ramp = SubResource("GradientTexture1D_confetti")
+

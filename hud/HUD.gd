@@ -16,8 +16,18 @@ const DEATH_FADE_OUT: float = 0.35
 
 @onready var _health_bar: Control = $Margin/VBox/HealthBar
 @onready var _death_overlay: ColorRect = $DeathOverlay
+@onready var _flash_overlay: ColorRect = $FlashOverlay
+@onready var _confetti: CPUParticles2D = $Confetti
+
 
 func _ready() -> void:
+	add_to_group("hud")
+	# CPUParticles2D doesn't render without a texture in Godot 4. Build a tiny
+	# 4x6 white rectangle in code so each particle reads as a confetti strip;
+	# avoids checking in a binary asset for a six-byte image.
+	var img: Image = Image.create(4, 6, false, Image.FORMAT_RGBA8)
+	img.fill(Color.WHITE)
+	_confetti.texture = ImageTexture.create_from_image(img)
 	var player: Node = get_tree().get_first_node_in_group("player")
 	if player == null:
 		push_warning("HUD: no node in group 'player'")
@@ -27,6 +37,25 @@ func _ready() -> void:
 	player.player_respawned.connect(_on_player_respawned)
 	# Sync initial state so the bar reflects health on scene load
 	_health_bar.set_health(player._health, player.MAX_HEALTH)
+
+
+# Endgame celebration triggered when the player grabs the Crown. Two beats:
+# (1) a quick white screen flash that fades over ~0.5s, (2) a confetti burst
+# from the bottom-right of the screen aimed up-and-left, with gravity pulling
+# the pieces back down before they hit the ceiling or the left wall. World
+# position is unused for now (the effect is screen-anchored) but accepted so
+# Crown.gd can pass it for future variations (e.g. emit from contact point).
+func play_crown_pickup(_world_pos: Vector2) -> void:
+	# Flash: 0 → 0.85 → 0 over ~0.55s. Sharp on, slow off so it reads as a
+	# "snap" rather than a wash.
+	_flash_overlay.modulate.a = 0.0
+	var flash_tw: Tween = create_tween()
+	flash_tw.tween_property(_flash_overlay, "modulate:a", 0.85, 0.06)
+	flash_tw.tween_property(_flash_overlay, "modulate:a", 0.0, 0.5)
+	# Confetti: one-shot burst. Restart triggers the pre-configured emission
+	# with all particles released at once (explosiveness=1.0 in scene).
+	_confetti.restart()
+	_confetti.emitting = true
 
 func _on_health_changed(current: int, maximum: int) -> void:
 	_health_bar.set_health(current, maximum)

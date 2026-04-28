@@ -1,9 +1,12 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://hazards/CoolantPool.gd" id="1_coolant"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_coolant"]
-size = Vector2(390, 36)
+size = Vector2(390, 64)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tankwall"]
+size = Vector2(10, 76)
 
 [node name="CoolantPool" type="Area2D"]
 collision_layer = 0
@@ -13,48 +16,122 @@ script = ExtResource("1_coolant")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_coolant")
 
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-200, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("RectangleShape2D_tankwall")
+
+[node name="LeftWallVisual" type="Node2D" parent="."]
+position = Vector2(-200, 0)
+
+[node name="Shadow" type="ColorRect" parent="LeftWallVisual"]
+offset_left = -4.0
+offset_top = -38.0
+offset_right = 6.0
+offset_bottom = 44.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="LeftWallVisual"]
+offset_left = -6.0
+offset_top = -40.0
+offset_right = 6.0
+offset_bottom = 40.0
+color = Color(0.13, 0.18, 0.2, 1)
+
+[node name="Body" type="ColorRect" parent="LeftWallVisual"]
+offset_left = -5.0
+offset_top = -38.0
+offset_right = 5.0
+offset_bottom = 38.0
+color = Color(0.32, 0.4, 0.46, 1)
+
+[node name="Highlight" type="ColorRect" parent="LeftWallVisual"]
+offset_left = -4.0
+offset_top = -38.0
+offset_right = -2.0
+offset_bottom = 38.0
+color = Color(0.55, 0.6, 0.66, 1)
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(200, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("RectangleShape2D_tankwall")
+
+[node name="RightWallVisual" type="Node2D" parent="."]
+position = Vector2(200, 0)
+
+[node name="Shadow" type="ColorRect" parent="RightWallVisual"]
+offset_left = -4.0
+offset_top = -38.0
+offset_right = 6.0
+offset_bottom = 44.0
+color = Color(0, 0, 0, 0.4)
+
+[node name="Outline" type="ColorRect" parent="RightWallVisual"]
+offset_left = -6.0
+offset_top = -40.0
+offset_right = 6.0
+offset_bottom = 40.0
+color = Color(0.13, 0.18, 0.2, 1)
+
+[node name="Body" type="ColorRect" parent="RightWallVisual"]
+offset_left = -5.0
+offset_top = -38.0
+offset_right = 5.0
+offset_bottom = 38.0
+color = Color(0.32, 0.4, 0.46, 1)
+
+[node name="Highlight" type="ColorRect" parent="RightWallVisual"]
+offset_left = -4.0
+offset_top = -38.0
+offset_right = -2.0
+offset_bottom = 38.0
+color = Color(0.55, 0.6, 0.66, 1)
+
 [node name="Visual" type="Node2D" parent="."]
 
 [node name="OuterGlow" type="ColorRect" parent="Visual"]
 offset_left = -206.0
-offset_top = -28.0
+offset_top = -38.0
 offset_right = 206.0
-offset_bottom = 24.0
+offset_bottom = 38.0
 color = Color(0.4, 0.85, 1, 0.16)
 
 [node name="Body" type="ColorRect" parent="Visual"]
 offset_left = -195.0
-offset_top = -18.0
+offset_top = -32.0
 offset_right = 195.0
-offset_bottom = 18.0
+offset_bottom = 32.0
 color = Color(0.25, 0.7, 0.95, 0.7)
 
 [node name="Surface" type="ColorRect" parent="Visual"]
 offset_left = -195.0
-offset_top = -18.0
+offset_top = -32.0
 offset_right = 195.0
-offset_bottom = -14.0
+offset_bottom = -28.0
 color = Color(0.7, 0.95, 1, 0.85)
 
 [node name="InnerGlow" type="ColorRect" parent="Visual"]
 offset_left = -190.0
-offset_top = -14.0
+offset_top = -28.0
 offset_right = 190.0
-offset_bottom = 8.0
+offset_bottom = 22.0
 color = Color(0.5, 0.9, 1, 0.35)
 
 [node name="Bubbles" type="CPUParticles2D" parent="."]
-position = Vector2(0, -8)
-amount = 14
-lifetime = 1.8
+position = Vector2(0, 24)
+amount = 18
+lifetime = 2.0
 preprocess = 1.8
 emission_shape = 3
-emission_rect_extents = Vector2(180, 4)
+emission_rect_extents = Vector2(180, 12)
 direction = Vector2(0, -1)
 spread = 18.0
-gravity = Vector2(0, -22)
-initial_velocity_min = 8.0
-initial_velocity_max = 22.0
+gravity = Vector2(0, -28)
+initial_velocity_min = 12.0
+initial_velocity_max = 30.0
 scale_amount_min = 1.0
-scale_amount_max = 2.2
+scale_amount_max = 2.4
 color = Color(0.7, 0.95, 1, 0.6)

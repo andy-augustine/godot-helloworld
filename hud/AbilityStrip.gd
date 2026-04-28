@@ -14,7 +14,6 @@ const SECTION_GAP: float = 28.0
 const LABEL_FONT_SIZE: int = 8
 const TITLE_FONT_SIZE: int = 9
 const TITLE_COLOR := Color(0.85, 0.9, 0.95, 0.7)
-const LOCKED_COLOR := Color(0.35, 0.38, 0.45, 0.6)
 const POP_DURATION: float = 0.35
 
 # Dramatic pulse on landing — 3x scale + color flash + return.
@@ -34,10 +33,18 @@ const _CATEGORY_HUE := {
 	2: Color("4ad6c2"),  # Climbs— teal
 }
 
-# id -> ColorRect (slot background); used to update visual state on grant
+# id -> Control (slot container, 28x28). Pulse animation scales this; the
+# locked "hole" Panel and the unlocked "raised" stack of ColorRects both live
+# inside it and are toggled via visibility on grant.
 var _icons: Dictionary = {}
-# id -> Node2D (icon holder for ability symbol polygons)
+# id -> Node2D (icon holder for ability symbol polygons; lives inside the
+# raised stack so it's hidden when the ability is locked)
 var _icon_holders: Dictionary = {}
+# id -> Panel (the dark recessed "hole" visible while the ability is locked)
+var _holes: Dictionary = {}
+# id -> Control (the raised pickup-style stack visible once the ability is
+# unlocked — outline + body + highlight + inner glow)
+var _raised: Dictionary = {}
 
 
 func _ready() -> void:
@@ -55,10 +62,10 @@ func _ready() -> void:
 # at the end of its swirl animation. Returns screen-space (HUD) coordinates;
 # Pickup converts via the camera transform.
 func get_slot_screen_position(id: StringName) -> Vector2:
-	var box: ColorRect = _icons.get(id, null)
-	if box == null:
+	var slot: Control = _icons.get(id, null)
+	if slot == null:
 		return Vector2.ZERO
-	return box.global_position + box.size * 0.5
+	return slot.global_position + slot.size * 0.5
 
 
 func _build() -> void:
@@ -104,22 +111,69 @@ func _make_icon(id: StringName, cat_idx: int) -> Control:
 	cell.add_theme_constant_override("separation", 2)
 	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var box := ColorRect.new()
-	box.custom_minimum_size = ICON_SIZE
-	box.color = LOCKED_COLOR
-	box.set_meta("category_color", _CATEGORY_HUE[cat_idx])
-	box.set_meta("ability_id", id)
-	box.pivot_offset = ICON_SIZE * 0.5
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	cell.add_child(box)
+	# Slot container — the pulse animation scales this whole node so both the
+	# hole and the raised stack scale together. Pivot at center for clean pulse.
+	var slot := Control.new()
+	slot.custom_minimum_size = ICON_SIZE
+	slot.set_meta("category_color", _CATEGORY_HUE[cat_idx])
+	slot.set_meta("ability_id", id)
+	slot.pivot_offset = ICON_SIZE * 0.5
+	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(slot)
 
-	# Symbolic icon polygons centered in the box. Locked state hides them
-	# (modulate alpha 0); unlocked shows them in the category hue lightened.
+	# LOCKED visual: a dark recessed "hole". Black bg with a slightly-darker
+	# top+left rim simulates light blocked from above (inset depth cue).
+	var hole := Panel.new()
+	hole.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hole.add_theme_stylebox_override("panel", _make_hole_stylebox())
+	hole.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(hole)
+	_holes[id] = hole
+
+	# UNLOCKED visual: layered ColorRects mirroring Pickup.tscn's structure
+	# (outline / body / highlight / inner-glow) so the slot reads as the same
+	# pickup the player just collected, now seated "above ground" in its slot.
+	var raised := Control.new()
+	raised.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	raised.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	raised.visible = false
+	slot.add_child(raised)
+	_raised[id] = raised
+
+	var hue: Color = _CATEGORY_HUE[cat_idx]
+	# Outline (full footprint)
+	var outline := ColorRect.new()
+	outline.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	outline.color = hue.darkened(0.5)
+	outline.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	raised.add_child(outline)
+	# Body (24x24 inset by 2px on every edge)
+	var body := ColorRect.new()
+	body.position = Vector2(2, 2)
+	body.size = Vector2(24, 24)
+	body.color = hue
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	raised.add_child(body)
+	# Highlight (small accent top-left to read as 3D)
+	var highlight := ColorRect.new()
+	highlight.position = Vector2(4, 4)
+	highlight.size = Vector2(8, 4)
+	highlight.color = Color(hue.lightened(0.45).r, hue.lightened(0.45).g, hue.lightened(0.45).b, 0.95)
+	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	raised.add_child(highlight)
+	# Inner glow (faint warm wash inside the body)
+	var inner_glow := ColorRect.new()
+	inner_glow.position = Vector2(6, 12)
+	inner_glow.size = Vector2(16, 8)
+	inner_glow.color = Color(hue.lightened(0.25).r, hue.lightened(0.25).g, hue.lightened(0.25).b, 0.5)
+	inner_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	raised.add_child(inner_glow)
+
+	# Symbolic icon polygons centered on the raised body.
 	var icon_holder: Node2D = Node2D.new()
 	icon_holder.position = ICON_SIZE * 0.5
-	icon_holder.modulate = Color(1, 1, 1, 0)  # hidden until unlocked
-	box.add_child(icon_holder)
-	AbilityIcons.build_into(icon_holder, id, _CATEGORY_HUE[cat_idx].lightened(0.55), 0.7)
+	raised.add_child(icon_holder)
+	AbilityIcons.build_into(icon_holder, id, hue.lightened(0.55), 0.7)
 	_icon_holders[id] = icon_holder
 
 	var caption := Label.new()
@@ -130,8 +184,21 @@ func _make_icon(id: StringName, cat_idx: int) -> Control:
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(caption)
 
-	_icons[id] = box
+	_icons[id] = slot
 	return cell
+
+
+func _make_hole_stylebox() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.03, 0.03, 0.05, 0.95)
+	sb.border_width_top = 1
+	sb.border_width_left = 1
+	sb.border_color = Color(0, 0, 0, 0.85)
+	sb.corner_radius_top_left = 4
+	sb.corner_radius_top_right = 4
+	sb.corner_radius_bottom_right = 4
+	sb.corner_radius_bottom_left = 4
+	return sb
 
 
 # DASH stays DASH; DOUBLE JUMP -> 2X JMP; HIGH JUMP -> HI JMP; WALL CLIMB -> WLL CLM.
@@ -153,33 +220,27 @@ func _refresh_all() -> void:
 
 
 func _apply_state(id: StringName, owned: bool, _animate: bool) -> void:
-	var box: ColorRect = _icons.get(id, null)
-	if box == null:
-		return
-	var holder: Node2D = _icon_holders.get(id, null)
-	if owned:
-		box.color = box.get_meta("category_color", Color.WHITE)
-		if holder:
-			holder.modulate = Color(1, 1, 1, 1)
-	else:
-		box.color = LOCKED_COLOR
-		if holder:
-			holder.modulate = Color(1, 1, 1, 0)
+	var hole: Panel = _holes.get(id, null)
+	var raised: Control = _raised.get(id, null)
+	if hole:
+		hole.visible = not owned
+	if raised:
+		raised.visible = owned
 
 
 func _on_ability_granted(id: StringName) -> void:
 	# By the time this fires, the Pickup has finished its swirl-and-fly
 	# animation (Pickup grants only on landing). Light up the slot, play
 	# the reward SFX, run the dramatic pulse.
-	var box: ColorRect = _icons.get(id, null)
-	if box == null:
+	var slot: Control = _icons.get(id, null)
+	if slot == null:
 		return
 	_apply_state(id, true, false)
 	AudioManager.play_sfx("skill_acquired", 0.04, -2.0)
-	_play_dramatic_pulse(box)
+	_play_dramatic_pulse(slot)
 
 
-func _play_dramatic_pulse(box: ColorRect) -> void:
+func _play_dramatic_pulse(box: Control) -> void:
 	box.scale = Vector2.ONE
 	box.modulate = Color.WHITE
 	# Up: scale to 3.0, modulate white-bright

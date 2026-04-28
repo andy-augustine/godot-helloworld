@@ -13,10 +13,9 @@ extends Area2D
 # Player contact uses Area2D.body_entered so it fires on the first overlap;
 # subsequent overlaps are no-ops because the node is freed in the same call.
 
-const SPIN_SPEED: float = 1.6           # radians/sec, full visible rotation
+const SPIN_SPEED: float = 1.6           # radians/sec around the imagined head Y-axis
 const BOB_AMPLITUDE: float = 6.0        # px peak-to-baseline
 const BOB_PERIOD: float = 1.8           # sec per full bob cycle
-const FLASH_COLOR: Color = Color(1, 1, 1, 1)
 
 var _t: float = 0.0
 var _origin_y: float = 0.0
@@ -34,10 +33,15 @@ func _process(delta: float) -> void:
 	if _claimed:
 		return
 	_t += delta
-	# Bob in y, spin around z. Spin is on the visual node so the Area2D
-	# CollisionShape stays axis-aligned (avoids weird rotated-box hit-tests).
 	position.y = _origin_y + sin(_t * TAU / BOB_PERIOD) * BOB_AMPLITUDE
-	_visual.rotation += SPIN_SPEED * delta
+	# Head-spin illusion: simulate the crown rotating around an imagined
+	# vertical axis through the wearer's head. In 2D we fake this with a
+	# horizontal scale that follows cos(angle): full width at 0° and 180°
+	# (front + back of crown), zero width at 90° + 270° (edge-on). Negative
+	# scale.x mirrors the design — fine because the crown is symmetric.
+	# Rotation stays at 0, so the band stays horizontal — distinct from the
+	# pinwheel-spin we replaced.
+	_visual.scale.x = cos(_t * SPIN_SPEED)
 
 
 func _on_body_entered(body: Node2D) -> void:
@@ -51,15 +55,5 @@ func _on_body_entered(body: Node2D) -> void:
 	var hud: Node = get_tree().get_first_node_in_group("hud")
 	if hud and hud.has_method("play_crown_pickup"):
 		hud.play_crown_pickup(global_position)
-	# Sparkle burst from the crown itself before freeing — so the moment of
-	# pickup reads even if the HUD effect is delayed by a frame.
-	var burst: CPUParticles2D = $Sparkle
-	burst.amount = 64
-	burst.initial_velocity_max = 320.0
-	burst.lifetime = 1.2
-	burst.restart()
-	# Pop and free. queue_free with a short delay so the burst can play out.
 	set_deferred("monitoring", false)
-	visible = false
-	await get_tree().create_timer(0.05).timeout
 	queue_free()

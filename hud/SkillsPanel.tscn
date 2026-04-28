@@ -1,62 +1,101 @@
-[gd_scene format=3 uid="uid://bau0wf7f3qcsh"]
+[gd_scene format=3 uid="uid://bau0wf7f3qcsh" load_steps=4]
 
 [ext_resource type="Script" uid="uid://b3xxqvhxm0cgq" path="res://hud/SkillsPanel.gd" id="1_lbk5b"]
 [ext_resource type="PackedScene" uid="uid://mewqlgll4k0k" path="res://hud/SkillCardSlot.tscn" id="2_nn1lb"]
 [ext_resource type="Script" uid="uid://bp47bgqdgs0ky" path="res://hud/SkillCardSlot.gd" id="3_6y3vj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_invpanel"]
+bg_color = Color(0.06, 0.06, 0.08, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.45, 0.55, 0.3)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+shadow_size = 6
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_offset = Vector2(0, 3)
 
 [node name="SkillsPanel" type="Control" unique_id=981143332]
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -160.0
+offset_left = -300.0
 offset_top = 12.0
 offset_right = -12.0
 offset_bottom = 220.0
+mouse_filter = 2
+
 script = ExtResource("1_lbk5b")
 
-[node name="VBox" type="VBoxContainer" parent="." unique_id=1549149116]
-layout_mode = 0
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 110.0
+theme_override_constants/separation = 8
+
+[node name="InventoryPanel" type="PanelContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_invpanel")
+
+[node name="InvVBox" type="VBoxContainer" parent="HBox/InventoryPanel"]
+layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="ActiveLabel" type="Label" parent="VBox" unique_id=930578883]
-modulate = Color(0.7, 0.7, 0.75, 1)
-layout_mode = 2
-theme_override_font_sizes/font_size = 9
-text = "ACTIVE"
-horizontal_alignment = 1
-
-[node name="ActiveSlot" type="Control" parent="VBox" unique_id=352913953 instance=ExtResource("2_nn1lb")]
-custom_minimum_size = Vector2(64, 88)
-layout_mode = 2
-size_flags_horizontal = 4
-script = ExtResource("3_6y3vj")
-kind = 1
-
-[node name="Spacer" type="Control" parent="VBox" unique_id=789162330]
-custom_minimum_size = Vector2(0, 6)
-layout_mode = 2
-
-[node name="InventoryLabel" type="Label" parent="VBox" unique_id=1072220611]
+[node name="InventoryLabel" type="Label" parent="HBox/InventoryPanel/InvVBox"]
 modulate = Color(0.7, 0.7, 0.75, 1)
 layout_mode = 2
 theme_override_font_sizes/font_size = 9
 text = "INVENTORY"
 horizontal_alignment = 1
 
-[node name="InventoryRow" type="HBoxContainer" parent="VBox" unique_id=845087713]
+[node name="InventoryRow" type="HBoxContainer" parent="HBox/InventoryPanel/InvVBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
 
-[node name="InvSlot1" type="Control" parent="VBox/InventoryRow" unique_id=713521890 instance=ExtResource("2_nn1lb")]
-custom_minimum_size = Vector2(32, 44)
+[node name="InvSlot1" parent="HBox/InventoryPanel/InvVBox/InventoryRow" instance=ExtResource("2_nn1lb")]
+custom_minimum_size = Vector2(28, 32)
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")
 
-[node name="InvSlot2" type="Control" parent="VBox/InventoryRow" unique_id=297471924 instance=ExtResource("2_nn1lb")]
-custom_minimum_size = Vector2(32, 44)
+[node name="InvSlot2" parent="HBox/InventoryPanel/InvVBox/InventoryRow" instance=ExtResource("2_nn1lb")]
+custom_minimum_size = Vector2(28, 32)
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("3_6y3vj")
+
+[node name="ActivePanel" type="Control" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_minimum_size = Vector2(80, 110)
+mouse_filter = 2
+
+[node name="ActiveVBox" type="VBoxContainer" parent="HBox/ActivePanel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+
+[node name="ActiveLabel" type="Label" parent="HBox/ActivePanel/ActiveVBox"]
+modulate = Color(0.7, 0.7, 0.75, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "ACTIVE"
+horizontal_alignment = 1
+
+[node name="ActiveSlot" parent="HBox/ActivePanel/ActiveVBox" instance=ExtResource("2_nn1lb")]
+custom_minimum_size = Vector2(64, 88)
+layout_mode = 2
+size_flags_horizontal = 4
+script = ExtResource("3_6y3vj")
+kind = 1

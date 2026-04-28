@@ -41,6 +41,7 @@ var _icon_holders: Dictionary = {}
 
 
 func _ready() -> void:
+	add_to_group("ability_strip")
 	_build()
 	var inv := get_node_or_null("/root/Inventory")
 	if inv:
@@ -48,6 +49,16 @@ func _ready() -> void:
 		# silently multiply on scene reload — use named methods for autoload signals).
 		inv.ability_granted.connect(_on_ability_granted)
 	_refresh_all()
+
+
+# Used by Pickup.gd to compute the world-space target the pickup should fly to
+# at the end of its swirl animation. Returns screen-space (HUD) coordinates;
+# Pickup converts via the camera transform.
+func get_slot_screen_position(id: StringName) -> Vector2:
+	var box: ColorRect = _icons.get(id, null)
+	if box == null:
+		return Vector2.ZERO
+	return box.global_position + box.size * 0.5
 
 
 func _build() -> void:
@@ -148,31 +159,18 @@ func _apply_state(id: StringName, owned: bool, _animate: bool) -> void:
 
 
 func _on_ability_granted(id: StringName) -> void:
+	# By the time this fires, the Pickup has finished its swirl-and-fly
+	# animation (Pickup grants only on landing). Light up the slot, play
+	# the reward SFX, run the dramatic pulse.
 	var box: ColorRect = _icons.get(id, null)
 	if box == null:
 		return
-	# Light up the slot immediately (icon visible + colored). The dramatic
-	# pulse + sound triggers when the tornado lands a moment later.
 	_apply_state(id, true, false)
-	# Spawn the swirl-and-smack tornado above this slot. It self-frees.
-	var tornado_pack: PackedScene = load("res://hud/PickupTornado.tscn") as PackedScene
-	var tornado: Control = tornado_pack.instantiate() as Control
-	add_child(tornado)
-	var box_center: Vector2 = box.global_position + box.size * 0.5
-	var hue: Color = box.get_meta("category_color", Color.WHITE)
-	tornado.setup(box_center, hue)
-	tornado.smacked.connect(_on_tornado_smacked.bind(id))
-
-
-func _on_tornado_smacked(id: StringName) -> void:
-	var box: ColorRect = _icons.get(id, null)
-	if box == null:
-		return
 	AudioManager.play_sfx("skill_acquired", 0.04, -2.0)
-	_play_dramatic_pulse(box, _icon_holders.get(id, null))
+	_play_dramatic_pulse(box)
 
 
-func _play_dramatic_pulse(box: ColorRect, _holder: Node2D) -> void:
+func _play_dramatic_pulse(box: ColorRect) -> void:
 	box.scale = Vector2.ONE
 	box.modulate = Color.WHITE
 	# Up: scale to 3.0, modulate white-bright

@@ -9,10 +9,10 @@ extends Control
 # once the card scene is locked and we've stopped iterating on it.
 const _SKILL_CARD_PATH := "res://hud/SkillCard.tscn"
 
-@onready var _active_slot: SkillCardSlot = $VBox/ActiveSlot
+@onready var _active_slot: SkillCardSlot = $HBox/ActivePanel/ActiveVBox/ActiveSlot
 @onready var _inv_slots: Array[SkillCardSlot] = [
-	$VBox/InventoryRow/InvSlot1,
-	$VBox/InventoryRow/InvSlot2,
+	$HBox/InventoryPanel/InvVBox/InventoryRow/InvSlot1,
+	$HBox/InventoryPanel/InvVBox/InventoryRow/InvSlot2,
 ]
 
 

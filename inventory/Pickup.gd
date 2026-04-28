@@ -12,7 +12,16 @@ extends Area2D
 @export var float_amplitude: float = 4.0   # vertical bob amplitude
 @export var float_period: float = 1.4      # full bob cycle in seconds
 
-@onready var _visual: Node2D = $Visual
+# Swirl-and-fly grant animation (the visual flourish on grab):
+# Pickup spins in expanding revolutions then flies to its AbilityStrip slot.
+# Tunable on the constants below; ability is granted only at landing so the
+# slot's pulse + skill_acquired SFX align with the visual smack.
+const SWIRL_DURATION: float = 1.6           # 3 revs in <= 2s, this is the rev portion
+const SWIRL_REVOLUTIONS: float = 3.0
+const SWIRL_START_RADIUS: float = 24.0      # ~2x the pickup-box width (24px)
+const SWIRL_END_RADIUS: float = 96.0        # ~2x the player visible height (~48px)
+const FLY_DURATION: float = 0.55            # time from end-of-swirl to slot landing
+
 @onready var _body: ColorRect = $Visual/Body
 @onready var _outline: ColorRect = $Visual/Outline
 @onready var _highlight: ColorRect = $Visual/Highlight
@@ -22,6 +31,8 @@ extends Area2D
 
 var _t: float = 0.0
 var _origin_y: float = 0.0
+var _animating: bool = false      # true once player touched and swirl began
+var _swirl_origin: Vector2 = Vector2.ZERO  # captured at animation start
 
 
 func _ready() -> void:
@@ -57,6 +68,10 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	# Suspend the idle bob during the grant animation — the swirl tween writes
+	# directly to global_position; bob would fight it.
+	if _animating:
+		return
 	_t += delta
 	# Vertical bob — gentle sine, doesn't accumulate drift
 	position.y = _origin_y + sin(_t * TAU / float_period) * float_amplitude
@@ -68,6 +83,8 @@ func _on_body_entered(body: Node2D) -> void:
 	if ability_id == &"":
 		push_warning("Pickup: empty ability_id, skipping grant")
 		return
+	if _animating:
+		return
 	var inv := get_node_or_null("/root/Inventory")
 	if inv == null:
 		push_warning("Pickup: Inventory autoload missing, skipping grant")
@@ -76,20 +93,71 @@ func _on_body_entered(body: Node2D) -> void:
 		queue_free()  # already owned, just clean up
 		return
 
-	inv.grant(ability_id)
-	# Burst on grab — restart particles for a satisfying poof
+	# Acknowledgment burst at the touch moment. The bigger reward (slot pulse
+	# + skill_acquired SFX) plays at landing — handled by AbilityStrip's
+	# ability_granted handler, which fires when we call inv.grant() at the
+	# end of the fly animation.
 	_sparkle.amount = 32
 	_sparkle.initial_velocity_max = 220.0
 	_sparkle.lifetime = 0.7
 	_sparkle.restart()
 	AudioManager.play_sfx("pickup", 0.05, -4.0)
-	# Disable further triggers while the burst plays out, then free.
-	# set_deferred is required because we're inside a body_entered callback
-	# (mid physics flush). See feedback_gdscript_practices.md rule 8.
+	# Disable further triggers — the pickup is committed now, prevent
+	# re-triggering by another player frame. set_deferred required because
+	# we're inside a body_entered callback (mid physics flush).
 	set_deferred("monitoring", false)
-	_visual.visible = false
-	# Brief delay so particles + audio finish
-	get_tree().create_timer(0.8).timeout.connect(queue_free)
+	_animating = true
+	_swirl_origin = global_position
+	_start_swirl_animation()
+
+
+func _start_swirl_animation() -> void:
+	# Phase 1: 3 expanding revolutions around the pickup's origin.
+	# Phase 2: fly to the AbilityStrip slot's world position.
+	# Phase 3: grant + free.
+	var target_world: Vector2 = _get_slot_world_position()
+	var tween: Tween = create_tween()
+	tween.tween_method(_apply_swirl, 0.0, 1.0, SWIRL_DURATION).set_trans(Tween.TRANS_LINEAR)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "global_position", target_world, FLY_DURATION)
+	tween.tween_callback(_on_landing)
+
+
+func _apply_swirl(t: float) -> void:
+	# t goes 0..1 over SWIRL_DURATION. radius lerps small→large; phase covers
+	# SWIRL_REVOLUTIONS full circles. The pickup's initial position is the
+	# orbit center.
+	var phase: float = t * SWIRL_REVOLUTIONS * TAU
+	var radius: float = lerpf(SWIRL_START_RADIUS, SWIRL_END_RADIUS, t)
+	global_position = _swirl_origin + Vector2(cos(phase), sin(phase)) * radius
+
+
+func _on_landing() -> void:
+	var inv: Node = get_node_or_null("/root/Inventory")
+	if inv:
+		inv.grant(ability_id)
+	queue_free()
+
+
+# Computes the world-space position the pickup should land at — the slot's
+# screen center, projected back through the camera transform. Falls back to
+# the pickup's current position if anything in the lookup chain is missing.
+func _get_slot_world_position() -> Vector2:
+	var strip: Node = get_tree().get_first_node_in_group("ability_strip")
+	if strip == null or not strip.has_method("get_slot_screen_position"):
+		return global_position
+	var screen_pos: Vector2 = strip.get_slot_screen_position(ability_id)
+	if screen_pos == Vector2.ZERO:
+		return global_position
+	var camera: Node = get_tree().get_first_node_in_group("camera")
+	if camera == null:
+		return global_position
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	# camera.global_position is the world-space center of the viewport (zoom 1).
+	# Top-left of viewport in world = camera_pos - viewport_size * 0.5.
+	# Pixel (sx, sy) in screen-space → world-space.
+	return (camera as Node2D).global_position - viewport_size * 0.5 + screen_pos
 
 
 func _hue_for(cat: int) -> Color:

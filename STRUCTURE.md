@@ -38,8 +38,10 @@ godot-helloworld/
 │
 ├── hazards/                    ← procedural-animated tier hazards (drop into rooms)
 │   ├── PlasmaFissure.tscn/.gd  ← tick-damage Area2D, bypasses iframes (Reactor Chamber)
-│   ├── CoolantPool.tscn/.gd    ← Area2D that calls player.enter_slow_zone() (Cryo Reservoir)
-│   └── SwingTendril.tscn/.gd   ← AnimatableBody2D pendulum platform (Cryo Reservoir)
+│   ├── CoolantPool.tscn/.gd    ← Area2D slow-zone + StaticBody tank walls (Cryo Reservoir)
+│   ├── SwingTendril.tscn/.gd   ← AnimatableBody2D pendulum platform (Cryo Reservoir)
+│   ├── Piranha.tscn/.gd        ← swimming bite hazard inside the coolant pool (25 dmg, 1.2s cd)
+│   └── Crown.tscn/.gd          ← endgame prize (ThirdRoom right side); pickup → HUD flash+confetti
 │
 ├── shaders/
 │   └── gradient_bg.gdshader    ← procedural-background gradient (per-room ShaderMaterial params)

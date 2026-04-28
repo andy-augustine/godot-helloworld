@@ -88,11 +88,12 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 
 ### 8. HUD / UI system
 
-**Why:** Health bar shipped via [`plans/done/hud-health.md`](../plans/done/hud-health.md). What's still missing: ability indicators (when pickups exist), item-count tracker, "you got X" pickup notification overlay, mini-map, pause overlay. Without these, the game still has no feedback channel for non-health state.
+**Status:** Partial. AbilityStrip with hole→raised pickup-style slots shipped. Inventory + ACTIVE merged into one styled panel. Drag-drop swap (inv↔active) verified end-to-end. Pickup-on-grant plays a swirl-and-fly animation that lands the box in its slot — visually replaces a separate "Got X" notification. Crown endgame triggers an HUD flash + rainbow confetti. Still missing: item-count tracker, mini-map, pause overlay. See "post-HUD-overhaul" ship in [`ROADMAP.md`](../ROADMAP.md).
+**Why:** Health bar shipped via [`plans/done/hud-health.md`](../plans/done/hud-health.md). What's still missing from the original scope: item-count tracker, mini-map, pause overlay.
 **Source:** Internal.
-**Effort:** Days for the remaining pieces, but each sub-piece is a half-day. The pickup notification is the most pressing — it's a hard dependency for #7.
-**Deliverable:** Extend `hud/HUD.tscn` with ability slot icons, an item-count Label, and a `PickupNotification` Control that animates "Got: <name>" on pickup. Mini-map can wait.
-**Notes:** Sequence with or after #7 — the first thing to add is whatever the first pickup grants.
+**Effort:** Half-day each for the remaining pieces.
+**Deliverable:** Item-count Label + mini-map Control + pause overlay (esc → modal). The "Got: X" notification is implicitly handled by the swirl-and-fly + slot pulse already.
+**Notes:** Pickup notification subsumed by swirl-fly animation — no separate notification needed for the abilities currently in play.
 
 ---
 
@@ -201,6 +202,34 @@ These were called out as "explicitly NOT in scope this round" in the camera/room
 **Deliverable:** Inventory grows `get_speed_multiplier()` and `get_jump_multiplier()` reading from owned abilities. player.gd's two `Skills.get_*_multiplier()` calls switch to Inventory equivalents. Skills.gd no longer instantiates turbo/high_jump in `_ready`.
 
 **Notes:** Sequence: do this AFTER the weapon system lands or in the same plan, so the cards have somewhere meaningful to go. Until then, the bridge state is fine.
+
+---
+
+### 18. Per-ability AbilityStrip slot sizing
+
+**Why:** Slots in the AbilityStrip are currently uniform 28×28 — matching the current Pickup template's outline footprint. User flagged that future pickups may differ in size, and the slots should match each ability's specific pickup so the visual "slotted in" effect (the pickup-shape ColorRect stack inside the slot) reads as the literal item the player just collected. The architecture is ready: `_make_icon` sizes from `ICON_SIZE`; the change is to lift that to a per-ability lookup.
+
+**Source:** Internal — surfaced 2026-04-27 in the HUD-overhaul ship.
+
+**Effort:** Half-day. Add `Abilities.size_for(id) -> Vector2` returning the pickup outline footprint for that ability. Update `AbilityStrip._make_icon` to read `Abilities.size_for(id)` instead of `ICON_SIZE`. Update the four raised-stack ColorRect offsets to be proportional to the slot size (currently hardcoded at 24x24 body inside 28x28 outline → use 0.86 ratio scaling).
+
+**Deliverable:** Per-ability slot dimensions in the strip; pickups of any size produce a visually-correct slot.
+
+**Notes:** Defer until a second pickup template with a different size actually exists. Premature otherwise.
+
+---
+
+### 19. Post-crown endgame flow
+
+**Why:** ThirdRoom's Crown is the current "endgame prize" — pickup plays the flash + rainbow confetti, the crown frees, then... nothing. No return-to-title, no "you win" overlay, no next-stage gate. The Beta state ships with the celebration but no resolution. Once the world has more rooms / a real end state, this becomes a player-facing gap.
+
+**Source:** Internal — surfaced 2026-04-27 alongside the Crown ship.
+
+**Effort:** Half-day. Hook a second beat into `HUD.play_crown_pickup`: after the confetti settles, fade in a "YOU WIN — press R to restart" overlay, or transition to a TitleScreen scene. Ties to #14 (Title screen) — could be the same plan.
+
+**Deliverable:** A reachable end state when the player picks up the Crown. Either a victory modal, a title-screen transition, or a "you cleared the demo" stinger.
+
+**Notes:** Sequence after the world has more than 3 rooms, or as part of the title-screen plan.
 
 ---
 

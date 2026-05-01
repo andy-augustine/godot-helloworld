@@ -1,6 +1,6 @@
 # Godot 4 / GDScript Community Sourcemap
-**Generated:** 2026-04-26  
-**Target window:** Q4 2025 onward  
+**Generated:** 2026-04-26 | **Updated:** 2026-05-01  
+**Target window:** January 2026 onward  
 **Purpose:** Sources-only reconnaissance for follow-on topic agents
 
 ---
@@ -14,6 +14,7 @@ No category-one surprises. Key flags below:
 - **AI slop load on maintainers (Feb 2026):** Core team publicly described AI-generated PRs as "draining and demoralizing." Relevant context if we ever submit PRs or proposals upstream.
 - **GUT and GdUnit4 are both active and not deprecated.** No replacement announced.
 - **GodotCon Amsterdam just happened:** April 23–24, 2026. Talks/videos likely to surface in coming weeks.
+- **Open input regression in 4.6.2 (as of 2026-05-01):** Issue #118521 — `is_action_just_pressed_by_event` / `is_action_just_released_by_event` always return `false` for mouse button clicks due to internal ID mismatch on event conversion. Filed April 13, 2026. Still open. Affects code that tries to distinguish which device triggered an action.
 
 ---
 
@@ -214,39 +215,47 @@ Known issues at launch: sky shader/VoxelGI regression (#115599), ReflectionProbe
 Fixed launch-day regressions. No known incompatibilities with 4.6.0.  
 https://godotengine.org/article/maintenance-release-godot-4-6-1/
 
-**Godot 4.6.2 — Released ~2026-04-01 (current recommended stable)**  
-122 fixes. Key: Jolt energy-leak fix, animation timeline cursor bug, 3D gizmo fix, viewport debanding fix, macOS ANGLE-on-Metal fix.  
+**Godot 4.6.2 — Released 2026-04-01 (current recommended stable)**  
+122 fixes, 61 contributors. Key: Jolt energy-leak fix, animation timeline cursor bug, 3D gizmo fix, viewport debanding fix, macOS ANGLE-on-Metal fix.  
 No known incompatibilities with 4.6.1. **Use this version.**  
+**Known remaining bug:** Issue #118521 — `is_action_just_pressed_by_event`/`is_action_just_released_by_event` return false for mouse button clicks (ID mismatch on event conversion; still open 2026-05-01).  
 https://godotengine.org/article/maintenance-release-godot-4-6-2/
 
-**Godot 4.6.3 — No announcement found as of 2026-04-26.**  
+**Godot 4.6.3 — No announcement found as of 2026-05-01.**  
 Active support for 4.6.x continues until 4.7's first patch release.
 
-**Godot 4.7 — Beta 1 released 2026-04-24 (NOT YET STABLE)**  
-Features so far:
-- HDR output: Windows, macOS, iOS, visionOS, Linux
-- Rectangular area lights (AreaLight3D)
-- Vertex snapping, collapsible animation groups
-- Remote scene debugging improvements
-- Editor quality-of-life focus
-Stable targeted Q2–Q3 2026.  
+**Godot 4.7 — Beta 1 released 2026-04-24/27 (NOT YET STABLE)**  
+Feature freeze in effect; only bug fixes going in from here.  
+Features:
+- HDR output: Windows, macOS, iOS, visionOS, Linux (Wayland)
+- AreaLight3D: rectangular real-time light source in 3D
+- 2D physics: one-way collision direction configurable (all directions, not just "up"); touch support on Wayland
+- Editor: vertex snapping, collapsible animation groups, Scene Paint tool, inspector section copy/paste, clearer remote debug
+- Rendering: nearest-neighbor scaling for 3D viewport (pixel-art 3D)
+- Build system: Tracy/Perfetto profiler integration automatic (no manual code needed)
+Stable targeted Q2–Q3 2026. Final dev snapshot confirmed as of late April.  
 https://www.phoronix.com/news/Godot-4.7-Beta  
-https://forum.godotengine.org/t/dev-snapshot-godot-4-7-beta-1/137627
+https://forum.godotengine.org/t/dev-snapshot-godot-4-7-beta-1/137627  
+https://80.lv/articles/godot-4-7-s-final-development-snapshot-arrived
 
 ### Testing Frameworks
 
 **GUT 9.6.0 (current stable, Godot 4.6)**  
-Released 2026-02-24. Notable additions since 9.x:
+Released 2026-02-24. Notable additions:
+- Godot 4.6 compatibility
+- **Breaking:** `assert_push_error`/`assert_engine_error` now accept only strings, assert single errors — use new `assert_push_error_count`/`assert_engine_error_count` for multi-error assertions
 - `assert_push_warning` / `assert_push_warning_count`
 - Singleton doubling (Input, Time, OS, etc.)
-- Elapsed time methods: `get_elapsed_sec`, `get_elapsed_msec`, etc.
-- `wait_idle_frames` for frame-counting in tests
+- Elapsed time methods: `get_elapsed_sec`, `get_elapsed_msec`
+- `print_tracked_errors` diagnostic
+- Fix: scene-changing methods no longer break tests when run from editor
 GUT 7.4.2 remains for Godot 3.x.  
 https://github.com/bitwes/Gut/releases  
 https://gut.readthedocs.io/en/v9.6.0/
 
-**GdUnit4 v5.0.4 (current for Godot 4.4, updated 2026-04-21)**  
-v6.0.0 released targeting Godot 4.5 (API-breaking from 4.5 changes). Both 5.x and 6.x actively maintained under godot-gdunit-labs org.  
+**GdUnit4 v6.1.3 (updated 2026-04-27, current)**  
+Org renamed from MikeSchulze/gdUnit4 to godot-gdunit-labs/gdUnit4.  
+Recent fixes: test script parse error detection, inspector freeze on stop, backslash handling in function bodies, HTML report quoting, editor crash on string settings click.  
 GdUnit4Net (C# variant) also active.  
 https://github.com/godot-gdunit-labs/gdUnit4/releases
 
@@ -278,4 +287,14 @@ https://godot-rust.github.io/dev/march-2026-update/
 
 ---
 
-*Crawl time: ~45 minutes. All URLs verified active as of 2026-04-26.*
+---
+
+## Additional notes from 2026-05-01 update
+
+- **GDScript 3.0 proposal (#12685)** is archived/inactive on GitHub. It was a community meta-proposal (June 2025) that core team has not picked up. The actual GDScript improvements are tracked as individual proposals (namespaces, traits, generics, `defer` keyword). Do not treat GDScript 3.0 as a planned release.
+- **GodotCon Amsterdam** occurred April 23-24, 2026. Videos may be appearing on the official YouTube channel now.
+- **GodotFest Munich** announced for November 2026 — continuation of the separate community-run GodotFest series.
+- **GodotEnv** (chickensoft) updated April 25, 2026 — relevant for managing Godot addon versions from CLI.
+- **kidscancode Godot Recipes** (https://kidscancode.org/godot_recipes/4.x/) is the best indexed reference for CharacterBody2D, TileMap, and 2D physics patterns even if YouTube uploads have slowed.
+
+*Original crawl: 2026-04-26 (~45 min). Updated crawl: 2026-05-01 (~40 min).*

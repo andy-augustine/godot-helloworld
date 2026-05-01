@@ -230,9 +230,9 @@ Should cite TESTING.md for the `simulate_action` + `capture_frames` timing pitfa
 
 ---
 
-## 12. Overnight crawl — current Godot 4.6 / GDScript community knowledge — **complete (2026-04-26)**
+## 12. Overnight crawl — current Godot 4.6 / GDScript community knowledge — **complete (2026-04-26), refreshed (2026-05-01)**
 
-**Status:** Shipped. Deliverable at [`research/tools/godot-4.6-current-intel.md`](../research/tools/godot-4.6-current-intel.md). Runbook preserved at [`research/crawl/PLAN.md`](../research/crawl/PLAN.md) for re-runs (re-execute via the `/refresh-godot-intel` slash command). Recommended re-scan cadence: monthly.
+**Status:** Shipped. Deliverable at [`research/tools/godot-4.6-current-intel.md`](../research/tools/godot-4.6-current-intel.md). Runbook preserved at [`research/crawl/PLAN.md`](../research/crawl/PLAN.md) for re-runs (re-execute via the `/refresh-godot-intel` slash command). Recommended re-scan cadence: monthly. Last refreshed 2026-05-01 (pre-scan + 5 topic agents + synthesis).
 
 **Why:** Our training data and research-doc sources (Godot stable docs, GUT issue #608 May 2024) are stale relative to current Godot. The user identified this explicitly during the 2026-04-26 skill-cards build: "training data is likely missing all this info." A focused crawl of *current* community sources (forums, Discord, recent GitHub issues, Reddit, blog posts dated 2025–2026) for Godot 4.6 quirks would close the gap. godogen's docs explicitly do NOT cover Control GUI / drag-and-drop testing — that domain is uncharted in their work too. (The narrow drag-test question that triggered this item is now resolved — see [`research/tools/godot-4.6-drag-test-current-intel.md`](../research/tools/godot-4.6-drag-test-current-intel.md), [`tests/RESULTS.md`](../tests/RESULTS.md), and `feedback_gdscript_practices.md` rules 12–13. The broader knowledge-gap remains.)
 

@@ -1,141 +1,155 @@
 # Godot 4.6 Performance & Deployment — Research Notes
-**Baseline:** Godot 4.6.2 (current stable, ~2026-04-01)
-**Window:** Jan 2026 – Apr 2026
-**Last updated:** 2026-04-26
+**Baseline:** Godot 4.6.2 (current stable, released 2026-04-01)
+**Window:** Jan 2026 – May 2026
+**Last updated:** 2026-05-01
 
 ---
 
 ## TL;DR — Top 3 Findings
 
-1. **GL Compatibility on macOS gets a critical ANGLE/Metal fix in 4.6.2.** Running under a VM (and some real hardware) could silently fall back to a broken driver path; 4.6.2 forces ANGLE (GL over Metal) in those cases. Confirm you are on 4.6.2 before shipping any macOS build.
+1. **Canvas renderer had accidental write-combined memory reads (4.6.0/4.6.1) — directly hits 2D/Compatibility on Apple Silicon.** Reading from write-combined memory is extremely slow on discrete and Apple Silicon GPUs. Fixed in 4.6.2 (GH-115757). If you haven't upgraded, frame-time stalls in 2D draws will be mysterious and hard to attribute in the profiler.
 
-2. **Canvas renderer had accidental write-combined memory reads (4.6.0/4.6.1).** This is a silent frame-budget killer on Apple Silicon — write-combined memory is fast to write but extremely slow to read. Fixed in 4.6.2 (GH-115757). Upgrade immediately if you have not.
+2. **4.6.2 introduced a sky-shader regression (TIME variable breaks lighting), cherry-picked to 4.6.3.** Using `TIME` in a sky shader in 4.6.2 makes the scene go dark (GH-118110, #118317). Patch targeted for 4.6.3. If your project uses sky shaders with TIME, stay on 4.6.1 or wait for 4.6.3; otherwise 4.6.2 is the correct baseline.
 
-3. **4.6.0 launched with a sky-shader/VoxelGI regression and a ReflectionProbe crash.** Neither affects a 2D GL Compatibility project directly, but they confirm that 4.6.0 and 4.6.1 should be treated as stepping stones — 4.6.2 is the only stable 4.6 target for production work.
+3. **macOS ANGLE-on-Metal forced in VMs in 4.6.2 — load-bearing for CI export pipelines.** Previously, ANGLE init failure in a macOS VM (GitHub Actions, Parallels) silently degraded the renderer. Now it forces ANGLE. Windows gets the same fallback fix for AMD GPUs (GH-117253).
 
 ---
 
 ## Per-Finding Entries
 
-### 1. Canvas Renderer Write-Combined Memory Reads (Silent Frame Hog)
+### 1. Canvas Renderer Write-Combined Memory Reads (Frame Hog, Apple Silicon)
 
-**Impact:** HIGH for 2D/Compatibility projects on Apple Silicon.
-Write-combined (WC) memory regions are write-only by design on Apple Silicon; reading from them causes extreme stalls. The 2D canvas renderer was accidentally reading from WC memory in 4.6.0 and 4.6.1, causing unexplained frame-time spikes that would not show up as obvious CPU or GPU load in basic profiling.
+**Impact:** HIGH for 2D/Compatibility on Apple Silicon and discrete GPUs.
+After GH-111183 in 4.6, `new_instance_data` returned a pointer into a GPU buffer mapping. The `|=` accumulation pattern then read from that pointer — catastrophically slow on write-combined memory regions. Apple M-series chips and discrete GPUs all exhibit this characteristic. Measured overhead: CPU performance dropped relative to 4.5.1. Fix returns an intermediary data pointer so future reads are never from WC memory. Minor regression on UMA (~200–300 µs/frame at 120k instances) is negligible for a 960×540 game.
 
-**Recommended action:** Upgrade to 4.6.2 (minimum). If profiling a 960×540 scene and you see inexplicable CPU stalls on draw calls, this is the likely culprit if you are still on 4.6.0/4.6.1. No GDScript or scene changes needed — the fix is engine-side.
+**Recommended action:** Must be on 4.6.2. If you profiled your game on 4.6.0/4.6.1 and saw inexplicable CPU stalls in CanvasItem draw calls, rebaseline on 4.6.2. No project-level changes required.
 
-**Citation:** GH-115757, Godot 4.6.2 release notes — "Fix accidental write-combined memory reads in canvas renderer."
-Source: https://godotengine.org/article/maintenance-release-godot-4-6-2/
-
----
-
-### 2. macOS ANGLE-on-Metal Forced in VMs (4.6.2)
-
-**Impact:** HIGH for macOS export / CI pipeline.
-The GL Compatibility renderer on macOS routes through ANGLE (GL emulation over Metal). In 4.6.0/4.6.1, running inside a VM (GitHub Actions macOS runners, Parallels, etc.) could cause ANGLE init to fail and fall back silently, producing a broken or degraded renderer. 4.6.2 detects this and forces ANGLE. A companion fix sets the current driver correctly when ANGLE init fails on Windows too.
-
-**Recommended action:** Verify export testing runs on Godot 4.6.2. If you run CI or build-verification in a macOS VM, this fix is load-bearing. No project settings change required.
-
-**Citation:** GH-117371 (macOS: force ANGLE when running in VM), GH-117253 (Windows: set current driver when ANGLE init fails).
-Source: https://godotengine.org/article/maintenance-release-godot-4-6-2/
+**Citation:** GH-115757, merged 2026-02-02; cherry-picked to 4.6.2 (2026-03-06).
+https://github.com/godotengine/godot/pull/115757 (accessed 2026-05-01)
+https://godotengine.org/article/maintenance-release-godot-4-6-2/ (2026-04-01)
 
 ---
 
-### 3. 2D Batching and Rendering Pipeline Speed-Ups (4.6.0)
+### 2. `TIME` in Sky Shader Breaks Lighting — 4.6.2 Regression
 
-**Impact:** MEDIUM — throughput improvement for sprite-heavy 2D scenes.
-The 2D renderer received batching improvements described by GDQuest as "faster" in their 4.6 workflow guide. This is on top of the canvas renderer WC-read bug (finding #1), which means post-4.6.2 the cumulative 2D rendering speed improvement versus 4.5.x is meaningful. No explicit benchmark numbers were published.
+**Impact:** HIGH if you use animated sky shaders. Scene goes fully dark when `TIME` is sampled in the sky shader. Introduced by the interaction between the sky roughness layer fix (GH-116154, cherry-picked into 4.6.2) and how backing textures are allocated: 8 layers are allocated but the shader only fills 7; the final layer stays black, making fully rough objects receive black reflections. Fix (GH-118317) tracks fallback mode earlier and recreates backing textures on mode change.
 
-**Recommended action:** No action needed — baked into the engine. Useful to know when evaluating whether to increase draw complexity (more enemies, particles, background tiles) in the 960×540 viewport. Profile with the built-in profiler after upgrading to 4.6.2 to establish a baseline.
+**Recommended action:** For 2D GL Compatibility games without custom sky shaders this is a non-issue. If you do use a sky shader with `TIME`: pin to 4.6.1 or wait for 4.6.3 (cherry-pick confirmed by Repiteo on 2026-04-13).
 
-**Citation:** GDQuest "Godot 4.6 Workflow Changes" library page; Godot 4.6 release highlights.
-Source: https://www.gdquest.com/library/godot_4_6_workflow_changes/
-
----
-
-### 4. Tracy / Perfetto / Instruments Tracing Support Added (4.6.0)
-
-**Impact:** MEDIUM — new capability for native-level profiling.
-Godot 4.6.0 added memory profiling macros and tracing support for dedicated profilers: Tracy (cross-platform frame profiler), Perfetto (Android), and Instruments (macOS/iOS). This allows profiling GDScript function calls and Godot API calls at system level rather than just within the editor's built-in profiler. Perfetto support is specifically called out in the April 2026 Mobile update article for Android crash-rate investigation.
-
-**Recommended action:** For macOS development on Apple Silicon, Instruments integration is now first-class. Use it when the editor profiler does not have enough resolution to isolate a frame spike. Requires a custom engine build with the tracing option enabled — not available in official export templates. Good to know for deep-dive debugging; not needed for routine development.
-
-**Citation:** GH-113279 (C++ tracing profilers: Tracy, Perfetto, Instruments), GH-112702 (memory profiling macros for Tracy).
-Source: https://godotengine.org/releases/4.6/; https://godotengine.org/article/godot-mobile-update-apr-2026/
+**Citation:** GH-118110 (opened ~Apr 8, 2026, assigned 4.7); GH-118317 (fix, cherry-picked to 4.6.3); GH-116154 (root trigger, merged 4.7 then 4.6.2).
+https://github.com/godotengine/godot/issues/118110 (accessed 2026-05-01)
+https://github.com/godotengine/godot/pull/118317 (accessed 2026-05-01)
 
 ---
 
-### 5. Core Container Optimizations (4.6.0) — GDScript Indirect Benefit
+### 3. macOS ANGLE-on-Metal: VM Detection Forced in 4.6.2
 
-**Impact:** LOW-MEDIUM — engine-side throughput, not GDScript bytecode speed.
-A cluster of 4.6.0 changes optimize fundamental engine containers used constantly at runtime: `HashMap` fast clear without zeroing (GH-108932), `HashSet::clear` cleanup (GH-108698), scene-tree group lookups (GH-108507), `Array::resize` avoids repeated copy-on-write (GH-110535), `Vector`/`CowData` `push_back`/`insert` avoids extra copy (GH-112630), and `NodePath`-to-String caching (GH-110478). GDScript benefits indirectly because these are the structures it touches on every frame (groups, node lookup, array manipulation).
+**Impact:** HIGH for CI export pipelines; MEDIUM for general macOS development.
+GL Compatibility renderer on macOS routes through ANGLE (OpenGL emulation over Metal). In 4.6.0/4.6.1, running inside a macOS VM (GitHub Actions, UTM/QEMU, Parallels) could crash or silently degrade at startup. GH-117371 detects the VM and forces ANGLE. Tested on macOS 15 VM, macOS 26 VM, and native macOS 26 — all pass. Requires ANGLE libraries compiled in; without them, expect an EGL library load error instead of a silent crash.
 
-No GDScript bytecode execution speed improvement was announced for 4.6. The GDScript static analyzer was expanded (full closure/lambda support) but that is a correctness feature, not a runtime speed feature.
+Companion fix GH-117253 addresses the same failure mode on Windows with AMD Radeon GPUs where ANGLE init fails (packHalf2x16/unpackHalf2x16 driver bug) — now falls back to next driver instead of hanging.
 
-**Recommended action:** None required. Be aware that GDScript call overhead is unchanged at the interpreter level — still budget-conscious for tight inner loops. Prefer `_physics_process` over polling signals in performance-critical code.
+**Recommended action:** On 4.6.2 this is resolved automatically. If you set up a macOS CI runner for export verification, no extra flags are needed. Confirm ANGLE libraries are present in your export template.
 
-**Citation:** CHANGELOG.md (Godot 4.6 section), GH-108507, GH-108932, GH-110535, GH-112630.
-Source: https://github.com/godotengine/godot/blob/master/CHANGELOG.md
-
----
-
-### 6. Delta-Encoded Patch PCKs (4.6.0)
-
-**Impact:** LOW for desktop-only; relevant if you ever ship web or Steam updates.
-Export now supports delta-encoded patch PCKs (GH-112011): patch files include only changed bytes within resources rather than entire files. For a small 2D game this mainly matters if you iterate frequently over a slow connection or via Steam depot. On macOS desktop it reduces patch download size.
-
-**Recommended action:** No immediate action for local development. Keep in mind when setting up a Steam/itch.io distribution pipeline — the export preset gains a delta-patch option worth enabling.
-
-**Citation:** GH-112011.
-Source: https://godotengine.org/releases/4.6/
+**Citation:** GH-117371 (macOS VM forces ANGLE, merged 2026-03-14, cherry-picked 4.6.2); GH-117253 (Windows AMD ANGLE fallback, cherry-picked 4.6.2); GH-117184 (AMD packHalf2x16 issue).
+https://github.com/godotengine/godot/pull/117371 (accessed 2026-05-01)
+https://github.com/godotengine/godot/issues/117184 (accessed 2026-05-01)
 
 ---
 
-### 7. Jolt Physics Energy Leak Fixed (4.6.2)
+### 4. Shader Material RAM Usage 6.5× Too High (4.6 launch, pre-stable fix)
 
-**Impact:** LOW for 2D projects; HIGH if you ever add 3D.
-Jolt Physics had an energy-increase bug on elastic collisions (gravity applied incorrectly to dynamic bodies), causing objects to gradually gain spurious velocity — a subtle simulation error that would waste CPU cycles on unnecessary physics recalculation over time and produce wrong gameplay behavior.
+**Impact:** HIGH if many shader materials; already fixed in 4.6.0-stable.
+Between 4.6dev5 and dev6, the Vulkan driver stored full SPIR-V bytecode in RAM at all times instead of only when pipeline statistics profiling is active — ~6.5× expected footprint per shader material. Fixed in GH-115049 (merged 2026-01-19) by gating SPIR-V storage on `pipeline_statistics` flag. No action needed on 4.6.0-stable or later; documented to explain early-4.6 RAM complaints in forum threads.
 
-**Recommended action:** No action for a 2D-only project. File this for when 3D is added. Use 4.6.2+.
-
-**Citation:** GH-115305.
-Source: https://godotengine.org/article/maintenance-release-godot-4-6-2/
+**Citation:** GH-115032, GH-115049.
+https://github.com/godotengine/godot/issues/115032 (accessed 2026-05-01)
 
 ---
 
-### 8. 3D Texture Import Up to 2× Faster (4.6.0)
+### 5. GDScript Closures / Await + PackedArray Crash (4.7-dev, not 4.6.x)
 
-**Impact:** LOW at runtime; HIGH for iteration speed during development.
-GPU-based RGB-to-RGBA conversion during import makes 3D texture reimport up to 2× faster (GH-110060). No runtime rendering performance change — this is an editor/import-time improvement. Relevant if you add 3D elements later.
+**Impact:** LOW for 4.6.2 users; HIGH if evaluating 4.7 beta.
+A 4.7-dev regression (introduced by GH-116711) crashes GDScript when a `PackedArray` variable appears between two `await` statements. Root cause: stack cleanup during coroutine unwinding triggers a `SafeRefCount` error. Fixed by reverting GH-116711 and landing GH-117053. Does NOT affect 4.6.x — milestone is 4.7 only.
 
-**Recommended action:** None for current 2D project. Noted for future reference.
+Separate GDScript issue: type inference for inferred return values became stricter in 4.7.dev2 (GH-117081), breaking functions that return mixed types. Also 4.7-dev only.
 
-**Citation:** GH-110060.
-Source: https://godotengine.org/releases/4.6/
+**Recommended action:** None for 4.6.2. If testing on 4.7 beta, check your scripts for mixed-type returns and `await` + PackedArray patterns.
+
+**Citation:** GH-117049 (PackedArray crash, 4.7 milestone); GH-117081 (return type inference, 4.7-dev2); GH-117053 (fix).
+https://github.com/godotengine/godot/issues/117049 (accessed 2026-05-01)
+https://github.com/godotengine/godot/issues/117081 (accessed 2026-05-01)
 
 ---
 
-## 4.6-Specific Performance Regressions Reported
+### 6. Tracy/Perfetto/Instruments Profiler Integration
 
-| Regression | Versions affected | Status in 4.6.2 | Notes |
+**Impact:** MEDIUM for deep frame-budget work; no impact on shipped game performance.
+Godot 4.6.0 added native tracing support (GH-113279): Tracy (cross-platform), Perfetto (Android), and Instruments (macOS/iOS). Enables profiling individual GDScript calls and Godot API calls at system level, not just inside the editor profiler. Requires a custom engine build with the tracing flag — not available in official export templates. **Coming in 4.7:** Tracy/Perfetto is automatic with no manual code annotations needed (build system integration) — noted in 4.7 beta 1 announcement.
+
+**Recommended action:** For macOS/Apple Silicon debugging of frame spikes, Instruments integration in 4.6.0+ is worth a custom build when the editor profiler isn't granular enough. For routine development, the editor's built-in profiler is sufficient.
+
+**Citation:** GH-113279 (4.6.0); 4.7 beta 1 announcement (2026-04-24/27).
+https://forum.godotengine.org/t/dev-snapshot-godot-4-7-beta-1/137627 (accessed 2026-05-01)
+https://www.phoronix.com/news/Godot-4.7-Beta (accessed 2026-05-01)
+
+---
+
+### 7. Core Container Optimizations (4.6.0) — Indirect GDScript Benefit
+
+**Impact:** LOW-MEDIUM — engine throughput, not GDScript bytecode speed.
+`HashMap` fast-clear without zeroing (GH-108932), `Array::resize` avoids repeated copy-on-write (GH-110535), `Vector`/`CowData` `push_back`/`insert` avoids extra copy (GH-112630), `NodePath`-to-String caching (GH-110478), scene-tree group lookups (GH-108507). GDScript touches these structures constantly. No GDScript bytecode execution speed improvement was announced for 4.6 — interpreter overhead is unchanged. The `String` append performance fix (GH-90203, closed 2026-02-12) addresses quadratic-time behavior on very large string concatenation.
+
+**Recommended action:** No action. Prefer `PackedStringArray` / `PackedFloat32Array` over plain GDScript arrays in tight inner loops; prefer `_physics_process` over polling signals.
+
+**Citation:** CHANGELOG.md (4.6 section); GH-90203.
+https://github.com/godotengine/godot/blob/master/CHANGELOG.md (accessed 2026-05-01)
+
+---
+
+### 8. Jolt Physics Energy Leak Fixed (4.6.2)
+
+**Impact:** LOW for 2D; HIGH if/when 3D is added.
+Elastic collision energy bug in Jolt caused dynamic bodies to gradually gain spurious velocity, wasting CPU on unnecessary recalculation and producing wrong gameplay behavior. Fixed in 4.6.2 (GH-115305 region). Kinematic rotation accuracy also improved.
+
+**Recommended action:** Nothing for current 2D project. Use 4.6.2+ when 3D is introduced.
+
+**Citation:** GH-115305; Godot 4.6.2 release notes (2026-04-01).
+https://godotengine.org/article/maintenance-release-godot-4-6-2/ (2026-04-01)
+
+---
+
+### 9. NVIDIA RTX Godot Fork (GDC 2026, Experimental)
+
+**Impact:** INFORMATIONAL only. NVIDIA's RTX/DLSS Godot fork (announced 2026-03-13) is not upstream. Irrelevant for GL Compatibility 2D work.
+
+**Citation:** GameFromScratch.com, ~2026-03-13.
+
+---
+
+## 4.6-Specific Performance Regressions Summary
+
+| Regression | Versions Affected | Status | Notes |
 |---|---|---|---|
-| Sky shader / VoxelGI / SDFGI lighting broken | 4.6.0 | Fixed in 4.6.1 | Issue #115599. 3D/Forward+ only; does not affect GL Compatibility 2D. |
-| ReflectionProbe crash | 4.6.0 | Fixed in 4.6.1 | Issue #115284. 3D only. |
-| Canvas renderer WC memory reads | 4.6.0, 4.6.1 | Fixed in 4.6.2 | GH-115757. **Directly affects 2D/Compatibility on Apple Silicon.** |
-| ANGLE init silent fallback on macOS | 4.6.0, 4.6.1 | Fixed in 4.6.2 | GH-117371. Affects VM-based CI and some hardware configs. |
-| Viewport debanding broken with spatial scalers | 4.6.0, 4.6.1 | Fixed in 4.6.2 | GH-114890. Visual quality regression, not a perf regression per se. |
-| Animation use-after-free (AHashMap realloc) | 4.6.0 | Fixed in 4.6.1 | GH-115931. Could cause non-deterministic crashes during heavy animation playback. |
+| Canvas renderer WC memory reads | 4.6.0, 4.6.1 | **Fixed in 4.6.2** (GH-115757) | Directly affects 2D/Compatibility on Apple Silicon |
+| Sky shader / VoxelGI / SDFGI lighting broken | 4.6.0 | **Fixed in 4.6.1** (GH-116155 backport) | 3D/Forward+ only; 2D GL Compat unaffected |
+| ReflectionProbe crash (dual probes) | 4.6.0 | **Fixed in 4.6.1** (GH-115284) | 3D only |
+| Shader material 6.5× RAM spike | 4.6.dev6–rc1 | **Fixed before 4.6.0 stable** (GH-115049) | Documented here for forum-thread context |
+| macOS ANGLE silent fallback in VMs | 4.6.0, 4.6.1 | **Fixed in 4.6.2** (GH-117371) | Affects CI/VM-based export testing |
+| Windows AMD ANGLE init crash | 4.6.0, 4.6.1 | **Fixed in 4.6.2** (GH-117253) | AMD Radeon R-series driver packHalf2x16 |
+| Sky shader TIME variable breaks lighting | **4.6.2** | **Targeted for 4.6.3** (GH-118317) | New regression introduced by GH-116154 backport |
+| Animation use-after-free (AHashMap realloc) | 4.6.0 | **Fixed in 4.6.1** (GH-115931) | Non-deterministic crash during heavy animation |
 
-**Summary:** 4.6.2 resolves all known regressions relevant to this project. Do not ship on 4.6.0 or 4.6.1.
-
----
-
-## Web / Mobile Caveats (for future reference)
-
-- **Web export:** No specific GL Compatibility web export regressions found in 4.6.x. Web threading still requires `SharedArrayBuffer` (requires COOP/COEP headers on server). No changes to this requirement in 4.6.
-- **Mobile:** Android Vulkan crash rates dramatically improved in 4.6 via driver workarounds for Mali and Adreno GPUs. iOS export logic now auto-prevents shipping incompatible builds. Android instrumented testing added. Native debug symbols now shipped with official Android templates.
-- **Apple Silicon (macOS desktop):** GL Compatibility via ANGLE-on-Metal is the correct renderer. Confirmed production-stable in 4.6.2. The WC memory read fix (GH-115757) is specifically relevant here.
+**Net takeaway:** 4.6.2 is correct baseline except for projects using `TIME` in sky shaders — those need 4.6.3 when available, or pin to 4.6.1.
 
 ---
 
-*Sources: godotengine.org/releases/4.6, maintenance-release-godot-4-6-1, maintenance-release-godot-4-6-2, gdquest.com Godot 4.6 Workflow Changes, godot-mobile-update-apr-2026, godotengine/godot CHANGELOG.md, sourcemap.md (2026-04-26 crawl).*
+## Web / Mobile Caveats
+
+- **Web export (4.6.x):** No GL Compatibility web export regressions landed in 4.6.x. The shader type-mismatch issue on WebGL 2.0 (GH-118684, GH-118927) affects **4.7-dev only** — mixed int/float implicit conversion that desktop drivers accept but WebGL 2.0 (strict GLSL ES 3.00) does not. Custom build template failures with Emscripten 5.0.0 are a known archived issue (GH-115979) with no 4.6.x fix confirmed. Web threading still requires `SharedArrayBuffer` + COOP/COEP server headers — unchanged in 4.6.
+- **Mobile:** Android Vulkan crash rates improved dramatically in 4.6 via driver workarounds for Mali/Adreno. Android instrumented testing added. Native debug symbols ship with official Android templates. No changes in 4.6.2.
+- **Apple Silicon (macOS desktop):** GL Compatibility via ANGLE-on-Metal confirmed production-stable in 4.6.2. WC-memory fix (GH-115757) and VM ANGLE fix (GH-117371) both directly apply.
+
+---
+
+*Sources: godotengine.org/releases/4.6, maintenance-release-godot-4-6-1, maintenance-release-godot-4-6-2, godot interactive changelog (4.6.2), godotengine/godot GitHub issues and PRs, phoronix.com Godot 4.7 beta, forum.godotengine.org 4.7 beta 1 thread, sourcemap.md (updated 2026-05-01 crawl).*

@@ -51,12 +51,9 @@ some_signal.connect(func(): print(self.name))
 
 **Impact:** Every node that uses this pattern and is reloaded/freed leaks its own RefCounted wrapper. Accumulates across scene reloads.
 
-**Fix/Workaround (three options, best to worst):**
-1. Connect a named method: `some_signal.connect(_on_signal)` — no capture, no leak.
-2. Capture a weakref: `var wr := weakref(self)` then `func(): if wr.get_ref(): ...` inside the lambda.
-3. Store the lambda in a member var, call `disconnect()` in `_exit_tree()` — prevents orphan accumulation but requires discipline.
+**Fix/Workaround:** (1) Connect a named method — no capture, no leak. (2) Capture `weakref(self)` and guard with `wr.get_ref()` inside the lambda. (3) Store the lambda in a member var and call `disconnect()` in `_exit_tree()`.
 
-**Status:** Open, no assignee, no milestone. Overlaps with anonymous-lambda scene-reload duplication bug #94641 (connecting the same lambda twice on reload because each lambda expression creates a new non-equal Callable).
+**Status:** Open, no assignee, no milestone. Also relates to bug #94641: each lambda expression creates a new non-equal Callable, so connecting the same anonymous lambda on scene reload accumulates duplicate connections.
 
 **Citations:**
 - https://github.com/godotengine/godot/issues/102327 (RefCounted leak with self capture)
@@ -119,9 +116,9 @@ No error. Resource inspector shows the resource persisting and re-rendering even
 
 **Impact:** Affects `@tool` scripts that use `weakref()` to track exported textures. Scene reloads fail to release the previous resource, and it continues to render.
 
-**Status:** Open, tagged as regression vs 4.5.1, assigned to **milestone 4.7**. No backport to 4.6.x listed.
+**Status:** Open, regression vs 4.5.1, milestone 4.7. No 4.6.x backport.
 
-**Workaround:** Avoid `weakref()` in `@tool` exported-property trackers. Use a plain property with an explicit `_notification(NOTIFICATION_PREDELETE)` guard, or upgrade to 4.7 when stable.
+**Workaround:** Avoid `weakref()` in `@tool` exported-property trackers. Use a plain property with `_notification(NOTIFICATION_PREDELETE)` guard, or wait for 4.7 stable.
 
 **Citation:** https://github.com/godotengine/godot/issues/115448 (opened Jan 27 2026)
 
@@ -138,16 +135,11 @@ await some_node.animation_finished  # if some_node is freed first: hangs forever
 
 **Impact:** Memory leak that grows with scene reloads; coroutine never resumes; no error emitted.
 
-**Fix/Workaround:**
-- Always check `is_instance_valid(node)` before awaiting a signal on it.
-- Prefer `await get_tree().process_frame` as a single-frame yield rather than long-lived signal waits on externally-owned nodes.
-- Use `CONNECT_ONE_SHOT` where possible — Godot auto-disconnects and the coroutine resumes correctly.
+**Fix/Workaround:** Check `is_instance_valid(node)` before awaiting. Prefer `await get_tree().process_frame` for short yields. Use `CONNECT_ONE_SHOT` where the signal fires exactly once.
 
-**Status:** Ongoing known issue; multiple related reports open (e.g., #99383, #72629, #74449). No comprehensive fix in 4.6.x.
+**Status:** Multiple open reports (#99383, #72629, #74449). No comprehensive fix in 4.6.x.
 
-**Citations:**
-- https://github.com/godotengine/godot/issues/99383 (freed node + Tween/coroutine leak, affects 4.4+)
-- https://github.com/godotengine/godot/issues/72629 (hanging await after free)
+**Citations:** https://github.com/godotengine/godot/issues/99383 ; https://github.com/godotengine/godot/issues/72629
 
 ---
 
@@ -158,16 +150,9 @@ Runtime error (not crash): `"Lambda capture at index 1 was freed. Passed 'null' 
 
 **Impact:** Debugging becomes trial-and-error when a lambda captures several objects. The error is also flagged as a hard error even when the programmer explicitly intends to handle null via `is_instance_valid()`.
 
-**Status:** Open, tagged for team assessment. PR discussion proposes either (a) emit variable name in the message or (b) demote to warning. Fix PR #118552 is pending review as of Apr 2026.
+**Status:** Open. Fix PR #118552 pending (Apr 2026) — proposes variable name in message or demotion to warning.
 
-**Workaround:** Guard lambdas that capture possibly-freed objects:
-```gdscript
-var captured_node := $Enemy
-some_signal.connect(func():
-    if not is_instance_valid(captured_node): return
-    captured_node.take_damage(10)
-)
-```
+**Workaround:** Guard captures with `is_instance_valid(captured_var)` at top of lambda.
 
 **Citation:** https://github.com/godotengine/godot/issues/117840 (opened Mar 25 2026)
 
@@ -215,21 +200,4 @@ Concurrent signal emissions from `Thread` objects could corrupt reference counts
 
 ---
 
-## Sources
-
-- https://github.com/godotengine/godot/issues/117348
-- https://github.com/godotengine/godot/issues/102327
-- https://github.com/godotengine/godot/issues/94641
-- https://github.com/godotengine/godot/issues/116947
-- https://github.com/godotengine/godot/issues/110628
-- https://github.com/godotengine/godot/issues/115448
-- https://github.com/godotengine/godot/issues/117840
-- https://github.com/godotengine/godot/issues/99383
-- https://github.com/godotengine/godot/issues/72629
-- https://github.com/godotengine/godot/issues/118550
-- https://github.com/godotengine/godot-proposals/issues/13597
-- https://github.com/godotengine/godot-proposals/issues/13951
-- https://github.com/godotengine/godot-proposals/issues/8999
-- https://github.com/godotengine/godot-proposals/issues/9174
-- https://github.com/godotengine/godot-proposals/issues/12685
-- https://godotengine.org/article/maintenance-release-godot-4-6-3/
+## Sources (godotengine/godot issues: #117348, #102327, #94641, #116947, #110628, #115448, #117840, #99383, #72629, #118550; proposals: #13597, #13951, #8999, #9174, #12685; release: godotengine.org/article/maintenance-release-godot-4-6-3/)

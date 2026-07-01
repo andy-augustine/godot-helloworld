@@ -1,244 +1,293 @@
 # Godot 4 Community Sourcemap
-*Generated: 2026-07-01 | Intel window: Jan 2026 – Jul 2026*
+**Crawl date:** 2026-07-01
+**Target window:** January 2026 – July 2026
 
 ---
 
-## Surprises
+## SURPRISE: Godot 4.7 Released June 18, 2026
 
-- **Godot 4.7 shipped June 18, 2026** — this is current stable; the project should target 4.7, not 4.6.
-- **Official new Asset Store** launched with 4.7, replacing the old Asset Library in the editor.
-- **AI contribution ban**: Godot officially prohibited AI-authored code contributions in early 2026 (see contribution policy below). Notable policy signal if using AI tooling in a PR workflow.
-- **GodotCon Boston** is upcoming July 20-22, 2026 — watch for announcements.
+Godot 4.7 stable is now the current release. Key changes affecting 2D/GDScript devs: built-in VirtualJoystick node, gyro controller aiming, DrawableTexture, new Asset Store replacing the Asset Library, HDR output on all desktop platforms (Linux requires Wayland). No regressions in input/GUI/2D rendering found for 4.6.x or 4.7 as of crawl date. GUT and GdUnit4 are both active — neither is deprecated.
 
 ---
 
-## 1. Active Venues (ranked by signal)
+## 1. Active Venues — Ranked by Signal Quality
 
-### HIGH signal
+### HIGH Signal
 
-**GitHub — godotengine/godot**
+**GitHub: godotengine/godot**
 - URL: https://github.com/godotengine/godot
-- Activity: 309 contributors / 1,265 fixes since 4.6-stable for 4.7 beta 1 (April 2026). 4.7 stable released June 18, 2026.
-- Why useful: Primary source of truth for engine changes, bug tracking, release notes, and PR review patterns.
-- Dated sample: 4.7 stable release June 18, 2026; 4.6.3 maintenance release May 21, 2026.
+- Activity: 4,600+ open PRs; daily commits through June 2026. 309 contributors contributed between 4.6 and 4.7-beta1 alone.
+- Signal: Primary source of truth for engine behavior, bug reports, and feature PRs. Merge discussions reveal intent better than docs.
+- Note (2026): Contribution policy tightened Feb 2026. New contributors restricted to bug fixes and docs before feature PRs. AI-authored code explicitly banned. Policy article: https://godotengine.org/article/contribution-policy-2026/
 
-**GitHub — godotengine/godot-proposals**
-- URL: https://github.com/godotengine/godot-proposals/discussions
-- Activity: Ongoing discussions; active in 2026.
-- Why useful: Where feature proposals are debated before implementation. Watch for 2D/physics/tilemap threads relevant to this project.
+**GitHub: godotengine/godot-proposals**
+- URL: https://github.com/godotengine/godot-proposals
+- Activity: 4.7 milestone was 97% complete (129 closed, 3 open) as of May 2026. 5.0 milestone is open and active.
+- Signal: Best place to understand what is coming. Proposals link to implementation PRs and carry maintainer commentary.
+- Note: AI-written proposals explicitly prohibited, which keeps signal quality high.
+- Discussions: https://github.com/godotengine/godot-proposals/discussions
+- Milestones: https://github.com/godotengine/godot-proposals/milestones
 
-**Godot Forum (official)**
-- URL: https://forum.godotengine.org
-- Activity: Active in 2026; community growth thread posted May 2026 with stats going "steadily up."
-- Why useful: Best Q&A signal after GitHub issues. Self-organized, indexed, persistent (better than Discord for search).
-- Dated sample: Thread "Godot usage and engine growth 2026" posted May 2026.
+**godotengine.org/blog**
+- URL: https://godotengine.org/blog/
+- Activity: Release articles for every milestone: 4.6 (Jan 26), 4.6.1 (Feb 16), 4.6.2 (Apr 1), 4.6.3 (May 20), 4.7 (Jun 18, 2026).
+- Signal: Authoritative, written by maintainers. Every release article names contributors and highlights PRs.
+- Releases index: https://godotengine.org/releases/4.7/
 
-**Reddit — r/godot**
-- URL: https://www.reddit.com/r/godot
-- Activity: Maintained by Godot Foundation; active 2026 posting.
-- Why useful: High-volume community showcase and troubleshooting. Good for sentiment, plugin discovery, and "what are people building" signals.
-- Note: Subreddit is officially maintained by the Godot Foundation.
+**Godot Interactive Changelog**
+- URL: https://godotengine.github.io/godot-interactive-changelog/
+- Activity: Updated with every release; maintained by YuriSizov.
+- Signal: Searchable, filterable commit log by area (GDScript, Physics, Editor, etc.). Fastest way to confirm whether a specific bug was fixed or a feature landed in a given release.
 
-**GDQuest (YouTube + tutorials)**
-- URL: https://www.youtube.com/@Gdquest | https://www.gdquest.com
-- Activity: Active in 2026 (appearing in best-courses roundups, tutorials indexed on site).
-- Why useful: Best beginner-to-intermediate Godot 4 tutorial content; open-source demos; GDScript-first. Covers 2D platformer patterns directly relevant to this project.
-- Note: "Godot Tours" interactive learning launched inside Godot editor — unique format.
+**forum.godotengine.org**
+- URL: https://forum.godotengine.org/
+- Activity: Active June 2026. Recent example threads: "Godot usage and engine growth 2026" (May 2026); "Can Godot handle AAA fidelity in 2026?" (recent); active 4.7 migration Q&A.
+- Signal: High for practical GDScript and node-system Q&A. Engine team monitors and responds here. Preferred over godotforums.org.
 
-**Godot Engine Blog (godotengine.org/article/)**
-- URL: https://godotengine.org/article/
-- Activity: Consistent release posts, dev snapshots, policy articles through 2026.
-- Why useful: Primary source for release announcements, migration notes, contribution policy changes.
-- Dated sample: Contribution policy 2026 article; 4.7 beta 1 April 2026; 4.7 stable June 2026.
+**GitHub: bitwes/Gut**
+- URL: https://github.com/bitwes/Gut
+- Activity: GUT 9.6.0 released 2026-02-24. Issue #799 filed 2026 for a null pointer regression in 4.6, showing active maintenance.
+- Signal: Essential if you write GDScript tests. Changelog and issues are authoritative reference.
+- Docs: https://gut.readthedocs.io/en/v9.6.0/
+- Releases: https://github.com/bitwes/Gut/releases
 
-### MED signal
+**GitHub: MikeSchulze/gdUnit4 (org: godot-gdunit-labs)**
+- URL: https://github.com/MikeSchulze/gdUnit4
+- Activity: v5.0.4 released June 8, 2026. Compatible with Godot 4.0.3 through 4.7. Also available on new Asset Store.
+- Signal: Active; supports GDScript and C#; has CI/CD GitHub Action in gdUnit4-action repo.
+- Asset Store: https://store.godotengine.org/asset/mikeschulze/gdunit4/
+- Releases: https://github.com/MikeSchulze/gdUnit4/releases
 
-**Godot Discord — Official**
-- URL: https://discord.com/invite/godotengine
-- Members: ~74,000 (as of 2026)
-- Why useful: Fast real-time answers; channels for 2D, GDScript, editor. Not indexed well for search.
-- Limitation: Ephemeral — answers disappear; prefer forum for persistent knowledge.
+### MED Signal
 
-**Godot Discord — Godot Café (community-run)**
-- URL: https://discord.com/invite/zH7NUgz
-- Members: ~84,800 (largest Godot Discord)
-- Why useful: More relaxed; good for community showcase and finding collaborators.
+**r/godot**
+- URL: https://reddit.com/r/godot
+- Activity: +82k members (31.2% growth). Maintained by the Godot Foundation. Active daily posting.
+- Signal: Good for community sentiment, "made with Godot" showcases, beginner questions. Lower signal-to-noise than the forum for technical issues. Useful for discovering what problems newcomers hit most.
+- Companion subreddit: r/madeWithGodot
+- Stats: https://subredditstats.com/r/godot
 
-**Mastodon — @godotengine@mastodon.gamedev.place**
+**GitHub: chickensoft-games**
+- URL: https://github.com/chickensoft-games
+- Activity: Active 2026. NuGet packages updated through June 2026 (e.g., Chickensoft.Log.Godot 1.0.64; Chickensoft.GoDotTest 2.0.35).
+- Signal: Med-High for C#/Godot devs. GodotEnv is useful for any project managing addon versions from CLI. GDScript-only projects: low relevance.
+- Docs: https://chickensoft.games/docs
+
+**GitHub: godotengine/godot-docs**
+- URL: https://github.com/godotengine/godot-docs
+- Activity: Continuously updated; community doc PRs accepted.
+- Signal: Med for API nuances. Stable docs often lag behind master branch by a release cycle. Cross-check with the interactive changelog.
+
+**GitHub: godotengine/awesome-godot**
+- URL: https://github.com/godotengine/awesome-godot
+- Activity: Updated within last week as of crawl date. Curated plugin list.
+- Signal: Med for plugin discovery. High-star entries (recent): Phantom Camera (3.4k), Terrain3D (4k), ProtonScatter (2.9k), Script-IDE (1k).
+- Weekly tracker: https://www.trackawesomelist.com/godotengine/awesome-godot/week/
+
+**X/Twitter: @godotengine + #GodotEngine**
+- URL: https://x.com/godotengine
+- Activity: Posted 4.7 dev snapshots (March 2026), 4.7 stable (June 18, 2026). Community uses #GodotEngine and #godot4.
+- Signal: Med for announcements; follow individual contributor accounts for higher signal.
+
+**Mastodon: @godotengine@mastodon.gamedev.place**
 - URL: https://mastodon.gamedev.place/@godotengine
-- Activity: 22,300 followers; actively maintained by Foundation.
-- Why useful: Official announcements and dev updates, especially from devs who left Twitter/X.
+- Activity: 1.02k posts, 22.3k followers. Juan Linietsky (@reduz@mastodon.gamedev.place) also active there.
+- Signal: Med for official announcements without algorithm noise. gamedev.place is the highest-concentration Mastodon instance for Godot devs.
 
-**GodotCon Conference**
-- URLs: https://conference.godotengine.org/2026/ | https://talks.godotengine.org/godotcon-boston-2026/cfp
-- Events in 2026: Amsterdam (April 23-24, 2026, completed); Boston (July 20-22, 2026, upcoming); Munich (November 2026, announced).
-- Why useful: Core dev talks, roadmap signals, networking. Recordings posted post-event.
+**GamingOnLinux**
+- URL: https://www.gamingonlinux.com/
+- Activity: Covered 4.6 (Jan 2026) and 4.7 (Jun 2026) on release day. Example: "Godot Engine 4.7 is out bringing a new Asset Store, HDR support, Steam Frame support."
+- Signal: Med — reliable same-day release coverage with solid feature summaries.
 
-**Jettelly blog**
-- URL: https://jettelly.com/blog/
-- Activity: Published 4.6 and 4.7 feature summaries in 2026 (multiple articles dated Jan-Jun 2026).
-- Why useful: Solid mid-depth feature overviews with concrete details; good first stop before reading full changelogs.
+**Phoronix**
+- URL: https://www.phoronix.com/
+- Activity: Covered 4.7 release with focus on Linux/Wayland HDR details.
+- Signal: Med-Low for GDScript work; Med for platform and render backend specifics.
 
-**Phoronix (Linux game dev news)**
-- URL: https://www.phoronix.com/news/Godot-4.7-Released
-- Activity: Covered 4.7 release June 2026.
-- Why useful: Quick release signal; Linux-angle coverage of each stable Godot release.
+**HackerNews**
+- URL: https://news.ycombinator.com/
+- Activity: Active Godot threads in 2026: AI slop PR discussion (Feb 2026, https://news.ycombinator.com/item?id=47059779); "Show HN: Claude Code skills for Godot games" (Mar 2026, id=47400868); 4.6 launch.
+- Signal: Med for meta-discussions about Godot's trajectory. Engine maintainers occasionally comment. Not useful for technical GDScript Q&A.
 
-**KidsCanCode (kidscancode.org)**
-- URL: https://kidscancode.org/godot_recipes/4.x/
-- Activity: Recipes site still indexed; 2D platform character recipe is maintained for Godot 4.x.
-- Why useful: Concise, well-structured recipes for common 2D patterns (CharacterBody2D, platforms, etc.). Direct relevance to this project.
+### LOW Signal
 
-### LOW / skip
+**Discord: Official Godot Server**
+- Activity: 66k+ members, 22k+ online. Invite: https://discord.me/godotgamedevelopment
+- Signal: Low for research — ephemeral, not indexed. High velocity for real-time help but poor for asynchronous reference.
+- Note: The Godot Contributors Chat (RocketChat) is used by the core team for PR coordination. More relevant than Discord for following maintainer discussions.
 
-**X/Twitter (@godotengine)**
-- URL: https://twitter.com/godotengine
-- Signal: Low — most core devs (including reduz) have reduced activity or left for Mastodon. Official account still exists but is secondary.
+**godotforums.org** (community-run, separate from official forum)
+- URL: https://godotforums.org/
+- Signal: Low — prefer forum.godotengine.org. Still active but audience is split.
 
-**godotforums.org (third-party)**
-- URL: https://godotforums.org
-- Signal: Low — separate unofficial forum; lower traffic than official forum.godotengine.org. Easy to confuse with the official one.
-
-**Facebook groups**
-- Signal: Low — outdated posts; community has largely moved to Discord and Reddit.
+**YouTube (general)**
+- Signal: Low for reference (can't search within videos, content gets stale). High for visual onboarding. See specific channels in section 5.
 
 ---
 
-## 2. High-Signal Individual Contributors (~15)
+## 2. High-Signal Individual Contributors (Active 2026)
 
-| Handle | Domain | Primary Venue | Why Useful | Example |
-|--------|--------|---------------|------------|---------|
-| @reduz (Juan Linietsky) | Engine architecture, core systems | GitHub / Mastodon | Co-creator; still actively merges core PRs. Vision setter. | Lead on LibGodot (embedded engine) in 4.6 |
-| @akien-mga (Rémi Verschelde) | Release management, project management | GitHub | Release manager; every stable release goes through him. Contribution policy author. | Authored 2026 AI contribution ban policy |
-| @clayjohn (Clay John) | Rendering, shaders | GitHub | Rendering maintainer; SSR rewrite in 4.6, HDR output in 4.7 | Rewrote Screen Space Reflections for 4.6 |
-| @vnen (George Marques) | GDScript, language | GitHub | GDScript language maintainer; if GDScript breaks, he fixes it | GDScript type system improvements across 4.x |
-| @Calinou (Hugo Locurcio) | Docs, editor UX, CI | GitHub | Prolific reviewer; writes godot docs; great at catching regressions | godotengine.org website contributions; docs reviews |
-| @BastiaanOlij | XR, OpenXR, rendering | GitHub | XR subsystem lead; Android XR in 4.7 | Steam Frame / Android XR support in 4.7 |
-| @aaronfranke (Aaron Franke) | Math, geometry, file formats | GitHub | Deep geometry/math fixes; GLB/GLTF imports | Frequent author of precision-fix PRs |
-| @KoBeWi (Tomasz Chabora) | Editor tools, 2D editor | GitHub | Editor behavior; 2D tilemap and editor UX fixes | Tilemap editor improvements |
-| @dsnopek (David Snopek) | GDExtension, web export | GitHub | GDExtension and HTML5/web platform lead | Web export reliability fixes |
-| @fire (K.S. Ernest Lee) | CI, build system, Godot org | GitHub | Keeps CI and build infra running; frequent triage | Build system improvements across releases |
-| @bitwes | GUT testing framework | GitHub (bitwes/Gut) | Sole maintainer of GUT; responsive to issues; released 9.6.0 for Godot 4.6 in Feb 2026 | GUT 9.6.0: assert_push_warning, Godot 4.6 compat |
-| @MikeSchulze | GdUnit4 testing framework | GitHub (MikeSchulze/gdUnit4) | Maintains GdUnit4 (GDScript + C# testing); CI/CD GitHub Action | gdUnit4 v6.x+ rebuilt for Godot 4.5+ API changes |
-| @nathanhoad | Godot Dialogue Manager plugin | GitHub / forum | Most-used dialogue plugin for Godot 4; active in 2026 | Dialogue Manager widely referenced in 2026 plugin roundups |
-| @segregate (GDQuest team) | Tutorials, open-source demos | YouTube / GitHub | GDQuest lead; produces the highest-quality Godot 4 tutorial content | Godot Tours interactive learning system |
-| @jsingh (Chickensoft) | C# Godot architecture | GitHub (chickensoft-games) | Godot + C# tooling; GodotGame template, LogicBlocks state machines, AutoInject DI | SaveFileBuilder and GodotGame both updated June 10, 2026 |
+1. **Juan Linietsky (@reduz)**
+   - Domain: Lead developer — engine architecture, rendering, GDExtension, LibGodot
+   - Links: https://github.com/reduz | https://mastodon.gamedev.place/@reduz | https://twitter.com/reduzio
+   - Why useful: Co-creator of Godot; architectural decisions trace back to him. His PRs and comments explain design intent better than docs.
+   - Example contribution: LibGodot embedded library mode (4.6); Vulkan ray tracing foundation (4.7).
 
----
+2. **Remi Verschelde (@akien-mga)**
+   - Domain: Project manager, release engineering, contribution policy
+   - Links: https://github.com/akien-mga
+   - Why useful: Writes release articles; manages merge queue; signals what gets prioritized each cycle.
+   - Example contribution: Authored 2026 contribution policy changes (Feb 2026); manages every stable release tag.
 
-## 3. Recent Milestones (Jan 2026+)
+3. **Yuri Sizov (@YuriSizov)**
+   - Domain: Editor UI, Inspector, theme system; maintainer of the Interactive Changelog tool
+   - Links: https://github.com/YuriSizov
+   - Why useful: Owns editor experience improvements. Also the person behind the interactive changelog — the most useful release-tracking tool.
+   - Example contribution: godot-interactive-changelog; Inspector and Signal docks improvements (PR #81221).
 
-### Engine Releases
+4. **dalexeev**
+   - Domain: GDScript language implementation — static typing, analyzer, runtime errors, doc generation
+   - Links: https://github.com/dalexeev
+   - Why useful: Go-to contributor for GDScript type system behavior. His PRs clarify language semantics before docs catch up. Also maintains gdscript-preprocessor plugin.
+   - Example contribution: PR #99899 (Apr 2026) — grouped GDScript analyzer/runtime error tests; gdscript-compile-time-evaluations experiments.
 
-**Godot 4.6 — stable released January 26, 2026**
-- Source: https://godotengine.org/releases/4.6/ | https://digitalproduction.com/2026/01/28/godot-4-6-arrives-with-major-cg-friendly-updates/
-- Key changes for this project:
-  - New "Modern" theme default in editor
-  - Editor docks/panels now movable and floatable
-  - Jolt Physics now default for new 3D projects
-  - LibGodot: embed engine in other apps
-  - Nodes get unique internal IDs (scene refactor tracking)
-  - Screen Space Reflections rewrite
-  - Delta encoding for patch PCKs (smaller updates)
+5. **Aaron Franke (@aaronfranke)**
+   - Domain: Math types (Vector, Transform, Quaternion), GDScript stdlib, documentation
+   - Links: https://github.com/aaronfranke
+   - Why useful: Prolific contributor to math and geometry APIs. Frequently cited in coordinate system and transform-related bug reports.
+   - Example contribution: High commit count in AUTHORS.md; active across math-related issues and PRs.
 
-**Godot 4.6.3 — maintenance release May 21, 2026**
-- Source: https://gamedev.net/news/3473/
-- 86 fixes from 41 contributors
-- Covers: 2D/3D editor behavior, animation crashes, Android/iOS export, C# deps, input quirks, physics overlap, rendering fixes.
+6. **Fabio Alessandrelli (@Faless)**
+   - Domain: Networking — WebSocket, WebRTC, multiplayer, ENet
+   - Links: https://github.com/Faless
+   - Why useful: Primary maintainer of Godot's networking layer. Essential reference for multiplayer and WebSocket work.
+   - Example contribution: Core networking contributor; named in QA/testing team at contributing.godotengine.org.
 
-**Godot 4.7 — stable released June 18, 2026** ← CURRENT STABLE
-- Sources: https://www.gamingonlinux.com/2026/06/godot-engine-4-7-is-out-bringing-a-new-asset-store-hdr-support-steam-frame-support/ | https://www.phoronix.com/news/Godot-4.7-Released | https://godotengine.org/article/dev-snapshot-godot-4-7-beta-1/
-- 1,265 fixes from 309 contributors since 4.6-stable
-- Key features:
-  - **HDR output support**
-  - **New official Asset Store** (replaces Asset Library in editor; threaded background loading)
-  - **AreaLight3D** — rectangular light source node
-  - **Steam Frame + Android XR** support
-  - **DrawableTexture2D** — draw on a texture at runtime
-  - Virtual joysticks built in
-  - Collapsible animation tracks
-  - Vertex snapping, Path3D collider snapping
-  - Searchable popups, category-level property copy/paste
+7. **Raul Santos (@raulsntos)**
+   - Domain: C# / .NET binding layer
+   - Links: https://github.com/raulsntos | https://github.com/raulsntos/godot-dotnet
+   - Why useful: Owns C# interop. Maintains godot-dotnet for framework-level C# compatibility with Godot 4.x.
+   - Example contribution: godot-dotnet framework; C# binding updates for 4.6 and 4.7.
 
-### Testing Frameworks
+8. **smix8**
+   - Domain: Navigation system — NavigationAgent, NavigationMesh, pathfinding
+   - Links: https://github.com/smix8
+   - Why useful: The primary contributor to Godot's navigation system. Navigation bugs should be diagnosed against their PRs first.
+   - Example contribution: Maintains a navigation-focused fork of godot-docs; navigation mesh fixes across 4.x.
 
-**GUT 9.6.0 — released February 24, 2026**
-- Source: https://github.com/bitwes/Gut/releases | https://gut.readthedocs.io/
-- Compatible with Godot 4.6
-- New: `assert_push_warning`, `assert_push_warning_count`; ability to double Godot Singletons (Input, Time, OS); push_warning no longer fails tests unexpectedly
-- Note: GUT 9.x = Godot 4.x; GUT 7.4.2 = Godot 3.x
+9. **K.S. Ernest Lee (@fire)**
+   - Domain: Animation, IK, engine stability
+   - Links: https://github.com/fire
+   - Why useful: Core team member active across a wide range of PRs. Named in Animation and IK teams at contributing.godotengine.org.
+   - Example contribution: Named maintainer in Animation/IK area teams; broad cross-domain contributions.
 
-**GdUnit4 v6.x+ (2026)**
-- Source: https://github.com/MikeSchulze/gdUnit4 | https://github.com/MikeSchulze/gdUnit4/releases
-- Rebuilt for Godot 4.5+ API (breaking API change required full rebuild from v5.x)
-- Supports GDScript and C#; CI/CD GitHub Action available: https://github.com/MikeSchulze/gdUnit4-action
-- v7.0.0 referenced as in-development milestone
+10. **Silc 'Tokage' Renew (@TokageItLab)**
+    - Domain: Animation system, SkeletonModifier3D, IKModifier3D
+    - Links: https://github.com/TokageItLab
+    - Why useful: Led the IK system rewrite that shipped in Godot 4.6. Authoritative on procedural animation.
+    - Example contribution: IKModifier3D / TwoBoneIK3D / FABRIK3D / CCDIK system in Godot 4.6.
 
-### Community / Ecosystem
+11. **Pavels Nadtocajevs (@bruvzg)**
+    - Domain: Text rendering, fonts, internationalization, platform text APIs
+    - Links: https://github.com/bruvzg
+    - Why useful: Owns the text rendering pipeline. Go-to for i18n, RTL text, and font system bugs.
+    - Example contribution: Named in QA/testing and text teams at contributing.godotengine.org.
 
-**GodotCon Amsterdam — April 23-24, 2026 (completed)**
-- Source: https://godotengine.org/article/godotcon-2026/ | https://tickets.godotengine.org/foundation/godotcon-ams-2026/
-- Partnered with Dutch Games Association
+12. **Nathan Lovato (@NathanLovato / GDQuest)**
+    - Domain: GDScript education, open-source demos, 2D game patterns
+    - Links: https://github.com/NathanLovato | https://www.gdquest.com/ | https://x.com/nathangdquest
+    - Why useful: 300k+ YouTube subscribers; "Learn GDScript From Zero" is the community-recommended free course. Open-source demos model good GDScript architecture.
+    - Example contribution: gdquest.com tutorial library; active newsletter; courses updated for Godot 4.x.
 
-**GodotCon Boston — July 20-22, 2026 (upcoming)**
-- Source: https://conference.godotengine.org/ | https://talks.godotengine.org/godotcon-boston-2026/cfp
-- CFP open; workshops July 20, talks July 21-22
+13. **bitwes**
+    - Domain: GUT testing framework (GDScript)
+    - Links: https://github.com/bitwes/Gut
+    - Why useful: Sole maintainer of GUT. Changelog and issue tracker are ground truth for test framework behavior.
+    - Example contribution: GUT 9.6.0 (Feb 24, 2026) — added Singleton doubling, assert_push_warning, headless auto-exit, elapsed time accessors.
 
-**GodotFest Munich — November 2026 (announced)**
-- Source: https://www.gamesmarket.global/godotfest-munich-returns-november-2026/
+14. **Mike Schulze (@MikeSchulze)**
+    - Domain: GdUnit4 testing framework (GDScript + C#)
+    - Links: https://github.com/MikeSchulze/gdUnit4
+    - Why useful: Sole maintainer of GdUnit4. v5.0.4 (Jun 8, 2026) supports Godot 4.0.3–4.7. Also maintains gdUnit4-action for GitHub Actions CI.
+    - Example contribution: gdUnit4-action CI/CD integration for automated Godot test runs.
 
-**Godot Contribution Policy (2026)**
-- Source: https://godotengine.org/article/contribution-policy-2026/
-- AI-authored code **explicitly banned** from the Godot engine repo
-- New contributors (<3 merged PRs) must fix bugs before submitting features
-- Rationale: growing AI-slop PR volume overwhelming volunteer reviewers
-
-**Godot Vision Statement 2026**
-- Source: https://godotengine.org/article/godot-vision-statement-2026/
-- Stated focus: small-to-medium teams; no paid tiers; completeness over breadth; reliability over feature count
-
-**Godot AI / MCP tooling ecosystem (2026)**
-- **Godot MCP Pro** (used in this project): 163 tools, 23 categories — https://godotengine.org/asset-library/asset/4961
-- **Godot AI plugin**: MCP-compatible, 150+ operations — https://godotengine.org/asset-library/asset/5050
-- Both listed on new Asset Store; MCP tooling for Godot editors is a new active category in 2026
-
-### Notable Plugin Releases (2026)
-
-- **Godot Dialogue Manager** — widely cited in 2026 roundups; maintained by @nathanhoad
-- **Chickensoft suite updated June 10, 2026**: GodotGame template, GameDemo, SaveFileBuilder — https://github.com/chickensoft-games
-- **awesome-godot** curated list: https://github.com/godotengine/awesome-godot (maintained)
+15. **Signal Emitted (YouTube channel)**
+    - Domain: Weekly Godot ecosystem news digest
+    - Links: Search "Signal Emitted Godot" on YouTube; published through week 17+ of 2026.
+    - Why useful: Covers merged PRs, dev snapshots, community discussions, and release news in weekly ~10-minute videos. Faster than the blog for tracking in-progress features.
+    - Example: Week 16 (Apr 2026) covered "GDScript 3.0 proposal"; Weeks 9-10 (Mar 2026) covered a major Godot game Steam launch.
 
 ---
 
-## 4. Dead / Low-Signal Sources to Skip
+## 3. Recent Milestones (Post-Jan 2026)
 
-| Source | Reason |
-|--------|--------|
-| X/Twitter @godotengine | Most core devs on Mastodon; official account secondary; noise ratio high |
-| godotforums.org | Third-party, low traffic; easy to confuse with official forum |
-| Facebook Godot groups | Outdated; community has moved on |
-| YouTube: kidscancode channel | Site recipes are maintained but YouTube channel has low 2026 activity; prefer kidscancode.org recipe pages directly |
-| Any Godot 3.x resources | Engine is Godot 4.4+; GDScript and scene APIs differ substantially |
-| LLM-generated "Godot tutorials" (Medium, etc.) | Many 2026 Medium posts are low-quality LLM output; verify against official docs |
+### Godot Engine Releases
+
+| Version | Date | Highlights |
+|---------|------|------------|
+| 4.6-stable | 2026-01-26 | New "Modern" editor theme; floatable docks; Jolt Physics as default 3D engine; IKModifier3D (TwoBoneIK3D, FABRIK3D, CCDIK); SSR rewrite; LibGodot embedded mode; patch PCK delta encoding |
+| 4.6.1-stable | 2026-02-16 | Stability and regression fixes |
+| 4.5.2-stable | 2026-03-19 | Backport maintenance for 4.5 branch |
+| 4.6.2-stable | 2026-04-01 | Maintenance fixes |
+| 4.6.3-stable | 2026-05-20 | 86 fixes from 41 contributors; 2D/3D editor, animation crashes, Android/iOS export, C# dependencies, input quirks, physics overlap, rendering fixes |
+| 4.7-stable | 2026-06-18 | HDR output (all desktop; Linux needs Wayland); AreaLight3D; built-in VirtualJoystick; DrawableTexture; Vulkan ray tracing foundation; new Asset Store; gyro controller aiming; Steam Frame support |
+
+### Contribution Policy Change (Feb 2026)
+- URL: https://godotengine.org/article/contribution-policy-2026/
+- New contributors must do bug fixes and docs before feature PRs
+- AI-authored code, agent-submitted PRs, AI-generated proposal text all explicitly banned
+- Context: ~4,681 open PRs at time of announcement; AI slop described as "draining and demoralizing"
+- Media coverage: The Register (Feb 18), PC Gamer, HN thread id=47059779
+
+### GUT Current State
+- Version: **9.6.0** (released 2026-02-24)
+- Compatible with: Godot 4.6 (9.x series is Godot 4.x only; 7.x was Godot 3.x)
+- Key 9.6.0 additions: `assert_push_warning` / `assert_push_warning_count`; Singleton doubling (Input, Time, OS, etc.); headless auto-exit; `print_tracked_errors`; elapsed time accessors (sec/msec/usec/idle-frames/process-frames/physics-frames)
+- Docs: https://gut.readthedocs.io/en/v9.6.0/
+- Status: Active; responsive to 4.6 regressions (issue #799 filed and tracked in 2026)
+
+### GdUnit4 Current State
+- Version: **5.0.4** (released 2026-06-08)
+- Compatible with: Godot 4.0.3 through 4.7
+- Caution: v6.0.0 referenced in some sources as Godot-4.5-based rebuild — verify on releases page before adopting
+- Features: GDScript + C# support; embedded inspector; scene runner; CI via gdUnit4-action
+- Releases: https://github.com/MikeSchulze/gdUnit4/releases
+
+### GodotCon 2026
+- Amsterdam: April 23-24, 2026 (Pathé Amsterdam Noord). First in Godot Foundation's home city; co-organized with Dutch Games Association.
+- Boston: Announced for 2026 US; name change from prior year signaled.
+- GodotFest Munich: November 2026.
+- Info: https://conference.godotengine.org/2026/
+
+### GDScript Proposals to Watch
+- "GDScript 3.0" (informal): Proposal to migrate GDScript implementation to GDExtension mechanism (godot-proposals Issue #14652). Tagged for Godot 5.0 milestone. Not imminent but signals long-term language direction.
+- Typed nested arrays/dicts: Multiple active proposals (e.g., Issue #12224 for Array[Array[String]] support). Watch the 4.8 and 5.0 milestones.
 
 ---
 
-## 5. Key URLs Quick Reference
+## 4. Sources to Skip (Abandoned / Replaced)
 
-| Resource | URL |
-|----------|-----|
-| Official docs (stable = 4.7) | https://docs.godotengine.org/en/stable/ |
-| Interactive changelog | https://godotengine.github.io/godot-interactive-changelog/ |
-| GDQuest tutorials | https://www.gdquest.com/tutorial/godot/ |
-| KidsCanCode Godot 4 recipes | https://kidscancode.org/godot_recipes/4.x/ |
-| GUT docs | https://gut.readthedocs.io/ |
-| GUT releases | https://github.com/bitwes/Gut/releases |
-| GdUnit4 repo | https://github.com/MikeSchulze/gdUnit4 |
-| Chickensoft org | https://github.com/chickensoft-games |
-| awesome-godot | https://github.com/godotengine/awesome-godot |
-| Godot proposals | https://github.com/godotengine/godot-proposals/discussions |
-| godot-prs-by-file | https://godotengine.github.io/godot-prs-by-file/ |
-| Asset Store (new, 4.7) | https://store.godotengine.org/ |
-| Asset Library (legacy) | https://godotengine.org/asset-library/asset |
-| GodotCon Boston 2026 | https://conference.godotengine.org/ |
-| Godot Foundation | https://godot.foundation/ |
+| Source | Status | Use Instead |
+|--------|--------|-------------|
+| Godot Asset Library (old) | Replaced in 4.7 by Asset Store (store.godotengine.org). Old library accessible for pre-4.7 projects. | New Asset Store |
+| godotforums.org | Community-run, fragmented audience. Lower traffic than official forum. | forum.godotengine.org |
+| Godot 3.x docs / GUT 7.x | Irrelevant for Godot 4.x projects. GUT 7.x is Godot 3 only. | Godot 4.x docs; GUT 9.x |
+| KidsCanCode (kidscancode.org) | No confirmed 2026 content found; GitHub org appears inactive for new Godot 4 tutorials. | GDQuest, Heartbeast |
+| Old Godot Q&A site (godotengine.org/qa) | Replaced by forum.godotengine.org in the Godot 4 era. | forum.godotengine.org |
+
+---
+
+## 5. Secondary Blogs and YouTube (Active 2026)
+
+- **GameFromScratch** (gamefromscratch.com): Day-of coverage of 4.6 and 4.7 releases. Tracks Godot popularity vs. Unity/Unreal via SteamDB data. MED signal for release and market context.
+- **Jettelly** (jettelly.com): Feature deep-dives on 4.6 and 4.7 dev snapshots through April 2026. Shader-heavy content. MED signal.
+- **GDQuest** (gdquest.com + YouTube): 300k+ subscribers. Free "Learn GDScript From Zero" course. Open-source demos model good GDScript patterns. HIGH signal for learning.
+- **Heartbeast** (youtube.com/c/uheartbeast): Godot and pixel art tutorials; ARPG series in Godot 4 ongoing. MED signal for 2D game patterns.
+- **Firebelley Games** (firebelley.com + YouTube): Professional Godot developer; publishes Steam games; long-form tutorials on project structure. MED signal for practical architecture.
+- **Signal Emitted** (YouTube): Weekly news digest. HIGH signal for tracking ecosystem pulse week-by-week.
+- **80.lv**: Covered 4.6 RC, 4.7 dev snapshot, 4.7 stable. CG/industry-facing but catches rendering news early.
+- **GamingOnLinux**: Same-day release coverage; reliable for 4.x release summaries.
+
+---
+
+*Crawl methodology: WebSearch + WebFetch via Claude research agent, 2026-07-01. URLs verified where accessible. godotengine.org returned HTTP 403 on direct WebFetch; information sourced from search result snippets and third-party coverage instead.*

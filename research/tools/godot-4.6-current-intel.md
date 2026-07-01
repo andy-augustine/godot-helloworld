@@ -1,204 +1,175 @@
-# Godot 4.6 Current Intel — Community Crawl Synthesis
-
-**Synthesized:** 2026-06-01 · **Window:** post-January 2026
-**Project:** 2D Metroidvania, Godot 4.6.2, GDScript, macOS Apple Silicon, GL Compatibility (GLES3) renderer, 960×540, CharacterBody2D + custom GameCamera room-locking, TileMapLayer rooms, AnimationPlayer rig, driven via godot-mcp-pro.
-**Sources:** six topic-research files under `research/crawl/`. Every claim is cited to the upstream issue/PR/release it came from.
+# Godot 4.6/4.7 Current Intel — Synthesized Deliverable
+*Synthesized: 2026-07-01 | Intel window: Jan 2026 – Jul 2026*
+*Project context: 2D Metroidvania, Godot 4.6.2, GDScript, macOS Apple Silicon, GL Compatibility renderer, 960×540, CharacterBody2D + custom GameCamera room-lock, TileMapLayer rooms, AnimationPlayer rig, MCP-driven dev (godot-mcp-pro).*
 
 ---
 
 ## 1. TL;DR
 
-- **Upgrade to 4.6.3 now.** It fixes the GLES3 batching bug that silently drops entire TileMapLayer render passes at specific tile counts (GH-117725) plus RefCounted/signal thread-safety races — both hit our GL Compatibility 2D stack. [engine-quirks F1; perf F-03]
-- **Lambda outer-variable capture is a value snapshot, not a live reference** (open bug #117348). Never mutate an outer var inside a lambda; use the 1-element Array accumulator. [gdscript #1]
-- **GdUnit4 (v6.1.3, Apr 2026) has overtaken GUT (v9.6.0, 15 months stale) in momentum** — better for greenfield test suites, though not worth mid-project migration. [tooling]
-- **Camera2D `position_smoothing` + `limit_smoothed` causes glitchy room entry**; the fix is calling `reset_smoothing()` after repositioning on transition — directly applicable to our GameCamera. [2d-platformer #1]
-- **CharacterBody2D slope jitter grows with distance from origin** (open #118130, ~16k px onset); keep room geometry within ~10k px of (0,0) on long maps. [engine-quirks F2]
+- **Engine quirks:** Animation TrackCache hash collisions silently mis-target properties on 4.6.0–4.6.3 (numbered/procedural node names); root fix landed in 4.7 (GH-117030, Mar 14 2026).
+- **GDScript:** Lambdas capturing `self` connected to signals on RefCounted classes leak the object — still unfixed in 4.7; use named method refs or `weakref` (GH-102327).
+- **Tooling:** GUT 9.7.0 (Jun 19) is still the default GDScript test framework; GdUnit4 (v6.1.3) surged in momentum but is overkill for GDScript-only projects.
+- **2D platformer:** `Input.parse_input_event` dropped button events in late-4.6/4.7-dev — directly hit our MCP synthetic-input tests; fixed in 4.7 stable (GH-119329, May 26 2026).
+- **Performance:** GL Compatibility renderer got a 2D batching overhaul (1.1×–7× GPU) in 4.6 and is NOT affected by the open Apple-Silicon Metal FPS regression — our renderer choice is correct.
 
 ---
 
 ## 2. Active sources, ranked
 
 ### HIGH
-| Source | Type | Why |
-|---|---|---|
-| [godotengine/godot](https://github.com/godotengine/godot) | GitHub | Ground-truth on fixed/broken; 4.6.3 = 86 fixes / 41 contributors |
-| [godot-proposals](https://github.com/godotengine/godot-proposals/discussions) | GitHub | Canonical design-decision record; core devs respond |
-| [godot-docs](https://github.com/godotengine/godot-docs) | GitHub | Official docs + doc-bug deltas |
-| [godotengine.org/blog](https://godotengine.org/blog/) | Blog | All release/Foundation announcements (403 on fetch, browser-OK) |
-| [forum.godotengine.org](https://forum.godotengine.org/) | Forum | Foundation-run official forum, active 2026 |
-| [bitwes/Gut](https://github.com/bitwes/Gut) | GitHub | Primary GDScript test framework (in our test patterns) |
-| [godot-gdunit-labs/gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4) | GitHub | Alt test framework; faster cadence |
-| [GDQuest](https://gdquest.com) | YouTube/web | Deep open-source GDScript courses |
-| [Godot Engine official YT](https://youtube.com/c/GodotEngineOfficial) | YouTube | GodotCon 2026 talks, dev vlogs |
+- **godotengine/godot** (GitHub) — primary truth for behavior/PRs. https://github.com/godotengine/godot — *S/N note: contribution policy tightened Feb 2026 (AI-authored code banned), which raises signal quality.*
+- **godotengine/godot-proposals** — what's coming; AI-written proposals banned. https://github.com/godotengine/godot-proposals
+- **godotengine.org/blog** — authoritative release articles. https://godotengine.org/blog/ — *WebFetch returned HTTP 403; sourced via search snippets + third-party coverage.*
+- **Godot Interactive Changelog** (YuriSizov) — fastest fix-landed-in-which-release check. https://godotengine.github.io/godot-interactive-changelog/
+- **forum.godotengine.org** — practical GDScript/node Q&A; team monitors. https://forum.godotengine.org/
+- **bitwes/Gut** — 9.7.0 (Jun 19 2026); authoritative for GDScript testing. https://github.com/bitwes/Gut
+- **godot-gdunit-labs/gdUnit4** — v6.1.3 (Apr 27 2026); moved to dedicated org (institutional-backing signal). https://github.com/godot-gdunit-labs/gdUnit4
 
 ### MED
-| Source | Type | Why |
-|---|---|---|
-| [ramokz/phantom-camera](https://github.com/ramokz/phantom-camera) | GitHub/asset | Top 4.6 camera plugin; relevant if camera system expands |
-| [chickensoft-games](https://github.com/chickensoft-games) | GitHub | C# tooling; low signal for pure GDScript |
-| [awesome-godot](https://github.com/godotengine/awesome-godot) | GitHub | Plugin discovery index |
-| r/godot · official Discord · @godotengine (Mastodon/X) | Community | Real-time Q&A; not archivable |
-| [jettelly.com](https://jettelly.com/blog) · [gamefromscratch.com](https://gamefromscratch.com) | Blogs | Good 4.6/4.7 feature coverage |
-| StayAtHomeDev · Lukky | YouTube | Practical tutorials |
+- **r/godot** — sentiment/showcases. https://reddit.com/r/godot
+- **godotengine/godot-docs** — API nuance; lags master ~one cycle. https://github.com/godotengine/godot-docs
+- **godotengine/awesome-godot** — plugin discovery. https://github.com/godotengine/awesome-godot
+- **GamingOnLinux** — reliable same-day release coverage. https://www.gamingonlinux.com/
+- **HackerNews** — meta/trajectory discussion. https://news.ycombinator.com/
+- **Mastodon @godotengine@mastodon.gamedev.place** — official announcements, no algorithm noise. https://mastodon.gamedev.place/@godotengine
+- **chickensoft-games** — C#-focused; low relevance to GDScript-only. https://github.com/chickensoft-games
 
-### LOW / SKIP
-- **SKIP (retired):** `answers.godotengine.org` (superseded by official forum), old IRC (dead).
-- **LOW:** `godotforums.org` (fan Flarum, fallback only), Stack Overflow godot tag (Godot 3.x era), Hacker News (shallow on GDScript), pre-2024 YouTube tutorials (TileMap/pre-Jolt APIs superseded).
-- **VERIFY before citing:** kidscancode.org recipes (Godot 3 era).
+### LOW
+- **Official Godot Discord** — real-time help, not indexable. https://discord.me/godotgamedevelopment
+- **godotforums.org** — split audience; prefer official forum. https://godotforums.org/
+- **YouTube (general)** — poor for reference, good for onboarding.
 
-**Topic-agent S/N updates:** Tooling agent flags GUT as a yellow-signal (15-month release gap) vs GdUnit4 momentum. 2D agent confirms `forum.godotengine.org` Metroidvania threads as actively useful. No source was downgraded out of its sourcemap tier.
+*Skip: old Asset Library (replaced by Asset Store in 4.7), Godot 3.x docs, GUT 7.x, KidsCanCode (no confirmed 2026 content — but note its screen-shake/save recipes are still cited as canonical patterns), old QA site.*
 
 ---
 
 ## 3. Contributors to follow
 
-| Name / handle | Domain | Primary link | Why useful | Example contribution |
-|---|---|---|---|---|
-| Juan Linietsky (reduz) | Engine architecture, GDScript VM, renderer | [github.com/reduz](https://github.com/reduz) | Creator/lead; core internals | Drove LibGodot in 4.6 |
-| Rémi Verschelde (akien-mga) | Release mgmt, CI, governance | [github.com/akien-mga](https://github.com/akien-mga) | Authoritative on what changed/why each release | Coordinates every stable; AI-slop PR statements (Feb 2026) |
-| George Marques (vnen) | GDScript language, type system | [github.com/vnen](https://github.com/vnen) | Best follow for GDScript semantics | Type inference + static-analyzer work in 4.6 |
-| Clay John (clayjohn) | Rendering (Vulkan, GLES3, forward+) | [github.com/clayjohn](https://github.com/clayjohn) | Owns renderers incl. GLES3 (our renderer) | Led 4.6 SSR rewrite |
-| Tomasz Chabora (KoBeWi) | Editor usability + MetSys | [github.com/KoBeWi](https://github.com/KoBeWi) | Authors Metroidvania-System framework | MetSys room/map mgmt; curve-point fixes (2026) |
-| Michael Alexsander (YeldhamDev) | Editor UX, canvas scaling | [github.com/YeldhamDev](https://github.com/YeldhamDev) | Inspector + Game debug tab | Favorite-properties + "Game" debug tab |
-| Thaddeus Crews (Repiteo) | Build system, SCons, exports | [github.com/Repiteo](https://github.com/Repiteo) | Export-template + thread-safety fixes | May–Jun 2026 thread-safety fixes |
-| Pāvels Nadtočajevs (bruvzg) | Text rendering, i18n | [github.com/bruvzg](https://github.com/bruvzg) | Go-to for font/text/CJK | Theora init + editor icon fixes (2026) |
-| Yuri Sizov (YuriSizov) | Editor UX, production | [github.com/YuriSizov](https://github.com/YuriSizov) | Deep editor-toolchain knowledge | Ex-Foundation PM; inspector internals |
-| bitwes (Tom) | GUT test framework | [github.com/bitwes](https://github.com/bitwes) | Sole maintainer of our test framework | GUT v9.6.0 singleton-doubling |
-| MikeSchulze | gdUnit4 | [github.com/MikeSchulze](https://github.com/MikeSchulze) | Alt test framework author | v6.1.3 (Apr 2026) flaky-test detection |
-| ramokz | Phantom Camera plugin | [github.com/ramokz](https://github.com/ramokz) | Top 4.6 camera plugin, responsive | Lookahead 2D; docs at phantom-camera.dev |
-| GDQuest (Nathan Lovato + team) | Education, demo projects | [gdquest.com](https://gdquest.com) | Authoritative patterns (hitbox/hurtbox, save) | Updated Godot 4 hitbox/hurtbox library |
-| Raul Santos (raulsntos) | C# / .NET | [github.com/raulsntos](https://github.com/raulsntos) | C# bridge owner (only if we add C#) | Owns Mono/GodotSharp |
+1. **George Marques (@vnen)** — GDScript language maintainer. https://github.com/vnen — Most GDScript type-system PRs in 4.6–4.7 route through him. E.g. reference point for the untyped-override return-type change (GH-115763).
+2. **dalexeev** — GDScript analyzer/static typing/runtime errors. https://github.com/dalexeev — Clarifies language semantics before docs; maintains gdscript-preprocessor. E.g. GH-99899 grouped analyzer/runtime error tests.
+3. **Nathan Lovato / GDQuest (@NathanLovato)** — GDScript education, 2D patterns. https://github.com/NathanLovato / https://www.gdquest.com/ — Open-source demos model good GDScript architecture; hitbox/hurtbox + save-format guides cited here are canonical. E.g. "Learn GDScript From Zero".
+4. **bitwes** — GUT maintainer (GDScript testing). https://github.com/bitwes/Gut — Ground truth for GUT behavior. E.g. GUT 9.6.0 added Singleton doubling, `assert_push_warning`, headless auto-exit.
+5. **Mike Schulze (@MikeSchulze)** — GdUnit4 maintainer. https://github.com/godot-gdunit-labs/gdUnit4 — Sole maintainer; also gdUnit4-action CI. E.g. v6.1.0 "run until failure" + variadic `assert_signal`.
+6. **KoBeWi** — Metroidvania-System plugin. https://github.com/KoBeWi/Metroidvania-System — Directly relevant: automated storable-object ID system for room/item state persistence (supports 4.6+).
+7. **Remi Verschelde (@akien-mga)** — release engineering, contribution policy. https://github.com/akien-mga — Signals per-cycle priorities; authored 2026 contribution policy. E.g. manages every stable release tag.
+8. **Juan Linietsky (@reduz)** — lead dev, architecture/rendering. https://github.com/reduz — Design intent for renderer/GDExtension decisions. E.g. LibGodot embedded mode (4.6).
+9. **Yuri Sizov (@YuriSizov)** — editor UI + Interactive Changelog. https://github.com/YuriSizov — Owns the best release-tracking tool. E.g. godot-interactive-changelog.
+10. **Aaron Franke (@aaronfranke)** — math types (Vector/Transform), stdlib. https://github.com/aaronfranke — Cited in coordinate/transform bug reports relevant to CharacterBody2D positioning.
+11. **Calinou / godot-extended-libraries** — godot-debug-menu. https://github.com/godot-extended-libraries/godot-debug-menu — In-game FPS/frametime overlay that works in exported builds; low-effort game-feel QA.
+12. **Signal Emitted (YouTube)** — weekly ecosystem digest. Search "Signal Emitted Godot" — Faster than the blog for in-progress features. E.g. Week 16 (Apr 2026) covered the "GDScript 3.0" proposal.
+13. **abarichello** — godot-ci (CI/CD deploy). https://github.com/abarichello/godot-ci — Standard Docker + Actions + butler-to-itch.io pipeline; updated to 4.7 same-day.
+14. **hi-godot** — godot-ai free MCP server. https://github.com/hi-godot/godot-ai — Strongest free MCP alternative to godot-mcp-pro; v2.8.2 (Jun 30 2026), 150+ ops, Asset Store one-click.
 
 ---
 
 ## 4. Findings
 
-### 4A. Engine quirks & regressions
-Ranked by relevance to our GL Compatibility 2D platformer.
+### 4.1 Engine quirks & regressions
 
-1. **GLES3 batching drops entire TileMapLayer render passes** (HIGH) — at tile counts hitting a multiple of `max_instances_per_buffer`, an `if (index == 0)` guard skipped all accumulated instances; layers vanish/flash, TileMap crashes under SubViewport. **Fixed in 4.6.3** (GH-117725). Pre-4.6.3 workaround: pad tile counts or use Forward+. We run GLES3 + TileMapLayer → upgrade is mandatory. [engine-quirks F1] https://github.com/godotengine/godot/pull/117725
-2. **CharacterBody2D slope jitter at distance from origin** (HIGH, OPEN #118130, filed Apr 2 2026) — FP precision loss; jitter onset ~16k px, severe at 30k–100k px, worst at ~11–13° slopes; `max_angle`/`snap_length` don't help. Workaround: keep geometry within ~10k px of (0,0) / stream large maps. [engine-quirks F2] https://github.com/godotengine/godot/issues/118130
-3. **TileMapLayer collision phantom cuts / ghost seams** (MED, OPEN #119163, confirmed 4.6-stable & 4.7.dev3) — `move_and_slide()` with square shapes snags on invisible tile seams. Workaround: use a slightly-undersized capsule/circle collider. NOTE conflict with the one-way-platform bug below (see 4D.2) — rect is needed there, capsule here; pick per room layout. [engine-quirks F6] https://github.com/godotengine/godot/issues/119163
-4. **CharacterBody2D misses RigidBody2D collision from above** (MED, OPEN #119824, filed May 27 2026, repros 4.5.2–4.7-beta3) — when grounded, `get_slide_collision()` returns nothing for a falling RigidBody2D. Workaround: detect from the RigidBody2D side or via Area2D. Relevant to hazard/enemy hit detection. [engine-quirks F5] https://github.com/godotengine/godot/issues/119824
-5. **UID assignment silent failure 4.6.0–4.6.2** (HIGH, fixed 4.6.3, GH-118037) — reimported assets didn't get UIDs assigned; `ResourceSaver` resolved stale data, scene references drifted silently. Another reason to be on 4.6.3 before expanding the asset pipeline. [engine-quirks F3] https://github.com/godotengine/godot/pull/118037
-6. **NodePath errors when referenced node deleted** (LOW, fixed 4.6.3, GH-115274) — editor error spam, edge-case instability. [engine-quirks F8]
-7. **Label `add_child` 150–400× slower for certain Unicode glyphs** (LOW, OPEN #116216) — e.g. ☠ ☥ 𝜎 cost 35k–106k µs vs ~240 µs ASCII; affects runtime HUD. Avoid those code points in runtime Labels. [engine-quirks F10] https://github.com/godotengine/godot/issues/116216
-8. *(3D-only, future reference)* GLB scene Unique-ID regeneration on reimport (fixed 4.6.3, F4); volumetric fog visual break with legacy-blending escape hatch in 4.6.3 (F9); AnimationTree StateMachine inspector not refreshing without deselect (LOW, OPEN #119249, F7).
+1. **`Input.parse_input_event` dropped Button events** (HIGH — hits our MCP synthetic-input test harness). Multitouch change added early `return`s that skipped button-press logic. Fixed 4.7 stable, GH-119329, merged May 26 2026. On 4.6.x workaround: call `Input.action_press()`/`action_release()` directly instead of routing button events through `parse_input_event`. https://github.com/godotengine/godot/pull/119329 (2026-05-26)
+2. **Animation TrackCache hash collisions** (HIGH if nodes have numbered/procedural names; MED otherwise). New `AHashMap` in 4.6.0 let two node-path strings collide → tracks apply to wrong property or combine. Partial fix GH-115473 (Feb 13 2026); root fix (StringName pointer IDs) GH-117030 (merged Mar 14 2026), ships 4.7. On 4.6.x: rename colliding nodes. https://github.com/godotengine/godot/issues/116231 (2026-02) / https://github.com/godotengine/godot/pull/117030 (2026-03-14)
+3. **CharacterBody2D slope jitter far from origin** (MED — large side-scrolling rooms). Movement on slopes (esp. 11–13°) gets choppy past ~30,000 px on X; Y unaffected. Open/untriaged, no fix. Workaround (standard Metroidvania mitigation): keep rooms near world origin, use chunk/room streaming to avoid large absolute coords. https://github.com/godotengine/godot/issues/118130 (2026-04)
+4. **AnimatedSprite2D position offset regression 4.4→4.6** (MED — only affects migrations from 4.4.x). Transform handling changed; projects started on 4.6 unaffected. Milestone 4.7 (verify fix present before upgrading). https://github.com/godotengine/godot/issues/116132 (2026-02-10)
+5. **GodotPhysics Area2D overlap missed after `area_set_space`** (MED — hazard/pickup detection). Reparenting/space-change at runtime can silently drop overlapping bodies. Fixed 4.7, GH-118420. On 4.6.x: hide + disable collision shapes individually rather than toggling `monitoring`/reparenting. https://github.com/godotengine/godot/pull/118420 (2026)
+6. **`ResourceLoader.load_threaded_get` never unloads resources** (MED — if used for room streaming). Slow memory leak; also had deadlocks. Fixed 4.7 (GH-119394, GH-119757, GH-120077). On 4.6.x: use synchronous `load()` and manually free. https://github.com/godotengine/godot/pull/119394 (2026)
+7. **Scene UID export non-determinism** (MED — breaks patch-PCK/diff workflows, noisy git). Per-node `unique_id` (GH-106837) regenerates every export for scenes saved ≤4.5.1. Milestone 4.8, unfixed as of Jul 2026. Workaround: open + re-save each `.tscn` once in the editor. https://github.com/godotengine/godot/issues/115971 (2026-02-06)
+8. **Tree node mouse-drag regression in 4.7.0** (LOW gameplay / MED editor). Scene-dock drag misread as touch scroll on macOS/Linux. Fix GH-120728 cherry-picked to 4.7.1 (Jun 30 2026; 4.7.1 not yet released). https://github.com/godotengine/godot/pull/120728 (2026-06-30)
+9. *(LOW, not applicable)* Sky/VoxelGI/SDFGI regression (GH-115599) — Forward+/Mobile only, GL Compatibility unaffected. BlendSpace negative-time-scale (GH-119089) — fixed pre-4.7, no action.
 
-### 4B. GDScript language traps & proposals
-Ranked by how likely our code paths hit them.
+### 4.2 GDScript language
 
-1. **Lambda outer-variable capture = value snapshot** (OPEN #117348, confirmed 4.6.1) — `func(): x += 1` never mutates outer `x`; repeat calls reuse the creation-time snapshot. Use the 1-element Array accumulator (`var acc := [0]`; mutate `acc[0]`). Risk for tween `finished` closures in our transitions. [gdscript #1] https://github.com/godotengine/godot/issues/117348
-2. **Lambda capturing `self` leaks RefCounted** (OPEN #102327) — reference cycle blocks GC; accumulates across scene reloads. Fix: connect named methods, or `weakref(self)` + `is_instance_valid()` guard; also #94641 (each anonymous lambda is a non-equal Callable → duplicate connections on reload). Directly relevant given our room/scene reloads. [gdscript #2] https://github.com/godotengine/godot/issues/102327
-3. **`await` on a signal whose emitter is freed → hung coroutine + leak** (OPEN #99383/#72629/#74449) — coroutine suspends forever; `GDScriptFunctionState` orphans accumulate. Guard with `is_instance_valid(node)` before awaiting externally-owned nodes; prefer `CONNECT_ONE_SHOT`. High relevance to door/room transition await chains. [gdscript #6]
-4. **Typed `Dictionary[K,V]` nested-for silent crash** (closed dup of #88753, NOT fixed in 4.6.1/4.6.2) — type-checks pass, game window freezes with no Output. Workaround: drop the type annotation. [gdscript #3] https://github.com/godotengine/godot/issues/116947
-5. **Typed Array/Dictionary can't be initialised via ternary** (OPEN #110628, "up for grabs", 4.5+) — runtime type-assign error; use an `if/else` assignment instead. [gdscript #4]
-6. **Freed-object lambda error uses opaque capture index, not var name** (OPEN #117840; fix PR #118552 pending) — debugging trial-and-error; guard captures with `is_instance_valid()`. [gdscript #7]
-7. **`weakref()` holds resources alive in `@tool` scripts** (OPEN #115448, regression vs 4.5.1, milestone 4.7, no 4.6.x backport) — avoid `weakref()` in `@tool` exported-property trackers. [gdscript #5]
-8. **4.6.3 fixed RefCounted/threaded-signal race** (no API change; upgrade benefit) — *deduped: cross-listed in 4E.2 as the perf-relevant framing.* [gdscript #8]
+1. **Lambda-captures-`self` leaks RefCounted — UNFIXED in 4.7** (HIGH). `signal.connect(func(): self.do_thing())` keeps the RefCounted alive forever. Use a named method ref (`connect(_on_signal)`) or capture `weakref(self)` and null-check. https://github.com/godotengine/godot/issues/102327 (open through 4.7)
+2. **Temporary-copy property mutation** (HIGH — silent no-op). `line2d.points[0] = v` mutates a returned copy; must read to a local, mutate, write back. 4.7 adds `CONFUSABLE_TEMPORARY_MODIFICATION` warning (GH-118002) — enable Treat Warnings as Errors. https://github.com/godotengine/godot/pull/118002 (2026)
+3. **`await` on freed-node coroutine leaked GDScriptFunctionState — fixed in 4.7** (MED). Freeing a node mid-`await` orphaned the state pre-4.7. Fixed by GH-116711/117053/119755. On 4.6.x: guard with `if not is_instance_valid(self): return` after the await. https://github.com/godotengine/godot/pull/116711 (2026)
+4. **`:=` widens to Variant on engine method returns** (MED — silent loss of type safety, hurts hot-path perf too). `var x := arr.pop_back()` infers Variant. Use explicit `var x: T =` or `as T`. 4.7 narrowed some cases (GH-117172, GH-118032). https://github.com/godotengine/godot/pull/117172 (2026)
+5. **Untyped overrides now inherit parent return type in 4.7** (MED — silent behavioral change on upgrade). A child `func get_speed()` with no annotation now inherits parent's `-> float`; code relying on Variant widening type-checks stricter. GH-115763. https://github.com/godotengine/godot/pull/115763 (2026)
+6. **MCP-specific: no top-level `await` in `run_script`** (project rule). godot-mcp-pro's runner drops `GDScriptFunctionState` continuations silently; use the `capture_frames` + action pattern in `tests/README.md`.
+7. **Ternary with mixed types downcasts to Variant** (LOW). `INCOMPATIBLE_TERNARY` is warning-only by default; can throw at runtime. Set it to Error in Project Settings > Debug > GDScript. https://github.com/godotengine/godot/issues/80097 (longstanding)
+8. **`type_exists()` deprecated in 4.7** (LOW). Use `ClassDB.class_exists()`. https://github.com/godotengine/godot/pull/116899 (2026)
+9. *Proposals to watch:* Trait system (PR #107227, not in 4.7); Typed WeakRef `WeakRef[T]` (PR #109268, would fix the untyped-weakref gotcha); typed nested arrays (Issue #12224, 4.8/5.0). "GDScript 3.0"/GDExtension migration targeted at 5.0.
 
-**Proposals to track:** `await` multiple signals `all()/any()` (#13597, high signal — would replace custom helpers); Typed WeakRef `WeakRef[T]` (#9174, relevant to #115448); unused-signal-inheritance warning (#13951). Archived/rejected: GDScript 3.0 namespaces/generics (#12685, closed Jun 2025). 4.7-beta opt-in `UNTYPED_DECLARATION` warning has a highlight bug (#118550) — don't enable until fixed.
+### 4.3 Tooling
 
-### 4C. Tooling
-Ranked by decision relevance.
+1. **GUT 9.7.0 remains the default for GDScript-only testing** (HIGH relevance). Jun 19 2026 release, 4.7-compatible (compat fix for stricter Double return-type checking). Matches our GDScript-first convention, minimal setup. https://github.com/bitwes/Gut (2026-06-19)
+2. **godot-mcp-pro is still the strongest live-engine MCP** (HIGH — our current tool). 163 tools / 23 categories; Lite Mode (76 tools) for tool-count-capped clients. No competing paid tool emerged. https://y1uda.itch.io/godot-mcp-pro
+3. **Free MCP alternatives proliferated** (MED — fallback options). Strongest: **godot-ai** (hi-godot, MIT, 150+ ops, Asset Store one-click, v2.8.2 Jun 30 2026). Others: Coding-Solo/godot-mcp (lightweight npm, CI headless), GDAI MCP (file-level only). Skip IvanMurzak/Godot-MCP (needs C#/.NET). https://github.com/hi-godot/godot-ai (2026-06-30)
+4. **GdUnit4 v6.1.3 surged but is overkill here** (MED). Moved to `godot-gdunit-labs` org; four 2026 releases; v7 API overhaul in dev; mocking/parameterized/scene-runner/CI. Adopt only if CI or C# becomes a priority. https://github.com/godot-gdunit-labs/gdUnit4 (2026-04-27)
+5. **godot-ci (abarichello) is current-stable for deploy** (MED — future itch.io automation). 4.7-stable release Jun 19 2026 (same day as engine). Standard Docker + Actions + butler pattern. https://github.com/abarichello/godot-ci (2026-06-19)
+6. **godot-debug-menu for in-build frame-pacing QA** (MED — game-feel passes). In-game FPS/frametime/CPU-GPU overlay, F3 cycles modes, works in exported builds (unlike editor profiler). Antz's fork updated Jun 12 2026. https://github.com/godot-extended-libraries/godot-debug-menu (2026-06-12)
+7. **Built-in profiler + Apple Instruments** (see 4.5). Floatable debugger as of 4.6; use built-in first, no plugin needed.
 
-1. **Testing frameworks — GdUnit4 vs GUT.** GdUnit4 v6.1.3 (Apr 27 2026) leads on momentum: flaky-test detection, session hooks, HTML/XML reports out of the box, variadic args, parse-error detection at CLI discovery; requires Godot 4.5+ (fine, we're on 4.6.2); v7.0.0 on roadmap. GUT v9.6.0 (Feb 24 2025, 15 months stale) is already in our test patterns and uniquely doubles Godot singletons (Input/Time/OS). **Verdict:** stay on GUT mid-project; pick GdUnit4 for a greenfield suite; if GUT goes 6 more months without a release, backlog a migration. [tooling]
-2. **In-editor AI agents (new class in 2026).** **Ziva** (~Feb 2026, free tier $3/mo credit, asset/4879) is most capable: live scene-tree manipulation via editor API (vs raw .tscn patching), runs GUT tests, reads debugger errors, screenshot-as-context, sprite/TileMap gen, Claude/Gemini/ChatGPT backends. Likely additive to our godot-mcp-pro workflow — worth a trial. **Summer Engine** (open-source, MCP built into engine) — monitor only; adds a layer over vanilla Godot, risky mid-project. **AI Assistant Hub** (free, Ollama/Gemini) — backlog; we already have the lead MCP seat. [tooling]
-3. **CI/CD — godot-ci (abarichello)** tracking 4.6.3-stable is the de-facto GitHub Actions standard; adopt when CI is prioritized (already in backlog), no alternative needed. **GodotEnv (Chickensoft, v2.16.2)** is C#-focused — skip for pure GDScript. [tooling]
-4. **Profilers — no new dominant plugin.** Built-in Godot profiler + ObjectDB debugger (4.6.0) covers our needs; no action. [tooling; cross-ref 4E.4]
+### 4.4 2D platformer patterns
 
-*Out of scope (tracked elsewhere):* godot-mcp-pro internals, godogen, MCP alternatives, PR #25.
+1. **TileMapLayer vanishes at certain Camera2D zoom (Compatibility mode) — fixed in 4.7** (HIGH — we use Camera2D room-lock + TileMapLayer + Compatibility). Affected 4.3–4.4.1; if tilemap flickers, upgrade. PR #117725. https://github.com/godotengine/godot/issues/105645 (fix 4.7)
+2. **Area2D phantom `body_entered` on scene load** (HIGH — our door/room triggers + pickups). CharacterBody2D starting with a disabled CollisionShape2D enabled via `set_deferred()` makes nearby Area2Ds fire spurious enter/exit on load → could mis-fire room transitions. Open mid-2026. Workaround: initialize shapes enabled, or validate the hit in-handler (`is_inside_tree()` + distance). https://github.com/godotengine/godot/issues/88592 (open)
+3. **Save/load: custom Resource + binary `.res`** (HIGH — not yet implemented; right foundation). `Resource` subclass with `@export` fields; `.tres` in dev, `.res` for release. For room/item state, track discovered rooms + collected items as a Dictionary in an autoload; KoBeWi's Metroidvania-System plugin automates storable-object IDs (4.6+). Avoid Resources for untrusted/shared saves (can embed executable scripts) — use FileAccess + JSON there. https://www.gdquest.com/tutorial/godot/best-practices/save-game-formats/ (2026)
+4. **Camera `position_smoothing` not auto-reset across room/scene change** (MED — our room-lock camera). Call `reset_smoothing()` (or disable/re-enable) in the new room's `_ready()` after teleporting the player, else the camera slides in from the old room. By design, all 4.x. https://www.gdquest.com/tutorial/godot/2d/scene-transition-rect/ (2026)
+5. **Runtime `set_cell` needs `notify_runtime_tile_data_update()`** (MED — future destructible tiles). Physics shapes stay stale until you call it once per batch (not per-cell); add `update_internals()` only for same-frame raycasts. https://forum.godotengine.org/t/tilemaplayer-notify-runtime-tile-data-update-doesnt-work-as-i-expect/99417 (2026)
+6. **AnimationPlayer-only is fine for our rig** (LOW relevance — confirms current approach). Valid for ≤8 non-blended states (idle/run/jump/fall/attack); scattered `play()` calls are the accepted trade-off. Move to AnimationTree only when blending is a felt need. Note 4.7 BlendSpace internal compat break — irrelevant until we migrate. https://github.com/godotengine/godot/issues/92730
+7. **CollisionShape2D one-way direction property (NEW in 4.7)** (MED — future rotating/conveyor hazards). Sets allowed pass-through direction relative or global; removes rotation hacks. Proposal #12093. https://github.com/godotengine/godot-proposals/issues/12093 (4.7 beta 1)
+8. **Trauma-based screen shake on `camera.offset`** (MED — combat feedback). Square the trauma for falloff; use additive model for overlapping shakes; apply to `offset` NOT position (position fights room limits). https://forum.godotengine.org/t/additive-2d-camera-shake-for-overlapping-shakes-in-rapid-succession/108424 (2026)
+9. **Ghost tile-seam collision on flat floors** (MED). CharacterBody2D catches tile corners (issue #89458); fixed by polygon merge PR #102662 — verify in build; fallback is one merged StaticBody2D floor section. https://github.com/godotengine/godot/issues/89458
+10. **4.7 Scene Paint Mode (press B)** (MED — future enemy/pickup placement). Scatters real editable node instances off-grid; complements TileMapLayer, no code impact. https://www.gamingonlinux.com/2026/06/godot-engine-4-7-is-out-bringing-a-new-asset-store-hdr-support-steam-frame-support/ (2026-06)
 
-### 4D. 2D platformer patterns
-Ranked by applicability to our shipped/in-flight systems.
+### 4.5 Performance & deployment
 
-1. **Camera2D room locking + smoothing** (HIGH) — `limit_*` room locking is still canonical (no new node in 4.6). Enabling both `position_smoothing_enabled` and `limit_smoothed` causes start-offset and one-frame-late snapping; consensus: disable `limit_smoothed`, call `reset_smoothing()` after repositioning on a transition. Screen shake: noise-based trauma pattern (`trauma`²→`shake_amount`); Camera2D `offset` is clipped by tight limits, so apply shake via sub-viewport/`RemoteTransform2D`, not Camera2D offset. PR #115397 (Jan 2026) "improve Camera2D" — check if merged pre-4.6.3. [2d #1] https://github.com/godotengine/godot/pull/115397
-2. **TileMapLayer collision & physics layers** (HIGH) — physics layers live on the **TileSet resource**, not the node (common upgrade gotcha). Multiple physics layers per TileSet recommended (solid vs one-way). **OPEN #102887 (4.3–4.6.x):** capsule/circle collider falsely triggers `is_on_wall()` on one-way-platform top corners → use a **rectangular** primary collider when one-way platforms exist. (Conflicts with the ghost-seam capsule advice in 4A.3 — choose per layout.) `set_cell()` physics changes apply next frame, not synchronously. [2d #2] https://github.com/godotengine/godot/issues/102887
-3. **Room transitions (door/scene load)** (HIGH, in flight) — Area2D trigger → `change_scene_to_file()` + ColorRect fade Tween. Zelda-style scroll transitions must disable smoothing during the pan and `reset_smoothing()` at destination or the camera slides back through the door seam. **MetSys (KoBeWi/Metroidvania-System)** is the most complete open-source room/map framework — worth studying. 4.6.0 Unique Node IDs reduce signal-connection fragility during room iteration. [2d #5] https://github.com/KoBeWi/Metroidvania-System
-4. **Hitbox/hurtbox layering** (MED, future combat) — dedicated `HitArea2D`/`HurtArea2D` children over CharacterBody2D contacts; named layers (Player/Enemy/PlayerHitbox/EnemyHitbox); toggle `monitoring = false` when inactive for a real perf win in enemy-dense rooms. [2d #3]
-5. **Animation state machines** (MED) — community threshold: **5+ states → AnimationTree pays off**; our AnimationPlayer `match`-over-enum rig is appropriate now. Migrate to `AnimationNodeStateMachine` for cross-fades/blend-spaces/attack-chaining at ~6+ states. Pitfall #69382: spammed transitions skip states — gate with min-duration or manual `travel()`. Keep `animation_finished` for one-shots. [2d #4] https://github.com/godotengine/godot/issues/69382
-6. **Save/load** (MED, not built) — prefer custom Resource pattern (`@export` + `ResourceSaver.save("user://save.tres")`) for structured Metroidvania data; `.tres` in dev, `.res` to ship. **Always check `ResourceSaver.save()` return code** — active 4.6 silent-failure report on nested custom resources without explicit sub-resource paths. `user://` only writable path post-export. [2d #6]
-
-### 4E. Performance & deployment
-Ranked by impact on our GL Compatibility 2D build.
-
-1. **2D renderer batching overhaul (4.6.0)** (HIGH) — 1.1×–7× GPU throughput gain, GL Compatibility explicitly included, automatic on upgrade, no code changes. Profile before/after to confirm in our scenes. [perf F-01] https://godotengine.org/releases/4.6/
-2. **4.6.3 fixes GLES3 batching bugs + RefCounted/signal thread-safety** (HIGH/MED) — *deduped: rendering-side detail lives in 4A.1.* Perf framing: 4.6.0–4.6.2 carry live refcount/signal races (exposed via `Thread`/`WorkerThreadPool`/`load_threaded_request`) and batching visual glitches. Upgrade is low-risk, zero known incompatibilities with 4.6.2. [perf F-02/F-03] https://godotengine.org/article/maintenance-release-godot-4-6-3/
-3. **GDScript static analyzer expanded (4.6.0)** (MED) — flags unused vars + unreachable code; address warnings especially in `_physics_process`/`_process` (unused locals still allocate/nil-check). Free correctness+micro-perf win; lambda closures fully supported. [perf F-05]
-4. **ObjectDB debugger (4.6.0)** (MED) — snapshot/diff live object counts to catch RefCounted leaks (esp. the self-capture cycles in 4B.2) between room transitions. Baseline memory now. [perf F-04]
-5. **macOS export** (LOW) — no GL Compatibility desktop regressions in window; 4.6.3 macOS-clean (its mobile fixes were iOS Xcode 26 + Android API 36). 4.7 HDR-on-macOS may shift GL Compatibility behavior — watch the stable notes. [perf F-06]
-6. **Web export** (LOW now) — 4.6.x has a 4 GB wasm32 heap limit; wasm64 is 4.7-beta-only. If web export lands before 4.7 stable, budget <1 GB assets. [perf F-07]
+1. **GL Compatibility 2D batching overhaul (4.5/4.6): 1.1×–7× GPU** (HIGH — we're already on the benefiting renderer). Gains require shared texture atlas + material + blend mode + Z-index. Action: group nodes by atlas, single TileSet atlas, avoid mixing blend modes mid-batch. PR #92797. https://github.com/godotengine/godot/pull/92797 (2026)
+2. **Apple-Silicon Metal FPS regression — NOT applicable to us** (HIGH context / no action). Metal backend (4.4+) dropped M1 FPS (~54→43–50) and stutters on render-target transitions; GL Compatibility uses OpenGL/ANGLE and is unaffected. Stay on Compatibility. https://github.com/godotengine/godot/issues/103723 (open)
+3. **Typed GDScript bytecode: 5–150% runtime speedup (4.6+)** (MED-HIGH). Vector2 ops ~59% faster. Annotate params + returns in `_physics_process`/`_process`/signal handlers; `@static_unload` on rarely-used static classes. https://godotengine.org/article/gdscript-progress-report-typed-instructions/ (2026)
+4. **Audio thread spikes cause frame drops in 4.6.2** (MED). Simultaneous AudioStreamPlayers spike audio thread 0.5→12 ms, blowing the 16.67 ms budget. Lower Max Voices 32→16, add ~50 ms cooldown on repeated triggers, pool/reuse players (don't create at runtime). https://github.com/godotengine/godot/issues/84157 (2026)
+5. **Profiling on macOS: Apple Instruments + Tracy/Perfetto (4.6, no custom build)** (MED). Microsecond flame graphs for renderer/physics bottlenecks; Audio Thread section is collapsed by default — expand it. 4.7 adds Visual Profiler tree folding. https://docs.godotengine.org/en/stable/engine_details/development/profiling/tracy.html
+6. **GPUParticles crash on GLES3 + Apple Silicon (historic, verify)** (LOW — not yet using). Use CPUParticles2D until verified fixed on 4.6.2/4.7; file a repro if it persists. https://github.com/godotengine/godot/issues/72469 (status unclear)
+7. **Upgrade recommendation: stay on 4.6.2 for active dev.** 4.7 migration is low-risk for 2D but Visual Profiler folding / HDR are not urgent — upgrade when a 4.7 feature is specifically needed (e.g. the parse_input_event or TileMapLayer-camera fixes above) or at a new phase boundary. Breaking changes to test on upgrade: keyboard/mouse device IDs (input remapping), audio spectrum API, shader preprocessor. macOS first-export can take 15+ min on M3 (issue #115062, no fix; restart before first export). https://docs.godotengine.org/en/4.7/tutorials/migrating/upgrading_to_godot_4.7.html (2026)
 
 ---
 
 ## 5. Open / unresolved issues we may hit
 
-| Issue | Status | Last seen | Re-scan trigger |
-|---|---|---|---|
-| CharacterBody2D slope jitter at distance (#118130) | OPEN | 2026-06-01 | 4.6.4 or 4.7-stable; if we build maps >10k px from origin |
-| CharacterBody2D misses falling RigidBody2D collision (#119824) | OPEN (repros to 4.7-beta3) | 2026-05-27 | 4.7-stable; when we add falling hazards/enemies |
-| TileMapLayer ghost-seam snag (#119163) | OPEN (4.6-stable, 4.7.dev3) | 2026-05-02 | 4.7-stable; if players report micro-stops on flat ground |
-| `is_on_wall()` false positive, capsule + one-way platform (#102887) | OPEN (4.3–4.6.x) | 2026-06-01 | When we add one-way/pass-through platforms |
-| `on_floor` false positive on moving platform (#117288) | OPEN | 2026-06-01 | When we add AnimatableBody2D moving platforms |
-| Lambda value-snapshot capture (#117348) | OPEN (4.6.1) | 2026-06-01 | On any lambda relying on outer-var mutation |
-| Lambda `self`-capture RefCounted leak (#102327 / #94641) | OPEN | 2026-06-01 | ObjectDB shows orphan growth across room reloads |
-| `await` on freed emitter hangs + leaks (#99383/#72629) | OPEN | 2026-06-01 | Coroutine that never resumes after a transition |
-| Typed Dictionary nested-for silent crash (#116947 / dup #88753) | OPEN (not fixed 4.6.2) | 2026-06-01 | If we adopt typed Dictionary[K,V] containers |
-| `weakref()` keeps resources alive in `@tool` (#115448) | OPEN (milestone 4.7) | 2026-01-27 | 4.7-stable; if we write `@tool` editor scripts |
-| Label `add_child` slow for Unicode glyphs (#116216) | OPEN | 2026-02 | If HUD frame spikes with non-ASCII glyphs |
-| AnimationTree inspector not refreshing (#119249) | OPEN | 2026-06-01 | When we migrate the rig to AnimationTree |
-| AnimationTree state-skip on spammed transitions (#69382) | OPEN | 2026-06-01 | When we migrate the rig to AnimationTree |
-| `ResourceSaver` silent failure on nested resources | OPEN (forum report) | 2026-06-01 | When we build save/load |
-| Camera2D improvement PR (#115397) | UNKNOWN merge state | 2026-01 | Confirm whether merged into 4.6.3 |
-| Await-multiple-signals proposal (#13597) | OPEN proposal | 2026-06-01 | If accepted, replace custom timeout/any helpers |
+| Issue | Status | Last-seen | Re-scan trigger |
+|-------|--------|-----------|-----------------|
+| Lambda-captures-`self` RefCounted leak ([GH-102327](https://github.com/godotengine/godot/issues/102327)) | Open (unfixed in 4.7) | Jul 2026 | Any signal-heavy RefCounted subsystem; re-scan on each Godot release |
+| Area2D phantom `body_entered` on scene load ([GH-88592](https://github.com/godotengine/godot/issues/88592)) | Open | mid-2026 | When adding item pickups / room-transition triggers |
+| CharacterBody2D slope jitter far from origin ([GH-118130](https://github.com/godotengine/godot/issues/118130)) | Open, untriaged | Apr 2026 | If any room places geometry past ~30k px on X |
+| Scene UID export non-determinism ([GH-115971](https://github.com/godotengine/godot/issues/115971)) | Milestone 4.8, unfixed | Feb 2026 | When 4.8 ships; when adopting patch-PCK/diff exports |
+| GPUParticles crash GLES3 + Apple Silicon ([GH-72469](https://github.com/godotengine/godot/issues/72469)) | Status unclear | pre-2026 | Before adding any particle effects |
+| macOS first-export 15+ min slowness ([GH-115062](https://github.com/godotengine/godot/issues/115062)) | Open, no fix | 4.6rc1 | First export attempt; on 4.7 upgrade |
+| NavigationAgent2D never reaches target on TileMapLayer ([GH-110567](https://github.com/godotengine/godot/issues/110567)) | Open since 4.5 | 2026 | If we add 2D navigation/pathfinding enemies |
+| Tree node mouse-drag regression ([GH-120728](https://github.com/godotengine/godot/pull/120728)) | Cherry-picked to 4.7.1 (unreleased) | Jun 30 2026 | If we upgrade to 4.7.0 before 4.7.1 lands |
+| Ghost tile-seam collision ([GH-89458](https://github.com/godotengine/godot/issues/89458)) | Fixed PR #102662 — verify in build | 2026 | If CharacterBody2D catches on flat floors |
 
 ---
 
 ## 6. Recurring scan recommendation
 
-**Self-recommendation: refresh this intel MONTHLY until Godot 4.7 ships stable, then drop to QUARTERLY.**
+**Frequency: monthly**, with an **event-driven trigger on each Godot point/stable release** (blog + interactive changelog).
 
-Rationale: 4.7 is in active beta (Beta 4, late May 2026) with stable expected **late June 2026** — the next ~6 weeks carry the highest churn (1,265 fixes since 4.6, 2D physics changes, HDR-on-macOS affecting GL Compatibility). After 4.7 stabilizes, the 4.x maintenance cadence is slow enough that quarterly suffices, with an ad-hoc scan on any new stable/maintenance release.
-
-**Monthly (until 4.7 stable):**
-- `godotengine/godot` releases + the open watch-list issues in §5 (priority: #118130, #119824, #119163).
-- `godotengine.org/blog` for 4.7 beta→stable progression and maintenance releases (watch for 4.6.4).
-- GdUnit4 + GUT release pages (is GUT still stale? did v7.0.0 ship?).
-
-**Quarterly (post-4.7-stable):**
-- Re-rank sources; sweep contributor activity; re-check Phantom Camera / MetSys / godot-ci version bumps; revisit the AI-agent landscape (Ziva, Summer Engine).
-
-**Watch for specifically:** 4.7-stable release; any new 4.6.x regression announcement; CharacterBody2D/TileMapLayer physics fixes; resolution of the lambda capture and typed-container bugs; whether PR #115397 (Camera2D) landed.
-
-**Who to ping if blocked:** GDScript semantics → vnen (George Marques); GLES3/renderer → clayjohn; release/regression status → akien-mga (Rémi Verschelde); test framework → bitwes (GUT) / MikeSchulze (GdUnit4); Metroidvania camera/room patterns → KoBeWi (MetSys) and the official forum's Help/Programming category.
+- **Every release (event-driven):** Diff the CHANGELOG via the Interactive Changelog filtered to GDScript, Physics/2D, Animation, and Core; confirm status of the Section 5 watch-list items. Godot cadence has been roughly monthly (4.6.x every 2–5 weeks; 4.7 in Jun), so this and the monthly cadence largely coincide.
+- **Monthly:** Re-scan HIGH sources only — godotengine/godot issues+PRs (labels `topic:gdscript`, `topic:2d`, `topic:physics`, `regression`, `crash`), godot-proposals 4.8/5.0 milestones, GUT + GdUnit4 releases, godot-ai / godot-mcp-pro changelogs.
+- **Watch specifically:** the two still-open HIGH-relevance bugs (GH-102327 lambda leak, GH-88592 phantom Area2D); 4.7.1 release (Tree-drag fix); 4.8 milestone for the UID determinism fix; typed-WeakRef and trait proposals.
+- **Quarterly:** Refresh the contributor list and re-rank sources; check for new MCP tooling and GodotCon Boston (Jul 20–22 2026) tooling/roadmap announcements.
 
 ---
 
 ## 7. Surprises
 
-Two scope-changers were flagged by the pre-scan/topic agents:
-
-1. **Godot 4.7 is in active beta, not yet stable** (Beta 1 Apr 24 2026; Beta 4 late May 2026 fixed critical regressions; stable expected late June 2026). 1,265 fixes from 309 contributors since 4.6. Any 4.7 feature advice is **beta-only / provisional** until stable. Directly relevant: 4.7 ships **one-way collision direction control for CollisionShape2D** (4.7-dev1), which will fix the one-way-platform authoring pain in §4D.2 — but do not adopt until stable. HDR output on macOS may shift GL Compatibility behavior. [sourcemap; 2d-platformer]
-2. **Godot maintainers are drowning in AI-generated PRs** (reported Feb 2026, PC Gamer / The Register, citing Rémi Verschelde). Maintainer throughput is constrained and PR review latency is elevated — set expectations accordingly before suggesting anyone submit engine PRs to fix the open issues above. [sourcemap]
+**Godot 4.7 shipped June 18 2026** — the crawl expected 4.6.x to be current. 4.7 is now stable (new Asset Store replacing the Asset Library, built-in VirtualJoystick, DrawableTexture, macOS HDR output, gyro aiming, Vulkan ray-tracing foundation). Scope impact is moderate, not a rework: 4.7 *fixes* several bugs that directly affect us (`Input.parse_input_event` button drop, TileMapLayer-camera vanish, animation hash collisions, threaded-loader leak) but migration is low-risk and non-urgent. Net effect: 4.7 is a recommended-when-convenient upgrade target rather than a forced move. Also notable (not scope-changing): the **Feb 2026 contribution policy banned AI-authored engine code** — this raises source signal quality but does not affect our AI-assisted game project or plugin usage.
 
 ---
 
 ## 8. Glossary
 
-- **GLES3 / GL Compatibility renderer** — Godot's OpenGL-based renderer (our project's renderer), distinct from Forward+ (Vulkan).
-- **LibGodot** — 4.6 feature letting you embed Godot as a library inside an external application.
-- **Jolt Physics** — third-party physics engine promoted to default for *new 3D* projects in 4.6; 2D still uses GodotPhysics by default.
-- **ObjectDB debugger** — 4.6.0 editor tool that snapshots/diffs live object counts to find RefCounted leaks.
-- **MetSys (Metroidvania-System)** — KoBeWi's open-source framework for Metroidvania room association, transitions, and map tracking.
-- **Phantom Camera** — ramokz's Cinemachine-inspired Godot 4 camera addon (Lookahead 2D; no built-in room-lock primitive).
-- **GUT** — bitwes' GDScript unit-testing framework (in-editor / headless CLI).
-- **GdUnit4** — godot-gdunit-labs' GDScript+C# test framework with flaky-test detection and HTML/XML reports.
-- **Ziva** — in-editor AI agent (Feb 2026) that manipulates the live scene tree via editor API, runs tests, and generates assets.
-- **Summer Engine** — open-source Godot 4 plugin embedding an MCP-compatible AI-native layer into the engine.
-- **godot-ci** — abarichello's Docker image + GitHub Actions/GitLab CI templates for headless export.
-- **GodotEnv** — Chickensoft's C# CLI for managing Godot versions and `addons.json` installs.
-- **Unique Node IDs** — 4.6.0 feature giving nodes stable internal IDs so connections survive renames/refactors.
-- **wasm64** — 4.7-beta WebAssembly target that removes the 4 GB heap limit of wasm32.
-- **TileMapLayer** — current tile node (replaced deprecated TileMap in 4.3); physics layers configured on the TileSet resource, not the node.
-- **`reset_smoothing()`** — Camera2D method to hard-snap position, used after repositioning during room transitions to avoid smoothing seam glitches.
-- **AnimationNodeStateMachine** — AnimationTree's visual state-machine graph; the upgrade path from script-driven AnimationPlayer at 5+ states.
+- **TrackCache / AHashMap** — AnimationPlayer's internal map from node-path to animation track; the 4.6 `AHashMap` rewrite caused the hash-collision bug (F1).
+- **GDScriptFunctionState** — the object representing a suspended coroutine at an `await`; leaked pre-4.7 when its node was freed mid-await.
+- **`CONFUSABLE_TEMPORARY_MODIFICATION`** — new 4.7 compiler warning flagging mutation of a returned temporary copy (e.g. indexing into a property-returned Packed array).
+- **TileMapLayer** — per-layer tilemap node that replaced the monolithic TileMap (deprecated); one node per logical layer.
+- **`notify_runtime_tile_data_update()`** — call after runtime `set_cell` batches so TileMapLayer physics shapes rebuild.
+- **Metroidvania-System (KoBeWi)** — plugin providing map, room, and storable-object-ID systems for Metroidvania games (4.6+).
+- **godot-mcp-pro** — our paid MCP plugin (163 tools) giving Claude live Godot editor access over WebSocket.
+- **godot-ai (hi-godot)** — strongest free/MIT MCP alternative (150+ ops, Asset Store one-click).
+- **GdUnit4 / GUT** — the two GDScript test frameworks; GUT is simpler/GDScript-native, GdUnit4 is feature-rich (mocking, CI, C#).
+- **godot-ci (abarichello)** — Docker + GitHub Actions template for exporting and deploying Godot games (itch.io via butler).
+- **Trauma-based screen shake** — Game-Feel-book shake model: accumulate `trauma`, square it for falloff, apply to `camera.offset`.
+- **Interactive Changelog** — YuriSizov's searchable per-release, per-area commit-log tool.
+- **Scene Paint Mode** — 4.7 2D-editor mode (key `B`) for scattering real scene instances off the TileMap grid.
+- **Jolt Physics** — default 3D physics engine as of 4.6 (2D still uses GodotPhysics2D; noted for context only).
+- **LibGodot** — 4.6 embedded-library mode letting Godot run as a library inside another app.

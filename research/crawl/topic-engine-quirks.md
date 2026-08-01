@@ -1,7 +1,6 @@
 # Engine Quirks & Regressions — July 2026 Crawl
 
-**Crawled:** 2026-08-01  
-**Target window:** July 2026 onward (4.7 stable June 18, 4.7.1 July 14, 4.8-dev2 July 21)  
+**Crawled:** 2026-08-01 | **Target window:** July 2026+ (4.7 stable June 18, 4.7.1 July 14, 4.8-dev2 July 21)  
 **Baseline:** Godot 4.7.1 stable; 4.8-dev2 in active development  
 **Sources:** godotengine/godot issues (GitHub search), linuxcompatible.org, godotengine.org/article (4.7.1 changelog), direct GitHub issue fetches
 
@@ -122,8 +121,7 @@ Tree or clicking the Video RAM tab in the running-game debugger causes an immedi
 (game closes as if Alt+F4). No error is printed to Output. The crash disappears after deleting
 `uid_cache.bin` and restarting the editor.
 
-**Workaround:** When any in-editor run crashes silently, delete `.godot/uid_cache.bin` and
-restart. This is especially likely after renaming scenes or moving resources in bulk.
+**Workaround:** Delete `.godot/uid_cache.bin` and restart the editor. Especially likely after renaming scenes or moving resources in bulk.
 
 ---
 
@@ -141,8 +139,7 @@ as an external file reference — every instance shares it, and edits in the ins
 globally. In 4.6+, Godot converts it to an embedded sub-resource unique to that scene; the
 inspector tooltip still shows the original path, misleadingly. Global edits no longer propagate.
 
-**Workaround:** Do not combine "Local to Scene" materials with Editable Children scenes. Use
-instanced subscenes for per-instance variation instead.
+**Workaround:** Do not combine "Local to Scene" materials with Editable Children. Use instanced subscenes for per-instance variation.
 
 ---
 
@@ -160,8 +157,7 @@ with a `RESET` track crashes the editor (EXC_BAD_ACCESS on macOS, memory violati
 platforms) at 27–39% progress. Introduced by commit `bf898d1` in 4.8-dev2; reverting the commit
 eliminates the crash.
 
-**Workaround:** Do not run UPF from 4.8-dev2. Stay on 4.7.1 for any project migration work
-until 4.8 stable.
+**Workaround:** Do not run UPF from 4.8-dev2; stay on 4.7.1 for project migration until 4.8 stable.
 
 ---
 
@@ -178,8 +174,7 @@ Closing a running Forward+ project causes Godot to hang indefinitely; requires s
 to specific NVIDIA GPU + Vulkan 1.4 driver combinations; not universal. This project uses
 GL Compatibility, so it is not currently exposed.
 
-**Workaround:** Use Compatibility or Mobile renderer on affected hardware. Not relevant for
-macOS/Apple Silicon development (Metal driver path).
+**Workaround:** Use Compatibility or Mobile renderer on affected hardware. Not relevant for macOS/Apple Silicon (Metal driver path).
 
 ---
 

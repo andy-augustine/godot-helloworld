@@ -43,10 +43,8 @@ calls during _ready() can cause it to disappear (classic Heisenbug). Root cause:
 `Input` may register a modifier press event without the corresponding release, leaving state corrupted.
 
 **Repro / Citation:**  
-- GH-120528 (June 21, 2026 — still open as of Sep 14, 2026):  
-  URL: https://github.com/godotengine/godot/issues/120528  
-- Secondary corroboration — GH-122728 (Aug 22, 2026): separate user reports Shift stuck in 4.7.2  
-  URL: https://github.com/godotengine/godot/issues/122728  
+- GH-120528 (June 21, 2026 — open as of Sep 14, 2026): https://github.com/godotengine/godot/issues/120528  
+- GH-122728 (Aug 22, 2026, separate user repro in 4.7.2): https://github.com/godotengine/godot/issues/122728
 
 **Workaround:** Track modifier state manually using transition events only:
 ```gdscript
@@ -205,5 +203,5 @@ embedded in a SubViewport (e.g., menus rendered in-world).
   Feature freeze is imminent; beta likely by late October 2026.
 - The `godot-mcp-pro` synthetic drag / `Input.parse_input_event` patterns remain unaffected
   by all findings in this crawl. No new regressions found in that area.
-- GH-122554 (Left Shift stuck on Windows — confirmed, separate race condition) was closed in
-  4.7.2 but the Heisenbug GH-120528 is a **different mechanism** and remains open.
+- GH-122554 (Left Shift stuck on Windows) was closed in 4.7.2; the Heisenbug GH-120528 is a
+  **different mechanism** (initialization-time state inversion) and remains open.

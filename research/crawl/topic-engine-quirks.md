@@ -4,9 +4,8 @@
 **Current stable:** Godot 4.7.2 (released August 18, 2026)  
 **4.8 status:** dev7 as of October 1, 2026 — feature freeze imminent, beta expected late October
 
-> **Calendar correction vs. sourcemap:** The sourcemap listed 4.8 dev5 as the latest snapshot.
-> GitHub issue #124029 (filed Sep 30) references "4.8.dev7", confirming two additional dev
-> snapshots shipped in September. Feature freeze is very close; watch the milestones page.
+> **Calendar note:** Sourcemap showed 4.8-dev5; GH-124029 (Sep 30) references "4.8.dev7" — two more
+> snapshots shipped in September. Feature freeze is imminent; watch the milestones page.
 
 ---
 
@@ -35,12 +34,10 @@
 **Severity:** HIGH (2D platformer — any dash/run mechanic using Shift)  
 **Status:** Open — filed June 21, 2026; last updated September 14, 2026; no fix in 4.7.2
 
-**Description:** In projects with sufficient complexity (multiple scenes, scripts, singletons), modifier
-keys (Shift, Ctrl, Alt, Meta) report inverted state from `Input.is_action_pressed()`: starts `true` at
-project launch without key held, then inverts on first actual press. `is_action_just_pressed()` works
-correctly; only the persistent-state query is corrupted. Bug is timing-dependent — adding `print()`
-calls during _ready() can cause it to disappear (classic Heisenbug). Root cause: during initialization
-`Input` may register a modifier press event without the corresponding release, leaving state corrupted.
+**Description:** In projects with multiple scenes/scripts/singletons, modifier keys (Shift, Ctrl, Alt)
+report inverted state from `Input.is_action_pressed()`: starts `true` at launch, inverts on first press.
+`is_action_just_pressed()` works correctly. Bug is timing-dependent — adding `print()` in _ready() makes
+it disappear. Root cause: Init-time modifier event registered without a matching release.
 
 **Repro / Citation:**  
 - GH-120528 (June 21, 2026 — open as of Sep 14, 2026): https://github.com/godotengine/godot/issues/120528  
@@ -171,13 +168,13 @@ embedded in a SubViewport (e.g., menus rendered in-world).
 
 ## Previous Findings — Status Updates
 
-| Finding | Previous Status | October 2026 Update |
-|---------|----------------|---------------------|
-| RigidBody2D sleep freeze (GH-forum) | Open, no fix in 4.7.2 | Still open — no fix reported |
-| AnimationPlayer editor freeze (GH-120379) | Open, expected in 4.8 | Still open — not in any 4.8 dev release confirmed |
-| RigidBody2D Frozen-Static shape desync (GH-118473) | Open since April 2026 | Still open |
-| TextureButton focus regression (GH-115782) | Status unclear | No update found |
-| Shift simultaneous-release (GH fix in 4.7.2) | FIXED in 4.7.2 | Still fixed; new distinct Shift Heisenbug (GH-120528) is unrelated |
+| Finding | Status |
+|---------|--------|
+| RigidBody2D sleep freeze (forum) | Still open, no fix |
+| AnimationPlayer editor freeze (GH-120379) | Still open, not confirmed fixed in any 4.8 dev |
+| RigidBody2D Frozen-Static shape desync (GH-118473) | Still open |
+| TextureButton focus (GH-115782) | No update |
+| Shift simultaneous-release (FIXED 4.7.2) | Still fixed; GH-120528 is a distinct new bug |
 
 ---
 

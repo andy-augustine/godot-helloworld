@@ -1,276 +1,175 @@
 # GDScript Language Traps, Gotchas & Proposals
-**Crawl date:** 2026-09-01
-**Target window:** August 2026 onward (previous crawl: 2026-08-01)
-**Godot stable:** 4.7.2 (August 18, 2026) — 4.8 dev 4 in progress (August 26, 2026)
-**Sources:** godot-proposals discussions, godot-docs, forum.godotengine.org, @vnen / @reduz / @Ivorforce
-**Note:** No live web fetch available this run. Findings drawn from training knowledge (cutoff Aug 2025) + sourcemap context for 4.7.x release delta.
+**Crawl date:** 2026-10-01
+**Target window:** September 2026 onward (previous crawl: 2026-09-01)
+**Godot stable:** 4.7.2 — 4.8 dev5 (September 2026, feature freeze imminent)
+**Sources:** godotengine/godot issues, godotengine/godot-proposals, @vnen / @Ivorforce / @reduz
 
 ---
 
-## TL;DR — Top 3 Findings
+## TL;DR — Top 3 New Findings (September 2026)
 
-1. **4.8 dev 4 (Aug 26) delivers 1.6× faster object property access** — GDScript property reads/writes got a significant VM-level speedup. No backport to 4.7.x expected; plan to revisit hot GDScript loops when upgrading to 4.8 stable.
+1. **Untyped GDScript called from multiple threads can crash** — `OPCODE_OPERATOR` first-run cache has a race when a function is first called simultaneously from several threads; fix: declare typed operands or pre-warm on main thread (#124010, open crash, Sept 30 2026).
 
-2. **Lambda `await` is still a compile-time error; the 1-element-Array capture trick remains the only workaround for mutable accumulator closures** — no language-level fix shipped in 4.7.x. The traits / struct proposals are the most active language-design threads but nothing merged.
+2. **Lambda closure capture is by-value for local variables** — `#117348` (labeled `documentation`, still open) confirms that outer *local* variables are snapshotted at lambda-creation time; the long-standing "all print 2" loop-variable trap is distinct and by-reference, making closure semantics context-dependent and confusing. The 1-element-Array workaround remains correct for mutable accumulators.
 
-3. **`@static_unload` is the correct escape hatch for static GDScript variable leaks across scene changes** — underused; frequently causes surprising persistent state in GDScript classes with static vars.
+3. **`Dictionary[SpecificType, V]` does NOT satisfy `Dictionary[Variant, V]` in 4.8.dev5** — a regression tightened covariance rules; closed "not planned" suggesting it may become permanent. Never use `Dictionary[Variant, ...]` as a generic receive type for typed dictionaries.
 
 ---
 
 ## Per-Trap Entries
 
-### Trap 1 — `:=` inference collapses to `Variant` on untyped return
+### Trap 1 — `:=` inference collapses to `Variant` on untyped return *(confirmed)*
+| Compiles | Runtime |
+|----------|---------|
+| Yes (silently) | Loses type safety; downstream calls fail at runtime |
 
-| | |
-|---|---|
-| **Compiles** | Yes — silently |
-| **Runtime** | Loses type safety; downstream method calls on the Variant may fail at runtime |
-
-**What happens:**
 ```gdscript
-# bad — get_node() returns Node, but if the return path goes through
-# a helper with untyped return, := infers Variant
-var cam := get_helper_result()  # helper returns Variant or untyped Array value
-cam.some_method()               # runtime error if cam is null or wrong type
+var cam := get_helper_result()   # helper returns Variant → cam is Variant
+cam.some_method()                # runtime error
 ```
-**Fix:** Always annotate the variable explicitly when the right-hand side is any method with a non-specific return type. This is especially common with `get()` on a Dictionary or when chaining `find()` results.
-```gdscript
-var cam: GameCamera = get_helper_result()
-```
-**Citation:** @vnen (GDScript maintainer) pattern documented in godot-docs; consistent with godot-proposals discussions on type-system proposals.
-**Status in 4.7.2:** No change. The `:=` behavior is intentional; fix requires explicit annotation.
+**Fix:** Annotate explicitly when RHS is untyped: `var cam: GameCamera = get_helper_result()`
+**Status 4.7.2:** Unchanged. Intentional; fix requires annotation.
 
 ---
 
-### Trap 2 — Lambda variable capture is by-reference, not by-value
+### Trap 2 — Lambda capture semantics are context-dependent *(updated Sept 2026)*
+| Compiles | Runtime |
+|----------|---------|
+| Yes | Loop var: all lambdas see LAST value (by-ref). Local var reassigned after lambda: lambda keeps OLD value (by-value snapshot). |
 
-| | |
-|---|---|
-| **Compiles** | Yes |
-| **Runtime** | Lambda sees the variable's value *at call time*, not capture time — loop variable bug |
-
-**What happens:**
 ```gdscript
-var funcs: Array[Callable] = []
+# CASE A — loop variable: by-reference (classic trap)
 for i in range(3):
-    funcs.append(func(): print(i))
-for f in funcs:
-    f.call()  # prints 2, 2, 2 — not 0, 1, 2
+    funcs.append(func(): print(i))   # prints 2, 2, 2
+
+# CASE B — #117348: local var reassigned after lambda creation
+var x = 1
+var fn = func(): print(x); x += 1
+fn.call()   # prints 1 (snapshot), then x inside lambda is 2
+x = 10
+fn.call()   # still prints 2 (NOT 10) — lambda has its own copy
 ```
-**Fix (already known):** Wrap the captured value in a 1-element Array to create an independent binding per iteration:
+**Fix:** Use 1-element Array for mutable accumulator closures:
 ```gdscript
-for i in range(3):
-    var cell := [i]
-    funcs.append(func(): print(cell[0]))
+var cell := [initial_value]
+var fn = func(): cell[0] += 1
 ```
-**Status in 4.7.2:** No change. Not a bug — GDScript closures are by-reference by design. Trait/closure language proposals have not addressed this.
-**Citation:** godot-proposals #5027 (closed; by-design); community thread forum.godotengine.org.
+**Status 4.7.2:** #117348 open since March 2026, labeled `documentation` — no VM behavior change expected; the inconsistency is a known spec gap.
 
 ---
 
-### Trap 3 — `await` is illegal inside lambda bodies
+### Trap 3 — `await` is illegal / broken inside lambda bodies *(unchanged)*
+| Compiles | Runtime |
+|----------|---------|
+| Some forms parse-error; some silently compile wrong | Coroutine never suspends the caller |
 
-| | |
-|---|---|
-| **Compiles** | Varies: some forms are parse errors, some silently skip the await |
-| **Runtime** | Coroutine never suspends correctly; await inside lambda body does not suspend the enclosing coroutine |
-
-**What happens:**
 ```gdscript
-# This does NOT work — await inside a lambda
-var result = await func(): return await get_tree().create_timer(1.0).timeout
-
-# Also does NOT work as expected:
-some_signal.connect(func(): await other_signal)
+some_signal.connect(func(): await other_signal)  # does NOT work
 ```
-**Fix:** Extract the coroutine body to a named function:
-```gdscript
-func _on_signal_with_await() -> void:
-    await other_signal
-    # ...
-some_signal.connect(_on_signal_with_await)
-```
-**Note:** No top-level `await` in MCP-injected scripts either (known). Both limitations stem from the same coroutine-context requirement.
-**Status in 4.7.2:** No change. Active discussion in proposals but no merge.
-**Citation:** GDScript coroutine docs (gdscript.md); #vnen comments on proposals re: async/lambda interaction.
+**Fix:** Extract to a named function. Note: no top-level `await` in MCP-injected scripts either (same root cause).
+**Status 4.7.2:** Unchanged. Closed as resolved in 4.1 (PR #74949) but async-in-lambda edge cases persist; verify against 4.7 if needed.
 
 ---
 
-### Trap 4 — `@static_unload` required to prevent static variable persistence across scene changes
+### Trap 4 — Untyped GDScript + multi-threading = crash *(NEW — #124010, Sept 2026)*
+| Compiles | Runtime |
+|----------|---------|
+| Yes | Crash (heap access violation) when a function with untyped operands is first called simultaneously from multiple threads |
 
-| | |
-|---|---|
-| **Compiles** | Yes (no error either way) |
-| **Runtime** | Static vars in GDScript classes persist as long as the script is cached — survives scene reloads unless `@static_unload` is used |
+**Root cause:** `OPCODE_OPERATOR` first-run cache writes signature → then return type → then function pointer (no lock on read path). A second thread can read the new signature and dereference an uninitialized pointer.
 
-**What happens:**
 ```gdscript
-# PlayerData.gd
-static var score: int = 0   # persists forever without @static_unload
+# Danger: untyped operands + WorkerThreadPool
+func compute(a, b):       # no type hints
+    return a + b          # cached on first call; race if called from 8 threads simultaneously
 ```
-After a full scene change (`get_tree().change_scene_to_file()`), `score` is not reset unless the script is unloaded from cache.
+**Fix (either):**
+1. Declare typed parameters: `func compute(a: int, b: int) -> int:` — uses `OPCODE_OPERATOR_VALIDATED` which has no first-run cache
+2. Pre-warm on main thread before handing to workers
 
-**Fix:** Add `@static_unload` at the top of scripts with static state that should reset on scene change:
-```gdscript
-@static_unload
-static var score: int = 0
-```
-**When NOT to use it:** Intentional global-state scripts (autoloads, singletons) — those should NOT have `@static_unload`.
-**Status in 4.7.2:** Feature exists; documentation improved in 4.7.x but still underused in community code.
-**Citation:** GDScript reference — `@static_unload` annotation; godot-docs PR trail Q1 2026.
+**Status:** Open crash bug as of Sept 30 2026. Not in 4.7.2; may land in 4.8.
+**Citation:** godotengine/godot #124010
 
 ---
 
-### Trap 5 — Typed Array (`Array[T]`) is not assignable to untyped `Array` without explicit cast
+### Trap 5 — Native `RefCounted` objects freed mid-method-call *(NEW — #122367, Aug 2026)*
+| Compiles | Runtime |
+|----------|---------|
+| Yes | Crash (use-after-free) when a native GDExtension RefCounted removes its own last reference during a method call |
 
-| | |
-|---|---|
-| **Compiles** | Sometimes yes (with warnings), sometimes error depending on context |
-| **Runtime** | Passing `Array[Enemy]` to a function expecting `Array` may fail or silently skip type checking |
+**Root cause:** GDScript VM keeps GDScript-originated temporaries alive until statement completion, but does NOT protect native `RefCounted` objects the same way. If the native object calls `set("self_ref", null)` internally, the object is freed while GDScript is still in the call.
 
-**What happens:**
+**Workaround:** Store a strong reference in a local variable before the call chain:
 ```gdscript
-func process_entities(entities: Array) -> void: pass
-
-var enemies: Array[Enemy] = [...]
-process_entities(enemies)  # may error at runtime in strict type contexts
+var held_ref = potentially_self_deleting_obj   # keeps refcount +1 for duration
+held_ref.method_that_might_delete_self()
 ```
-**Fix:** Cast explicitly, or type the receiving parameter as `Array[Enemy]`:
+**Status:** Open, Aug 13 2026. No fix in 4.7.2; complex — may require VM-level change.
+**Citation:** godotengine/godot #122367
+
+---
+
+### Trap 6 — `Dictionary[T, V]` covariance tightened in 4.8.dev5 *(NEW — #123383)*
+| Compiles | Runtime |
+|----------|---------|
+| Error in 4.8.dev5 (was OK in dev4) | N/A |
+
 ```gdscript
-process_entities(enemies as Array)
-# OR prefer:
-func process_entities(entities: Array[Enemy]) -> void: pass
+func get_map() -> Dictionary[MyEnum, String]: ...
+func caller() -> Dictionary[Variant, String]:
+    return get_map()   # ERROR in 4.8.dev5: cannot convert Dictionary[MyEnum, String]
 ```
-**Status in 4.7.2:** Partially improved. The typed-array covariance rules were refined in 4.5/4.6; still not full covariance. Proposals for typed Array covariance are open.
-**Citation:** godot-proposals discussions on typed array covariance; @vnen issue tracker comments 2025-2026.
+**Fix:** Match key types exactly. Do not use `Dictionary[Variant, ...]` as a "generic" receive type for typed dictionaries. Use `Dictionary[MyEnum, String]` throughout or an untyped `Dictionary`.
+**Status:** Closed "not planned" — behavior change is likely intentional as 4.8 feature freeze approaches.
+**Citation:** godotengine/godot #123383
 
 ---
 
-### Trap 6 — `match` with `String` vs `StringName` produces unexpected no-match
+### Trap 7 — Self-referential typed `@export` Array causes shutdown resource leak *(NEW — #122601)*
+| Compiles | Runtime |
+|----------|---------|
+| Yes | "1 resource still in use at exit" warning; may prevent clean shutdown in CI/headless runs |
 
-| | |
-|---|---|
-| **Compiles** | Yes |
-| **Runtime** | `match` uses `==` comparison; `String("idle") != StringName("idle")` by identity in some contexts |
-
-**What happens:**
 ```gdscript
-var state := &"idle"  # StringName literal
-match state:
-    "idle":        # String literal — does NOT match StringName in strict Variant comparison
-        pass
+# NavNode.gd — self-referential typed array
+@export var connections: Array[NavNode] = []   # triggers leak
+# Workaround:
+@export var connections: Array[Node] = []      # use parent type
 ```
-**Fix:** Use StringName literals consistently (`&"idle"`), or ensure the matched expression and arms use the same type:
-```gdscript
-match state:
-    &"idle": pass  # correct
-```
-**Status in 4.7.2:** Known quirk; `==` between String and StringName now returns `true` in most contexts (fixed in early 4.x), but the `match` arm comparison path had a regression that may still surface in typed contexts.
-**Citation:** GitHub issue tracker; forum.godotengine.org search "match StringName"; @vnen comments.
+**Status:** Closed "not planned" in Aug 2026. Exact reproduction condition unknown; workaround: use a parent-class type.
+**Citation:** godotengine/godot #122601
 
 ---
 
-### Trap 7 — `weakref()` / `WeakRef` — `get_ref()` vs. `is_instance_valid()` double-check required
-
-| | |
-|---|---|
-| **Compiles** | Yes |
-| **Runtime** | `get_ref()` returns `null` for freed Object; if you skip `is_instance_valid()` check before use, null-dereference |
-
-**What happens:**
-```gdscript
-var ref := weakref(some_node)
-# later, after node freed:
-ref.get_ref().do_something()   # null dereference crash
-```
-**Fix:** Always guard:
-```gdscript
-var obj = ref.get_ref()
-if is_instance_valid(obj):
-    obj.do_something()
-```
-**Note:** `is_instance_valid()` is safe to call on null (returns false). Prefer it over `obj != null` for Objects, since a freed node reference is non-null but invalid.
-**Status in 4.7.2:** No change. Behavior is stable and expected.
+### Trap 8 — `Callable.bind()` reference lost for `disconnect()` *(confirmed unchanged)*
+**Fix:** Store the bound Callable at connect time; reuse for disconnect. `my_func.bind(42)` creates a new Callable each call — equality fails.
 
 ---
 
-### Trap 8 — `Callable.bind()` creates a new Callable; original reference lost for `disconnect()`
-
-| | |
-|---|---|
-| **Compiles** | Yes |
-| **Runtime** | Calling `disconnect(callable.bind(arg))` creates a *new* Callable that does not compare equal to the stored one — signal never actually disconnects |
-
-**What happens:**
-```gdscript
-func _ready():
-    some_signal.connect(my_func.bind(42))
-
-func _exit_tree():
-    some_signal.disconnect(my_func.bind(42))  # creates NEW Callable; disconnect silently fails
-```
-**Fix:** Store the bound Callable at connection time and use the stored reference for disconnection:
-```gdscript
-var _bound_callable: Callable
-
-func _ready():
-    _bound_callable = my_func.bind(42)
-    some_signal.connect(_bound_callable)
-
-func _exit_tree():
-    some_signal.disconnect(_bound_callable)
-```
-**Status in 4.7.2:** No change; Callable equality semantics are well-defined and stable. This is a usage pattern issue.
-**Citation:** GDScript Callable docs; forum posts on signal disconnect gotchas.
+### Trap 9 — Hot-reload leaves new typed members as `nil` on live instances *(known, fix in progress)*
+New `var members: Dictionary = {}` added to a script during hot-reload appear as `nil` on already-live instances. PR #123040 adds a regression test and fix. **Workaround:** Stop and restart the scene after adding new typed builtin member declarations.
+**Citation:** godotengine/godot #119057
 
 ---
 
-## GDScript Proposals — Active & Worth Tracking (2026)
-
-### 1. Traits / Interface System (godot-proposals, multiple threads; primary: ~#7903)
-**Owner:** @reduz (co-authored), @vnen (GDScript maintainer)
-**Status (as of Aug 2026):** In design discussion. Not accepted into any milestone.
-**What it would add:** Structural typing via `trait` keyword — allows defining a contract (methods a class must implement) without full inheritance. Relevant for plugin/system architecture.
-**Impact for our project:** LOW immediate (Metroidvania doesn't need traits), but HIGH long-term as it would replace duck-typing patterns.
+### Trap 10 — String literals as multiline comments deprecated in 4.8 *(NEW behavior)*
+PR #121833 (merged for 4.8) emits a `DEPRECATED` warning for standalone string literals used as comments (`""" ... """`). These will be **errors in Godot 5.x**. Use `##` doc comments instead.
+**Action now:** Audit scripts for `"""..."""` blocks and replace with `## comment` lines.
+**Citation:** godotengine/godot-proposals #15279 → godotengine/godot PR #121833
 
 ---
 
-### 2. Callable Type Hints (`Callable[[ArgTypes], ReturnType]`)
-**Owner:** @vnen
-**Status (as of Aug 2026):** Active proposal; prototype syntax circulating. Not in 4.7.x.
-**What it would add:** Full type annotation for Callable parameters and return values — e.g., `var handler: Callable[[int, String], void]`. Currently all Callables are untyped.
-**Impact for our project:** MED — would catch signal-handler signature mismatches at parse time instead of runtime.
+## GDScript Proposals — Active & Worth Tracking (Oct 2026)
 
----
-
-### 3. GDScript Annotation Plugins (godot-proposals #14940)
-**Owner:** @Ivorforce (GDScript area maintainer)
-**Status (as of Aug 2026):** Active discussion; no milestone assigned.
-**What it would add:** Allow GDScript code to define its own `@my_annotation` directives that run at parse/load time. Would enable user-land DI frameworks, serialization annotations, etc.
-**Impact for our project:** LOW immediate; HIGH for future tooling.
-
----
-
-### 4. GDScript Struct-Like Value Types
-**Owner:** @reduz
-**Status (as of Aug 2026):** Discussed alongside trait system. No separate accepted proposal.
-**What it would add:** Value-type aggregates (like C# structs) — no heap allocation, pass-by-copy. Relevant for per-frame data (hit results, movement vectors).
-**Impact for our project:** MED — would eliminate the "use a Dictionary for compound return values" pattern.
-
----
-
-### 5. Typed Dictionary (`Dictionary[KeyType, ValueType]`)
-**Status (as of Aug 2026):** Partially implemented in 4.4+ (`Dictionary[String, int]` syntax exists); still gaps in inference and covariance.
-**What's still open:** Full type-checked access; `get()` on a typed Dictionary should return `ValueType?` not `Variant`.
-**Impact for our project:** MED — affects any state management code using typed Dicts.
-
----
-
-## 4.8 Dev 4 Relevance (August 26, 2026 — not stable)
-
-- **Object property access 1.6× faster** — VM-level optimization. Affects all GDScript property reads/writes. Not backported to 4.7.x. Profile hot paths before upgrading to confirm real-world gains.
-- **224+ fixes** — review 4.8 changelog for any GDScript-specific fixes before upgrading.
-- **No GDScript language-semantics breaking changes** reported in 4.7.2 (zero reported breaking changes per sourcemap).
+| Proposal | Status | Impact |
+|----------|--------|--------|
+| **Nullable types** (`Vec2?` syntax) — proposals #162 | Open, "on hold", requires core feedback. PR #76843 exists. | HIGH — would eliminate `is_instance_valid()` boilerplate |
+| **Structs / value types** — proposals #7329 | Open, active Sept 2026. No milestone. | MED — eliminates dict-as-compound-return pattern |
+| **Callable type hints** (`Callable[[int], void]`) | Active design; @vnen owns. No milestone. | MED — catches signal handler mismatches at parse time |
+| **GDScript annotation plugins** — proposals #14940 | Active; @Ivorforce. No milestone. | LOW immediate / HIGH tooling future |
+| **Nonvirtual GDScript functions** — proposals #15491 | Open Sept 2026; performance gating behind project setting. | MED perf — enables inlining; relevance grows post-4.8 |
+| **Typed Array `as`-cast** — godot #54311 | Open since 2021; still open Sept 2026. Use `Array[T](source)` constructor as workaround. | MED — typed array interop still rough |
+| **Unified type system** — proposals #11489 | Closed "not planned" Sept 2026. | Archived |
 
 ---
 
@@ -278,8 +177,7 @@ func _exit_tree():
 
 | Item | Where | Why |
 |------|--------|-----|
-| Callable type hints proposal | godot-proposals | If accepted, changes signal-connection practices project-wide |
-| Traits system design | godot-proposals | Architectural impact when merged |
-| 4.8 GDScript changelog | godotengine.org/blog | 1.6× property speedup — confirm before upgrading project |
-| `@static_unload` doc improvements | godot-docs | Underused; doc PRs landing 2026 |
-| Typed Dictionary covariance | godotengine/godot issues | Affects Dict-heavy state code |
+| #124010 OPCODE_OPERATOR threading crash | godot issues | Fix expected before 4.8 stable; affects any project using WorkerThreadPool |
+| 4.8 feature freeze / beta | godotengine.org/blog | GDScript property 1.6× speedup (dev4) + covariance rule changes (dev5) |
+| Nullable types PR #76843 | godotengine/godot | If merged, changes `weakref` + optional-return patterns project-wide |
+| `@static_unload` documentation | godot-docs | Underused; causes scene-reload state bugs |

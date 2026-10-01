@@ -1,154 +1,150 @@
 # 2D Platformer Patterns — Godot 4.7 Intel
-*Crawled: 2026-09-01 | Window: August 2026 onward (previous crawl: 2026-08-01)*
-*Sources: sourcemap.md v2 | Previous crawl baseline: research/tools/godot-4.6-current-intel.md §4.4*
-*Engine target: Godot 4.7.2 (stable, Aug 18 2026). Prior target was 4.7.1.*
+*Crawled: 2026-10-01 | Window: September 2026 onward (previous crawl: 2026-09-01)*
+*Sources: sourcemap.md v3 | Engine target: Godot 4.7.2 (stable). 4.8-dev5 shipped Sept 2026.*
 
-> **Delta note.** The August 1 crawl covered 4.7.1-era patterns thoroughly (P1–P11 in the synthesis).
+> **Delta note.** The September 1 crawl covered 4.7.2-era patterns (P-A through P-I).
 > This file covers only what is new or materially changed since that date.
-> Do NOT re-read P1–P11 from the synthesis as new findings; they remain valid unless explicitly
-> superseded below.
+> P-A through P-I remain valid unless explicitly superseded below.
 
 ---
 
 ## TL;DR — Top 3 Findings
 
-1. **Upgrade to 4.7.2 now.** The Shift-key simultaneous-release bug (GH-125811, fixed in 4.7.2)
-   is a silent platformer input breakage: releasing Shift + a direction key in the same frame
-   fired only one `INPUT_KEY` action released event in 4.7.0–4.7.1. Zero breaking changes;
-   free update. This is the single highest-priority action from this crawl.
+1. **4.8 feature freeze is imminent (October 2026); GH-121681 watch trigger has fired.**
+   Dev5 shipped in September 2026 with 183 fixes. The watch list trigger for GH-121681
+   (AnimationPlayer RESET-track crash in 4.8-dev2) was "4.8-dev5 or 4.8 stable RC."
+   That trigger is now live. Confirm fix status before any 4.8 migration attempt.
 
-2. **4.7.2 threading hardening likely resolves the threaded TileSet load bug (GH-120482).**
-   The "threading hardening" block in the 4.7.2 changelog maps to the same subsystem as the
-   `load_threaded_request` + TileSet sources regression. The previous crawl marked this HIGH
-   before any room-streaming work. Re-test synchronous vs. threaded load on 4.7.2 before
-   starting that work — the workaround (synchronous load) may no longer be required.
+2. **SaveKit is a new lightweight save plugin on the new Godot Asset Store.**
+   SaveKit (fernforestgames, v0.1, MIT, Apr 2026) targets Godot 4.5+ and offers
+   group-based node saving with JSON/binary serializers and a clean extension point.
+   First credible GDScript-native alternative to KoBeWi Metroidvania-System for save/load
+   since the last crawl. Worth evaluating before implementing our own room-state save system.
 
-3. **Four previous-crawl open issues are NOT fixed in 4.7.2 and still affect our stack.**
-   Camera2D built-in smoothing gray screen (GH-121843), AnimationPlayer scene-root path
-   writing (GH-120921), TileSet editor physics-layer freeze (GH-120873), Area2D monitorable
-   toggle no-op (GH-121094). All four have confirmed workarounds already in the codebase or
-   in STRUCTURE.md; no new action needed, but do not remove the workarounds.
+3. **Area2D monitorable toggle (GH-121094) is confirmed still open in 4.7.2 and 4.8-dev5.**
+   Community threads in September 2026 continue reporting the no-op on re-enable.
+   The `collision_layer = 0` / restore workaround is confirmed as the canonical fix.
+   Audit Door.gd before any refactor that touches door enable/disable logic.
 
 ---
 
 ## Per-Pattern Entries
 
-### P-A. Shift Key Simultaneous Release — platformer input breakage, FIXED in 4.7.2
-**Applicability: HIGH**
+### P-J. 4.8-dev5 Shipped — Feature Freeze Pending, No 2D Runtime Breakage
+**Applicability: MED (future planning)**
 
-In 4.7.0 and 4.7.1, releasing two keys in the same physics frame where one was Shift fired only
-one `action_released` event. For a CharacterBody2D platformer where sprint is `ui_run`
-(Shift + direction) and the player releases the movement key and Shift together, the game
-silently continued treating one as held. The fix landed in 4.7.2 (August 18, 2026).
+Godot 4.8 dev5 (September 2026) delivered: mip-level texture streaming (VRAM reduction via
+TextureStreaming singleton, must be enabled in project settings — 3D-only benefit), alpha test
+coverage fix for foliage, and a 2D editor toolbar redesign (GH-121080, by Jayden Sipe) that
+increases parity with the game view toolbar. 183 fixes from 78 contributors.
 
-**Action:** Upgrade to 4.7.2 and remove any `Input.is_key_pressed(KEY_SHIFT)` polling workaround
-if one was added to compensate. Re-run the jump+run combo in the playtest after upgrading.
+No 2D runtime API changes in dev5 that affect CharacterBody2D, TileMapLayer, Camera2D, Area2D,
+or AnimationPlayer behavior. The 2D toolbar change is editor-UI only — it does not affect .tscn
+files, scripts, or runtime.
 
-**Citation:** Godot 4.7.2 release notes, opensourceforu.com/2026/08/godot-4-7-2-released/
-(2026-08-18). Issue confirmed to affect 4.7.0–4.7.1; absent in 4.6.x.
+Feature freeze is scheduled for late October 2026. Beta RC phase expected shortly after.
+Current recommendation: stay on 4.7.2 until 4.8 RC is proven stable.
 
----
-
-### P-B. Threaded TileSet Load Regression (GH-120482) — Status Update for 4.7.2
-**Applicability: HIGH (gate on room streaming work)**
-
-Previous finding (Aug 1 crawl): `load_threaded_request(path, "", true)` on a scene containing
-TileMapLayer yielded a TileSet with zero atlas sources at runtime. Workaround: synchronous
-`load()` or disable sub-threads.
-
-4.7.2 release notes cite "threading hardening" as a targeted fix category. The specific issue
-tracker entry (GH-120482) is not listed by name, but the subsystem matches. **Do not remove
-the synchronous-load workaround until explicit re-test on 4.7.2 confirms the regression is
-resolved.** Check GH-120482 for a "fixed in 4.7.2" label before starting room streaming.
-
-**Citation:** 4.7.2 changelog summary, opensourceforu.com/2026/08/godot-4-7-2-released/.
-Original issue: github.com/godotengine/godot/issues/120482 (2026-06-20, labeled regression).
+**Citation:** warp2search.net summary of dev-snapshot-godot-4-8-dev-5 (Sept 2026);
+sourcemap.md §3 milestones (4.8 dev5 confirmed).
 
 ---
 
-### P-C. 4.7.2 Has Zero Breaking Changes — Safe to Upgrade
-**Applicability: HIGH (decision gate)**
+### P-K. GH-121681 Watch Trigger Now Live — Recheck Before Any 4.8 Migration
+**Applicability: HIGH (gate on 4.8 migration)**
 
-The sourcemap confirms no breaking changes in 4.7.2 for GL Compatibility 2D projects. The
-release addresses only bugs (57 fixes from 39 developers). The upgrade path from 4.7.1 is:
-back up project, bump `config/features` in project.godot, test playback. No GDScript API
-removals, no TileMapLayer API changes, no CharacterBody2D behavior changes.
+The previous crawl noted: "Recheck GH-121681 closure before attempting 4.8 migration. Trigger:
+4.8-dev5 or 4.8 stable RC." Dev5 has now shipped; the trigger has fired.
 
-**Citation:** opensourceforu.com/2026/08/godot-4-7-2-released/ (2026-08-18).
+The issue (4.8-dev2 crash when AnimationPlayer plays any animation whose RESET track references
+a node path that isn't present) cannot be confirmed resolved or open through accessible sources
+this crawl — the GitHub API for godotengine/godot is not available in this session. **Do not
+assume it is fixed.** Before migrating to 4.8 beta, manually verify:
+1. Open the issue at github.com/godotengine/godot/issues/121681 in a browser.
+2. If closed with a "fixed in 4.8-devN" label, note the dev version and proceed.
+3. If still open, keep the workaround: ensure every AnimationPlayer RESET track covers all
+   property paths that appear in any other animation on the same player.
 
----
-
-### P-D. 4.8-dev4 Object Property Access 1.6× Faster — Future Direction
-**Applicability: MED (not stable)**
-
-4.8-dev4 (August 26, 2026) includes a `_physics_process` optimization: object property
-access via GDScript is now 1.6× faster per the dev4 changelog. This matters for
-CharacterBody2D movement scripts that access `velocity`, `position`, and collision result
-fields on every tick. Not stable and not a reason to migrate (4.8-dev2 still crashes on
-projects with RESET AnimationPlayer tracks — GH-121681, unresolved as of crawl date).
-
-**Action:** Recheck GH-121681 closure before attempting 4.8 migration.
-
-**Citation:** godotengine.org/article/dev-snapshot-godot-4-8-dev-4/ (2026-08-26).
+**Citation:** Previous crawl P-D + watch list entry; 4.8-dev5 confirmed via warp2search.net.
 
 ---
 
-### P-E. Camera2D Built-in Smoothing Gray Screen (GH-121843) — Still Open in 4.7.2
-**Applicability: HIGH (confirmed still affects our stack)**
+### P-L. SaveKit — New GDScript Save Plugin on Godot Asset Store
+**Applicability: MED (pre-save-system work)**
 
-No mention of GH-121843 in the 4.7.2 changelog. The macOS + GL Compatibility gray screen when
-`position_smoothing_enabled = true` is still present. **The GameCamera's script-driven follow
-(`lerp` in `_physics_process`) remains the correct approach and must not be changed to use
-built-in smoothing.**
+SaveKit (fernforestgames, MIT license, v0.1, submitted 2026-04-10) is the first notable
+GDScript-native save plugin released on the new Godot Asset Store (launched with 4.7).
+Architecture: nodes added to a `saveable` group; `SaveManager.save_game()` /
+`SaveManager.load_game()` serializes them. Built-in JSON and binary formats; extensible via
+`SaveKitSerializer` / `SaveKitDeserializer`. Does NOT require a C# runtime.
 
-**Citation:** github.com/godotengine/godot/issues/121843 (opened 2026-07-28, not in 4.7.2
-notes). Confirmed by absence from 4.7.2 fix list at opensourceforu.com/2026/08/.
+Contrast with KoBeWi Metroidvania-System (storable-object IDs + room-state serialization):
+SaveKit is more general-purpose and simpler; KoBeWi bakes in Metroidvania-specific patterns
+(door flags, ability unlocks, room persistence). For our project, KoBeWi remains the better
+fit if we adopt a pre-built plugin; SaveKit is worth a look only if we find KoBeWi too opinionated.
 
----
+Compatibility: Godot 4.5+; should work on 4.7.2 without modification.
 
-### P-F. AnimationPlayer at Scene Root Path Bug (GH-120921) — Still Open
-**Applicability: MED**
+**Action:** No action now. Revisit during save-system planning phase.
 
-Not addressed in 4.7.2. AnimationPlayer as a direct child of the scene root still writes
-local paths instead of `%unique` paths in 4.7.2. The workaround (nest AnimationPlayer one
-level down under an intermediate Node2D) applies at next rig revision. No action needed now
-since the player rig has not been restructured.
-
-**Citation:** github.com/godotengine/godot/issues/120921 (2026-07-04), confirmed absent
-from 4.7.2 changelog.
+**Citation:** store.godotengine.org/asset/fernforestgames/savekit/ (confirmed active Oct 2026).
 
 ---
 
-### P-G. DrawableTexture2D (Minimap Primitive) — @tool Bug Still Open
-**Applicability: MED**
+### P-M. Area2D Monitorable Toggle (GH-121094) — Confirmed Open, Workaround Canonical
+**Applicability: HIGH (Door.gd risk)**
 
-GH-121113 (`DrawableTexture2D.get_image()` returns blank in @tool scripts) is not in the
-4.7.2 fix list. Runtime use (player-explored-room minimap drawn at play time) remains fully
-functional. **Editor-time minimap preview is still off the table.** Use a separate editor
-plugin approach or defer minimap work to runtime-only.
+Forum threads dated September 2026 confirm GH-121094 (setting `monitorable = true` on an
+Area2D that was previously `false` does not re-trigger `body_entered` for bodies already
+overlapping) is still open in 4.7.2 and unaddressed in 4.8-dev5. Community consensus as
+of this crawl:
 
-**Citation:** github.com/godotengine/godot/issues/121113 (2026-07-08).
+- **Wrong:** `area.monitorable = false` then `area.monitorable = true`
+- **Correct:** `area.collision_layer = 0` then restore; or `area.collision_mask = 0` then
+  restore. Layer/mask toggle correctly triggers new enter events on the next physics frame.
 
----
+**Action:** Audit Door.gd. If any enable/disable path touches `monitorable`, replace with
+`collision_layer` toggling. This is high-priority before implementing door re-entry logic.
 
-### P-H. Save/Load — No Change, KoBeWi Plugin Still Active
-**Applicability: HIGH (unchanged)**
-
-The Metroidvania-System plugin (KoBeWi, storable-object IDs + room-state serialization) shows
-no breaking changes in 4.7.2. The `Resource` + JSON pattern for save files remains best
-practice. Nothing new to act on; see prior crawl P3 for the full recipe.
-
-**Citation:** github.com/KoBeWi/Metroidvania-System — active as of Aug 2026 per sourcemap
-contributor entry.
+**Citation:** forum.godotengine.org/t/whats-the-latest-status-on-area2d-not-detecting-
+staticbody2d-if-not-set-to-monitorable/140997 (Sept 2026 activity confirmed).
 
 ---
 
-### P-I. TileMapLayer as Optional Build Module in 4.8 — No Runtime Impact
-**Applicability: LOW**
+### P-N. TileMapLayer API Stable — No Changes in 4.7.2 or 4.8-dev5
+**Applicability: LOW (no action)**
 
-Already flagged in prior crawl P11. 4.8-dev4 does not change this further. Standard Godot
-builds (which is what we use) keep TileMapLayer. Only relevant if a custom engine build with
-`module_tilemap_enabled=no` is ever produced.
+No TileMapLayer API additions, removals, or behavior changes in 4.7.2 or 4.8-dev5.
+The module-opt-out flag (`module_tilemap_enabled=no`) for custom engine builds remains
+only relevant for non-standard builds (previously flagged in P-I / P11).
+
+Best practice as of September 2026 (community-confirmed): use `set_cells_terrain_connect()`
+for bulk tile writes; never `set_cell()` in a per-frame loop without batching; always convert
+world coordinates via `local_to_map(global_pos)` before passing to TileMapLayer methods.
+No new patterns emerged; previously-documented recipe is current.
+
+**Citation:** forum.godotengine.org/t/best-architectual-practices-for-using-the-tilemaplayer-
+node-programmatically/116440 (active thread, no new engine changes noted).
+
+---
+
+### P-O. Camera2D for Metroidvania — PhantomCamera Plugin Gaining Traction
+**Applicability: LOW (our approach is already better)**
+
+An active September 2026 forum thread ("Handling the Camera in Metroidvania games",
+forum.godotengine.org/t/handling-the-camera-in-metroidvania-games/130882) shows the
+PhantomCamera plugin (3D/2D, tween-based, active on the new Asset Store) is the most
+frequently recommended third-party camera solution for room-based games. However, the
+thread authors who tried it for Metroidvania-style room locking report that scripted
+Camera2D with `lerp()` in `_physics_process` + explicit `limit_*` updates produces the
+same result with less setup overhead.
+
+Our GameCamera (script-driven lerp + explicit limit locking per room) already matches this
+pattern. No reason to adopt PhantomCamera. Note: Camera2D built-in smoothing gray screen
+(GH-121843) remains unresolved — do not enable built-in smoothing.
+
+**Citation:** forum.godotengine.org/t/handling-the-camera-in-metroidvania-games/130882
+(Sept 2026); GH-121843 still absent from 4.8-dev5 fix list.
 
 ---
 
@@ -156,11 +152,11 @@ builds (which is what we use) keep TileMapLayer. Only relevant if a custom engin
 
 | Pitfall | Likelihood | Status |
 |---|---|---|
-| **Shift key combos silently dropping in 4.7.0–4.7.1** | HIGH if on 4.7.x pre-4.7.2 | FIXED in 4.7.2; upgrade |
-| **Camera built-in smoothing** — our GameCamera avoids this, but any "simplify the camera" refactor might re-enable it | MED if refactored | Workaround in place; don't change it |
-| **AnimationPlayer at scene root** — player.tscn root is CharacterBody2D with AnimationPlayer as direct child per STRUCTURE.md | HIGH | Apply nest-one-level workaround at next rig revision |
-| **Area2D monitorable toggle** — Door.gd uses Area2D; if any code sets `monitorable = false` during transitions instead of `collision_layer = 0`, signals may not fire on re-enable | MED | Audit Door.gd's enable/disable path; use collision_layer |
-| **Threaded TileSet load** — not currently used; risk materializes when room streaming is added | LOW now, HIGH then | Re-test on 4.7.2 before starting streaming |
+| **Area2D monitorable toggle no-op** — Door.gd enable/disable path | HIGH | GH-121094 still open; use collision_layer toggle instead |
+| **AnimationPlayer RESET crash on 4.8** — triggered when migrating | MED on migration | GH-121681 trigger fired; manually verify before any 4.8 attempt |
+| **Camera built-in smoothing gray screen** — any "simplify camera" refactor | MED if refactored | GH-121843 still open; our script-driven lerp is correct, don't change it |
+| **AnimationPlayer at scene root path bug** — player.tscn rig | MED | GH-120921 still open; nest AnimationPlayer one level down at next rig revision |
+| **TileSet threaded load** — not used yet; risk on room streaming | LOW now | GH-120482 4.7.2 fix unverified; re-test synchronous vs threaded on 4.7.2 before starting |
 
 ---
 
@@ -168,9 +164,10 @@ builds (which is what we use) keep TileMapLayer. Only relevant if a custom engin
 
 | Issue | Priority | Re-scan trigger |
 |---|---|---|
-| GH-121843 Camera2D smoothing gray screen (macOS + Compat) | HIGH | Every 4.7.x patch; 4.8 stable |
-| GH-120482 TileSet sources empty under threaded load | HIGH | Before room-streaming work; confirm 4.7.2 fix |
+| GH-121843 Camera2D smoothing gray screen (macOS + Compat) | HIGH | 4.8 RC or stable |
+| GH-121681 4.8-dev2 crash on RESET tracks | HIGH | **TRIGGERED** — manually verify at github.com/godotengine/godot/issues/121681 before 4.8 migration |
+| GH-120482 TileSet sources empty under threaded load | HIGH | Before room-streaming work; confirm 4.7.2 fix via manual test |
+| GH-121094 Area2D monitorable toggle no-op | HIGH | Before any door re-entry refactor; use collision_layer workaround now |
 | GH-120921 AnimationPlayer scene-root path writing | MED | Next player-rig revision |
-| GH-121113 DrawableTexture2D @tool blank image | MED | Before minimap work |
-| GH-121681 4.8-dev2 crash on RESET tracks | HIGH | 4.8-dev5 or 4.8 stable RC |
-| 4.8-dev4 property access speedup | MED | 4.8 stable; recheck _physics_process budget |
+| GH-121113 DrawableTexture2D @tool blank image | MED | Before minimap editor-preview work |
+| 4.8-dev4/dev5 property access 1.6× speedup | MED | 4.8 stable; recheck _physics_process budget |

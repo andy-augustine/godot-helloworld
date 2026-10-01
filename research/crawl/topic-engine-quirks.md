@@ -1,160 +1,185 @@
-# Engine Quirks & Regressions — August 2026 Crawl
-**Crawl date:** 2026-09-01  
-**Target window:** August 2026 onward (previous crawl: 2026-08-01)  
+# Engine Quirks & Regressions — October 2026 Crawl
+**Crawl date:** 2026-10-01  
+**Target window:** September 2026 onward (previous crawl: 2026-09-01)  
 **Current stable:** Godot 4.7.2 (released August 18, 2026)  
-**Next:** 4.8 dev 4 (August 26, 2026) — not yet stable
+**4.8 status:** dev7 as of October 1, 2026 — feature freeze imminent, beta expected late October
+
+> **Calendar correction vs. sourcemap:** The sourcemap listed 4.8 dev5 as the latest snapshot.
+> GitHub issue #124029 (filed Sep 30) references "4.8.dev7", confirming two additional dev
+> snapshots shipped in September. Feature freeze is very close; watch the milestones page.
 
 ---
 
-## TL;DR — Top 3 Findings
+## TL;DR — Top 3 Findings (new this crawl)
 
-1. **RigidBody2D sleep regression in 4.7** (HIGH): Bodies freeze after settling to rest — a clean regression from 4.6. No confirmed fix as of 4.7.2. Workaround: set `can_sleep = false` on dynamic bodies or use `sleeping_threshold` tuning. Directly affects any physics object in your platformer (pickups, debris, props).
+1. **Modifier key `is_action_pressed()` inverted Heisenbug (4.7.2 — still open)** (HIGH): In projects
+   with multiple scenes and scripts, `Input.is_action_pressed()` for Shift/Ctrl/Alt returns an *inverted*
+   boolean — `true` when not pressed, `false` when pressed. Directly hits any run/dash mechanic.
+   Workaround exists. GH-120528.
 
-2. **Shift key simultaneous-release bug fixed in 4.7.2** (MED): If the player held Shift (run/dash) while another key was released at the same frame, the engine could silently drop the Shift modifier state — causing missed input frames. Fixed in 4.7.2; upgrade immediately if still on 4.7.0/4.7.1.
+2. **`.tscn` save silently converts external subresources to internal (4.8 dev)** (HIGH): Scene saves
+   can rewrite resource paths, converting externally-referenced subresources into embedded-internal ones,
+   dirtying version control and breaking resource sharing. GH-123846.
 
-3. **AnimationPlayer editor freeze with many animations** (MED — dev workflow): Any scene tree hierarchy change (move, rename, delete node) stalls the editor for 10–20 seconds when an AnimationPlayer with a large animation library is present. Regression introduced in 4.7; not present in 4.6. No confirmed fix in 4.7.x maintenance releases; fix expected in 4.8.
+3. **Binary resource relative-path resolution broken (4.8 dev)** (HIGH for binary-format workflows):
+   Relative paths inside binary `.res` / `.scn` files resolve to wrong locations; affects projects
+   using packed binary resources. Does not affect text `.tres` / `.tscn`. GH-123189.
 
 ---
 
-## Per-Finding Entries
+## Per-Finding Entries (new since September 2026)
 
 ---
 
-### 1. RigidBody2D Sleep Freeze Regression
-**Severity:** HIGH (2D platformer)  
-**Status:** Open — no confirmed fix in 4.7.2
+### A. Input: `is_action_pressed()` Inverted for Modifier Keys — Heisenbug
+**Severity:** HIGH (2D platformer — any dash/run mechanic using Shift)  
+**Status:** Open — filed June 21, 2026; last updated September 14, 2026; no fix in 4.7.2
 
-**Description:** After upgrading from 4.6 to 4.7, RigidBody2D bodies freeze in place after coming to rest, rather than entering the normal sleep state and waking on collision. In affected projects, bodies simply stop reacting to physics after a few moments. Worked correctly in 4.6.stable.
+**Description:** In projects with sufficient complexity (multiple scenes, scripts, singletons), modifier
+keys (Shift, Ctrl, Alt, Meta) report inverted state from `Input.is_action_pressed()`: starts `true` at
+project launch without key held, then inverts on first actual press. `is_action_just_pressed()` works
+correctly; only the persistent-state query is corrupted. Bug is timing-dependent — adding `print()`
+calls during _ready() can cause it to disappear (classic Heisenbug). Root cause: during initialization
+`Input` may register a modifier press event without the corresponding release, leaving state corrupted.
 
 **Repro / Citation:**  
-- Forum report (June 2026): "After moving to 4.7, the rigidbodies seem to freeze after standing still for a few moments. In 4.6 this all worked with no issue."  
-  URL: https://forum.godotengine.org/t/broken-rigidbody2d-behavior-after-4-7-update/140666
+- GH-120528 (June 21, 2026 — still open as of Sep 14, 2026):  
+  URL: https://github.com/godotengine/godot/issues/120528  
+- Secondary corroboration — GH-122728 (Aug 22, 2026): separate user reports Shift stuck in 4.7.2  
+  URL: https://github.com/godotengine/godot/issues/122728  
 
-**Workaround:** Set `can_sleep = false` on affected bodies, or increase `sleep_threshold` in Project Settings > Physics > 2D to prevent premature sleep. Test if a `sleeping_threshold` overide per-body resolves the symptom.
+**Workaround:** Track modifier state manually using transition events only:
+```gdscript
+var _shift_held := false
+func _process(_delta):
+    if Input.is_action_just_pressed("dash"): _shift_held = true
+    elif Input.is_action_just_released("dash"): _shift_held = false
+```
+Do NOT rely on `is_action_pressed()` for modifier-key-bound actions in complex projects.
 
-**Related issues:** RigidBody2D sleep never-wake long-standing issue GH-7996; separate freeze-in-static-mode issue GH-118473 (see below).
-
----
-
-### 2. Input: Simultaneous Shift Key Release Mishandled
-**Severity:** MED (2D platformer)  
-**Status:** FIXED in 4.7.2 (August 18, 2026)
-
-**Description:** When the player released Shift at the same frame as another key, the engine could mis-attribute the release event, dropping the modifier state silently. For a platformer this can manifest as a "run button stuck" or "dash cancelled mid-frame" inconsistency. Affects keyboard-driven input; does not affect joypad.
-
-**Repro / Citation:**  
-- 4.7.2 release summary (August 18, 2026): "Resolves an issue handling simultaneous Shift key releases."  
-  URL: https://www.opensourceforu.com/2026/08/godot-4-7-2-released/  
-  Official: https://godotengine.org/article/maintenance-release-godot-4-7-2/
-
-**Workaround:** Upgrade to 4.7.2. No known per-project workaround on earlier builds.
-
-**Related issues:** Part of the broader input hardening pass in 4.7.2.
+**Related issues:** GH-122554 (confirmed Shift stuck on Windows in 4.7.2 — separate race condition).
 
 ---
 
-### 3. AnimationPlayer Editor Freeze (Scene Tree Hierarchy Edits)
-**Severity:** MED (developer-workflow; does not affect shipped game)  
-**Status:** Open — present through 4.7.stable, unclear if fixed in 4.7.1/4.7.2; likely targeting 4.8
+### B. `.tscn` Save Corrupts External Subresource Paths
+**Severity:** HIGH (scene file hygiene; save/load correctness)  
+**Status:** Open — filed September 26, 2026; needs testing label
 
-**Description:** Any scene tree modification (move, rename, reparent, delete node) triggers a 10–20 second editor freeze when an `AnimationPlayer` with a large animation library is in the scene. The cause is a 4.7 change that forces the AnimationPlayer to enumerate all animations on every tree change. Removing the AnimationPlayer makes the same edits instantaneous.
+**Description:** When a scene property references an external subresource (e.g., a Material or Resource
+stored in its own `.tres`), saving the parent `.tscn` may rewrite the path reference and embed the
+resource inline as an internal subresource instead. The change is silent, corrupts VCS diffs, and can
+break other scenes that reference the same external resource. Affects 4.7.x and 4.8 dev builds.
 
 **Repro / Citation:**  
-- GitHub issue #120379 (filed June 17, 2026): Reproducible in 4.7.beta2, 4.7.rc2, 4.7.rc3; not in 4.6.stable. Minimal repro: instantiate a complex scene 74 times (with AnimationPlayers) — rename a node → 7+ second freeze.  
-  URL: https://github.com/godotengine/godot/issues/120379
+- GH-123846 (September 26, 2026):  
+  "Scene properties that reference external subresources modify their paths and make the internal
+  subresources on save."  
+  URL: https://github.com/godotengine/godot/issues/123846
 
-**Workaround:** For large-animation-library characters, keep the AnimationPlayer scene separate and only instantiate it when needed; do hierarchy edits on scenes that exclude the AnimationPlayer. Alternatively, temporarily delete or disable the AnimationPlayer node while doing large scene tree reorganizations, then re-add.
+**Workaround:** After any save, run `git diff` to check whether `.tscn` files have gained inline
+`[sub_resource ...]` blocks that should remain as `[ext_resource ...]` references. If so, manually
+revert the embedding and use `ResourceSaver.FLAG_RELATIVE_PATHS` explicitly. Prefer text format
+(`.tscn`/`.tres`) over binary (`.scn`/`.res`) until this is resolved.
 
-**Related issues:** GH-104483 (progressive freeze when adding animation keys — separate but related editor performance regression).
+**Related issues:** GH-123189 (binary resource relative-path resolution broken, below).
 
 ---
 
-### 4. RigidBody2D Separates from CollisionShape2D When Frozen (Static Mode)
-**Severity:** MED (2D platformer — affects any dynamically-frozen physics props)  
-**Status:** Open — filed April 2026, no confirmed fix as of 4.7.2
+### C. Binary Resource Relative-Path Resolution Broken
+**Severity:** HIGH (only if using binary `.res`/`.scn` format)  
+**Status:** Open — filed September 4, 2026
 
-**Description:** When a `RigidBody2D` is programmatically frozen to `Freeze Mode: Static` at runtime and then repositioned, the `CollisionShape2D` child desyncs — the shape stays at the old position while the visual (sprite) moves. The orphaned collision shape is invisible in the editor even with "Visible Collision Shapes" enabled, but still blocks other bodies.
+**Description:** Relative path references inside binary-format resources (`ResourceFormatLoaderBinary`)
+resolve to incorrect locations. Projects using binary resources (e.g., AtlasTexture, compressed meshes,
+or any `.scn` binary scene file) may see missing-resource errors at runtime that do not occur in the
+text-format equivalent. Does **not** affect `.tres` / `.tscn` text resources.
 
 **Repro / Citation:**  
-- GitHub issue #118473 (April 12, 2026): Affects Godot 4.6 and up; Godot Physics engine (Jolt unconfirmed).  
-  URL: https://github.com/godotengine/godot/issues/118473
+- GH-123189 (September 4, 2026):  
+  URL: https://github.com/godotengine/godot/issues/123189
 
-**Workaround:** Avoid changing `freeze` state and position in the same frame. Use a `StaticBody2D` from the start for objects that need to be fixed in place, rather than freezing a RigidBody2D. If dynamic freeze is unavoidable, force a full physics step (`await get_tree().physics_frame`) before repositioning.
-
-**Related issues:** GH-34124, GH-30551 (older shape-sync issues, different root cause).
+**Workaround:** Keep all resources in text format (`.tres`/`.tscn`). Use `ResourceSaver.FLAG_CHANGE_PATH`
+to force absolute paths in binary resources as a stop-gap.
 
 ---
 
-### 5. Input: High-Polling-Rate Mouse Lag on Windows
-**Severity:** LOW (2D platformer — keyboard-driven; editor UX affected)  
-**Status:** FIXED in 4.7.2 (August 18, 2026)
+### D. RichTextLabel / Container Freeze + Crash (4.7 regression)
+**Severity:** MED (2D platformer — dialog boxes, cutscene text, HUD item descriptions)  
+**Status:** Open — filed August 6, 2026; confirmed; last updated September 22, 2026
 
-**Description:** On Windows, mice with ≥1000 Hz polling rates (e.g. gaming peripherals at 4000 Hz) caused input queue starvation, introducing visible stutter in both the editor and in games. Did not affect gamepad or keyboard input.
+**Description:** A regression introduced in 4.7 causes RichTextLabel inside Container nodes to freeze
+and subsequently crash the engine under certain layout conditions. Exact trigger involves dynamic resizing
+of the parent container while the RichTextLabel is visible. Not present in 4.6.
 
 **Repro / Citation:**  
-- 4.7.2 RC1 release notes: "Thread hardening and high-polling-rate mouse support."  
-  URL: https://www.warp2search.net/story/godot-472-release-threading-hardening-mouse-input-fixes-and-57-stability-patches (August 2026)  
-  Also: https://www.linuxcompatible.org/story/godot-engine-472-rc1-released-43-fixes-thread-hardening-and-high-polling-rate-mouse-improvements
+- GH-122176 (August 6, 2026):  
+  URL: https://github.com/godotengine/godot/issues/122176
 
-**Workaround:** Upgrade to 4.7.2. On older builds: reduce mouse polling rate in device software (e.g. to 500 Hz).
+**Workaround:** Avoid dynamically resizing Containers holding active RichTextLabels. Use a fixed
+`min_size`, or replace with plain Label for HUD text that resizes frequently.
 
 ---
 
-### 6. GUI: TextureButton Focus Regression (4.6+)
-**Severity:** LOW (2D platformer UI — HUD/menu)  
-**Status:** Open as of last known state — filed against 4.6, closed as duplicate of GH-115782; root fix status unclear
+### E. AnimationPlayer Capture Track Segfault on Freed Target
+**Severity:** MED (developer stability — any scene with capture-mode AnimationPlayer tracks)  
+**Status:** Open — filed September 18, 2026; confirmed crash
 
-**Description:** `TextureButton` nodes lose focus and revert to their Normal texture immediately when the player clicks anywhere, even if the button was focused. The Focused texture never shows during gameplay click sequences. Regression from Godot 4.5.
+**Description:** If an `AnimationPlayer` uses a capture track (`Animation.TYPE_VALUE` with capture mode)
+and the target node has been freed (e.g., after `queue_free()` from an async callback), playing the
+animation causes a segfault rather than a safe error. Affects 4.8 dev builds; 4.7.x status unconfirmed.
 
 **Repro / Citation:**  
-- GitHub issue #117486 (March 2026): "Texture button that is in currently focus will revert to 'Normal' and display the normal texture instead." Closed as duplicate of #115782.  
-  URL: https://github.com/godotengine/godot/issues/117486
+- GH-123593 (September 18, 2026):  
+  URL: https://github.com/godotengine/godot/issues/123593
 
-**Workaround:** Use a standard `Button` with a StyleBoxTexture theme override for focus states rather than `TextureButton` if you need reliable keyboard/gamepad-driven UI focus.
-
-**Related issues:** GH-115782 (parent issue), GH-68067 (disabled-state variant).
+**Workaround:** Before calling `play()`, verify targets are live (`is_instance_valid(node)`). Stop the
+AnimationPlayer in `_notification(NOTIFICATION_PREDELETE)` on the scene root.
 
 ---
 
-### 7. Threading: Multiple Main Thread Race Condition Risk
-**Severity:** MED (stability — any threaded scene loading or async ResourceLoader usage)  
-**Status:** HARDENED in 4.7.2 — strict single-main-thread invariant now enforced
+### F. Input Action Fires Twice When Mouse Is Moving (mouse-button actions)
+**Severity:** LOW (2D platformer — keyboard-primary; relevant only if using mouse actions)  
+**Status:** Open — filed August 12, 2026; needs testing
 
-**Description:** Prior to 4.7.2, it was possible for game code to accidentally spin up a second main thread in certain GDExtension or background-loading scenarios, producing intermittent crashes that were hard to reproduce. 4.7.2 now hard-asserts a single main thread, converting silent corruption into a predictable error. Existing projects using `Thread.new()` correctly are unaffected; projects using `ResourceLoader.load_threaded_request` or background scene loading should test against 4.7.2 to surface any latent threading mistakes.
+**Description:** An `InputAction` bound to a mouse button fires its `pressed` signal twice per click
+when the mouse is in motion at the time of the click. Keyboard-bound actions are unaffected. Only
+relevant to menus or point-and-click systems.
 
 **Repro / Citation:**  
-- 4.7.2 release summary: "enforces a strict single main thread invariant, so you simply cannot have more than one main thread."  
-  URL: https://www.warp2search.net/story/godot-472-release-threading-hardening-mouse-input-fixes-and-57-stability-patches (August 2026)
+- GH-122320 (August 12, 2026):  
+  URL: https://github.com/godotengine/godot/issues/122320
 
-**Workaround:** N/A — the fix is the workaround. Projects hitting the new assert had a latent bug; fix the threading pattern.
+**Workaround:** Use `_unhandled_input()` with `event is InputEventMouseButton` directly instead of
+action mapping for mouse-bound actions until fixed.
 
 ---
 
-### 8. Linux/KDE Wayland: IME Popup Position Under Fractional Scaling
-**Severity:** LOW (2D platformer — Linux dev environment only)  
-**Status:** FIXED in 4.7.2 (August 18, 2026)
+### G. Tab Focus Escapes SubViewportContainer
+**Severity:** LOW (2D platformer — only if pause menu uses SubViewportContainer for in-world UI)  
+**Status:** Open — filed September 23, 2026
 
-**Description:** On Linux with KDE Plasma and Wayland, fractional display scaling caused the IME (Input Method Editor) popup for text entry fields to appear in the wrong position. Affects editor text entry and any in-game text input fields on Linux/KDE.
+**Description:** Pressing Tab to cycle keyboard/gamepad focus inside a `SubViewportContainer` causes
+focus to jump outside the SubViewport entirely rather than cycling within it. Affects any in-game UI
+embedded in a SubViewport (e.g., menus rendered in-world).
 
 **Repro / Citation:**  
-- 4.7.2 release summary: "resolves an input method editor (IME) popup positioning bug under KDE Plasma when using fractional display scaling."  
-  URL: https://www.opensourceforu.com/2026/08/godot-4-7-2-released/ (August 2026)
+- GH-123744 (September 23, 2026):  
+  URL: https://github.com/godotengine/godot/issues/123744
 
-**Workaround:** Upgrade to 4.7.2. On older builds: disable fractional scaling or switch to X11.
+**Workaround:** Override `_gui_input()` on the SubViewportContainer to consume Tab and call
+`SubViewport.get_child(0).gui_focus_next()` manually.
 
 ---
 
-### 9. BaseButton Long-Press-as-Right-Click Misbehavior
-**Severity:** LOW (2D platformer — only if using `enable_long_press_as_right_click`)  
-**Status:** FIXED in 4.7.2 (August 18, 2026)
+## Previous Findings — Status Updates
 
-**Description:** When `BaseButton.enable_long_press_as_right_click = true`, input events were dispatched incorrectly, causing spurious `button_up` signals or consuming the event before the long press threshold was reached.
-
-**Repro / Citation:**  
-- 4.7.2 release notes: "fixes BaseButton input when enable_long_press_as_right_click is true."  
-  URL: https://www.opensourceforu.com/2026/08/godot-4-7-2-released/
-
-**Workaround:** Upgrade to 4.7.2.
+| Finding | Previous Status | October 2026 Update |
+|---------|----------------|---------------------|
+| RigidBody2D sleep freeze (GH-forum) | Open, no fix in 4.7.2 | Still open — no fix reported |
+| AnimationPlayer editor freeze (GH-120379) | Open, expected in 4.8 | Still open — not in any 4.8 dev release confirmed |
+| RigidBody2D Frozen-Static shape desync (GH-118473) | Open since April 2026 | Still open |
+| TextureButton focus regression (GH-115782) | Status unclear | No update found |
+| Shift simultaneous-release (GH fix in 4.7.2) | FIXED in 4.7.2 | Still fixed; new distinct Shift Heisenbug (GH-120528) is unrelated |
 
 ---
 
@@ -162,17 +187,23 @@
 
 | Issue | Title | Why Watch |
 |-------|-------|-----------|
-| GH-120379 | AnimationPlayer editor freeze on scene tree edits | 4.7 regression, no fix in 4.7.2; expected in 4.8 |
-| GH-118473 | RigidBody2D separates from CollisionShape2D (Frozen Static) | Open since April 2026; no confirmed fix |
-| Forum thread (no GH#) | RigidBody2D freeze/sleep after 4.7 update | Related to sleep system rewrite; no fix confirmed |
-| GH-115782 | TextureButton focus root issue (parent of #117486) | Status unclear; check against 4.7.2 |
-| GH-88067 | CharacterBody2D `is_on_floor()` erratic inside tilemaps | Long-standing; resurfaces across minor versions — verify in 4.7.2 |
+| GH-120528 | `is_action_pressed()` inverted for modifier keys | Directly hits run/dash on Shift; no fix ETA |
+| GH-123846 | `.tscn` save converts external to internal subresources | Can silently corrupt project file structure |
+| GH-123189 | Relative paths broken in binary resources | Affects any binary resource workflow |
+| GH-122176 | RichTextLabel/Container freeze+crash (4.7) | Still open after 7 weeks; no fix in sight |
+| GH-123593 | AnimationPlayer capture track segfault | Confirmed crash; fix expected in 4.8 |
+| GH-120379 | AnimationPlayer editor freeze on tree edits | 4.7 regression; expected 4.8 fix unconfirmed |
+| GH-118473 | RigidBody2D Frozen-Static collision shape desync | Open since April 2026, affects physics props |
+| 4.8 feature freeze | Milestone: godotengine/godot | Beta expected late October; watch for breaking API changes |
 
 ---
 
 ## Notes on Scope
 
-- All 4.7.2 fixes listed as "FIXED" above require upgrading to 4.7.2-stable (released August 18, 2026). Running 4.7.0 or 4.7.1 leaves the Shift key, high-polling mouse, IME, and BaseButton regressions active.
-- 4.8 dev 4 (August 26, 2026) contains 224 fixes but is not yet stable. Do not ship against it.
-- The sprite neighboring-frame flickering issue (GH-117978, first reported in 4.6.1) was **closed as not planned** due to inability to reproduce — watch for reports in 4.7.x context.
-- The `godot-mcp-pro` drag-event and synthetic input patterns documented in `tests/README.md` Pattern 4 are **unaffected** by any of the above; no new regressions found in that area for 4.7.x.
+- All findings marked (4.8 dev) occur in pre-release snapshots — do NOT ship against 4.8.
+- 4.8 reached **dev7** by October 1, 2026 (two snapshots beyond what the sourcemap recorded).
+  Feature freeze is imminent; beta likely by late October 2026.
+- The `godot-mcp-pro` synthetic drag / `Input.parse_input_event` patterns remain unaffected
+  by all findings in this crawl. No new regressions found in that area.
+- GH-122554 (Left Shift stuck on Windows — confirmed, separate race condition) was closed in
+  4.7.2 but the Heisenbug GH-120528 is a **different mechanism** and remains open.

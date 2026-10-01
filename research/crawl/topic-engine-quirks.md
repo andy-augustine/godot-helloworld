@@ -43,14 +43,8 @@ it disappear. Root cause: Init-time modifier event registered without a matching
 - GH-120528 (June 21, 2026 — open as of Sep 14, 2026): https://github.com/godotengine/godot/issues/120528  
 - GH-122728 (Aug 22, 2026, separate user repro in 4.7.2): https://github.com/godotengine/godot/issues/122728
 
-**Workaround:** Track modifier state manually using transition events only:
-```gdscript
-var _shift_held := false
-func _process(_delta):
-    if Input.is_action_just_pressed("dash"): _shift_held = true
-    elif Input.is_action_just_released("dash"): _shift_held = false
-```
-Do NOT rely on `is_action_pressed()` for modifier-key-bound actions in complex projects.
+**Workaround:** Track state via `is_action_just_pressed`/`is_action_just_released` — never read
+`is_action_pressed()` directly for modifier keys in complex projects.
 
 **Related issues:** GH-122554 (confirmed Shift stuck on Windows in 4.7.2 — separate race condition).
 

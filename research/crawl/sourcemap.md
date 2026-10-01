@@ -1,18 +1,21 @@
 # Godot 4 / GDScript Source Map
-**Crawl date:** 2026-09-01  
-**Target window:** August 2026 onward (previous crawl: 2026-08-01)
+**Crawl date:** 2026-10-01  
+**Target window:** September 2026 onward (previous crawl: 2026-09-01)
 
 ---
 
 ## ⚠️ Surprises
 
 **1. Godot 4.7 is already released and at 4.7.2 — not 4.6.x.**  
-Godot 4.7 shipped June 19, 2026. The second maintenance update (4.7.2, 57 bug fixes) shipped August 18, 2026. The previous crawl's focus on 4.6.x is stale. Current stable is `4.7.2`. Additionally, Godot 4.8 dev snapshots are already in progress (dev 4 posted August 26, 2026).
+Godot 4.7 shipped June 19, 2026. The second maintenance update (4.7.2, 57 bug fixes) shipped August 18, 2026. The previous crawl's focus on 4.6.x is stale. Current stable is `4.7.2`. No 4.7.3 has been announced as of October 1, 2026.
 
-**2. Godot banned AI-authored code contributions (effective July 1, 2026).**  
+**2. Godot 4.8 is at dev5 with feature freeze imminent.**  
+Dev 5 shipped in September 2026 (mip-level texture streaming, 2D editor toolbar redesign, main-screen EditorDock move, 183 fixes from 78 contributors). Feature freeze is approaching, making 4.8 beta realistic by late October 2026. Track https://github.com/godotengine/godot/milestones for the exact date.
+
+**3. Godot banned AI-authored code contributions (effective July 1, 2026).**  
 The Godot Foundation rewrote its contributor guidelines to ban "autonomous AI agent use or vibe coding" and disallow AI from generating "substantial pieces of code." This affects how we frame any AI-assisted workflows touching the engine codebase or suggesting engine patches.
 
-**3. W4 Games raised $18M Series B led by Tencent (August 2026).**  
+**4. W4 Games raised $18M Series B led by Tencent (August 2026).**  
 W4 Games (founded by Godot creator Juan Linietsky, Rémi Verschelde, et al.) closed $18M to scale Godot commercial support and expand into Asian markets. Godot Foundation remains independent; W4 is the commercial arm.
 
 ---
@@ -37,7 +40,7 @@ W4 Games (founded by Godot creator Juan Linietsky, Rémi Verschelde, et al.) clo
 |-------|--------|-------|
 | `forum.godotengine.org` | **HIGH** | Official re-launched Discourse forum. Active dev snapshot announcement threads (4.8 dev 4 thread confirmed). GodotFest/GodotCon announcements posted here. 2026 discussion threads confirmed (e.g., "Godot usage and engine growth 2026," May 7 2026). URL: https://forum.godotengine.org |
 | `godotengine.org/blog` | **HIGH** | Official blog; primary channel for release notes, dev snapshots, progress reports. 4.8 dev 4 posted Aug 26 2026; regular contributor progress reports (Snopek, Huya-Kouadio, Olij OpenXR post May 19 2026). URL: https://godotengine.org/blog |
-| `r/godot` (Reddit) | **MED** | 88,000+ members, 32% yearly growth. Good for community sentiment and discovering what devs are struggling with. Mod policy: maintained by the Godot Foundation. Lower signal-to-noise than the forum for deep technical answers; better for spotting trends. URL: https://reddit.com/r/godot |
+| `r/godot` (Reddit) | **MED** | 228,000+ members as of October 2026 (previously ~88k; significant growth through 2026). Good for community sentiment and discovering what devs are struggling with. Mod policy: maintained by the Godot Foundation. Lower signal-to-noise than the forum for deep technical answers; better for spotting trends. The 2026 showreel submission window closed October 1; voting runs October 2–16. URL: https://reddit.com/r/godot |
 | `godotdigest.substack.com` | **MED** | Godot Digest newsletter. Issue 30 and 40 confirmed active (issues 30 and 40 both found in search results; issue 40 correlates with ~Aug 2026). Curated weekly roundup — good for not missing things. URL: https://godotdigest.substack.com |
 | `jettelly.com/blog` | **MED** | Posts technical feature breakdowns: "Godot 4.6: What Shipped," "Godot 4.7: What's New So Far." More editorial than primary; useful for quick-scan of what changed. URL: https://jettelly.com/blog |
 | HackerNews | **LOW** | Occasional Godot threads with high-quality discussion (AI ban post got traction July 2026; 4.7 release thread at news.ycombinator.com). Worth checking on releases; not a consistent signal source. Search `site:news.ycombinator.com godot`. |
@@ -46,7 +49,7 @@ W4 Games (founded by Godot creator Juan Linietsky, Rémi Verschelde, et al.) clo
 
 | Venue | Signal | Notes |
 |-------|--------|-------|
-| Godot Engine official Discord | **MED** | 78,827 members as of crawl date. Web-accessible via https://discord.com/invite/godotengine. Key channels include #announcements, #game-jams, and a dedicated #xr channel. Ephemeral — answers evaporate; prefer forum for persistent Q&A. |
+| Godot Engine official Discord | **MED** | ~74,000–79,000 members (official count fluctuates; ~73,875 from one Sep 2026 snapshot). Web-accessible via https://discord.com/invite/godotengine (server ID 1235157165589794909). Key channels include #announcements, #game-jams, and a dedicated #xr channel. Ephemeral — answers evaporate; prefer forum for persistent Q&A. |
 
 ### Social Media
 
@@ -104,7 +107,7 @@ W4 Games (founded by Godot creator Juan Linietsky, Rémi Verschelde, et al.) clo
 | **4.7.0** | June 19, 2026 | "Director's Cut" — HDR output (all desktop platforms), AreaLight3D (production-ready), new Asset Store (replaces Asset Library), VirtualJoystick built-in, Control offset transforms for UI animation, DrawableTexture2D, wasm64 web exports, Android export improvements, XR updates. Full notes: https://godotengine.org/releases/4.7/ (redirect expected) |
 | **4.7.1** | ~July 2026 | Quick stability patch; rendering and platform bug fixes. |
 | **4.7.2** | August 18, 2026 | 57 bug fixes by 39 developers. Threading hardening; high-polling-rate mouse fix (Windows); Linux IME popup position fix (KDE Plasma fractional scaling); Shift key simultaneous release fix; PCSS shadow range correction; multiplayer replication fix after spawned-node deletion; AccessKit updated to 0.22.3. **Zero reported breaking changes.** Source: https://www.opensourceforu.com/2026/08/godot-4-7-2-released/ |
-| **4.8 (in dev)** | Dev 4: Aug 26, 2026 | Trail3D node; multi-bounce AO; specular lightmaps; VisualShader node groups; main screen dock support; object property access 1.6× faster; 224+ fixes. Not yet stable. Source: https://godotengine.org/article/dev-snapshot-godot-4-8-dev-4/ |
+| **4.8 (in dev)** | Dev 5: Sept 2026 | Mip-level texture streaming (VRAM reduction for open-world scenes); alpha test coverage fix for foliage; redesigned 2D editor toolbar; main screen plugins moved to EditorDock system; feature freeze imminent. Prior dev4 (Aug 26): Trail3D node, multi-bounce AO, specular lightmaps, VisualShader node groups, object property access 1.6× faster. Not yet stable. |
 
 ### Known Issues in 4.7.x
 

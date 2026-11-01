@@ -139,46 +139,22 @@ switch renderer to Compatibility or Mobile mode as a temporary measure.
 
 ---
 
-### 6. AnimationPlayer `current_animation_length` stale after editing named library  
-**Severity:** MED  
-**Versions affected:** 4.7.2 (confirmed), regression from 4.6  
-**Fixed in:** Open as of October 18, 2026  
+### 6. AnimationPlayer `current_animation_length` stale after named-library edit (GH-124548)
+**Severity:** MED | **Versions affected:** 4.7.2 | **Fixed in:** Open, filed October 18, 2026  
 
-**Description:** GH-124548: Changing the length of an animation inside a named
-`AnimationLibrary` does not update `AnimationPlayer.current_animation_length`. Reading the
-property after a library-level length edit returns the old (stale) value. Workaround is to
-explicitly re-assign `current_animation` after the length change to force a refresh.
-
-**Repro/citation:**  
-- <https://github.com/godotengine/godot/issues/124548> (filed October 18, 2026)  
-
-**Workaround:**
-```gdscript
-# After changing animation length in a named library:
-var anim_name = animation_player.current_animation
-animation_player.current_animation = ""
-animation_player.current_animation = anim_name
-```
-**Related issues:** GH-124548
+Changing an animation's length inside a named `AnimationLibrary` does not update
+`current_animation_length`. Workaround: bounce `current_animation` to `""` then back to force
+a refresh. Citation: <https://github.com/godotengine/godot/issues/124548> (October 18, 2026)
 
 ---
 
-### 7. Script editor captures game input outside Windowed+Embedded mode (4.8 dev, confirmed regression)  
-**Severity:** MED  
-**Versions affected:** 4.8 dev 7+; NOT in 4.7.2 stable  
-**Fixed in:** Targeted for 4.8 stable (added to 4.8 milestone)  
+### 7. Script editor captures game input in non-Windowed+Embedded mode (4.8 dev, GH-124079)
+**Severity:** MED | **Versions affected:** 4.8 dev 7+; NOT in 4.7.2 stable  
+**Fixed in:** Targeted 4.8 stable (in 4.8 milestone)  
 
-**Description:** GH-124079: When running the game from the editor in any mode other than
-Windowed+Embedded, the script editor grabs keyboard input away from the running game. Holding a
-key to move/jump results in that input being typed into the script editor instead. Confirmed
-regression not present in 4.7.2 stable.
-
-**Repro/citation:**  
-- <https://github.com/godotengine/godot/issues/124079> (Godot issue tracker, 2026)  
-
-**Workaround:** Use Windowed+Embedded mode while testing in 4.8 dev/beta. Or detach the editor
-and game into separate OS windows (the pre-4.8 workflow).  
-**Related issues:** GH-124079
+Editor keyboard input bleeds into the running game when using anything other than
+Windowed+Embedded mode. Workaround: use Windowed+Embedded during 4.8 dev/beta playtesting.
+Citation: <https://github.com/godotengine/godot/issues/124079> (2026)
 
 ---
 
